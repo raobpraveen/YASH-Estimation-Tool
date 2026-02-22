@@ -110,6 +110,105 @@ const ProficiencyRates = () => {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const template = [
+      ["Technology", "Skill Name", "Base Location", "Proficiency Level", "Avg Monthly Salary"],
+      ["SAP S/4HANA", "Finance Consultant", "UAE", "Senior", "8000"],
+      ["SAP S/4HANA", "Technical Architect", "India", "Architect", "12000"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Rates Template");
+    XLSX.writeFile(wb, "proficiency_rates_template.xlsx");
+    toast.success("Template downloaded");
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Skip header row
+      const dataRows = rows.slice(1).filter(row => row.length >= 5 && row[0] && row[1] && row[2] && row[3] && row[4]);
+      
+      let added = 0;
+      let skipped = 0;
+
+      for (const row of dataRows) {
+        const technologyName = String(row[0]).trim();
+        const skillName = String(row[1]).trim();
+        const locationName = String(row[2]).trim();
+        const proficiencyLevel = String(row[3]).trim();
+        const salary = parseFloat(row[4]);
+
+        // Find skill by name and technology
+        const skill = skills.find(s => 
+          s.name.toLowerCase() === skillName.toLowerCase() && 
+          s.technology_name?.toLowerCase() === technologyName.toLowerCase()
+        );
+        if (!skill) {
+          skipped++;
+          continue;
+        }
+
+        // Find location by name
+        const location = locations.find(l => l.name.toLowerCase() === locationName.toLowerCase());
+        if (!location) {
+          skipped++;
+          continue;
+        }
+
+        // Validate proficiency level
+        if (!PROFICIENCY_LEVELS.includes(proficiencyLevel)) {
+          skipped++;
+          continue;
+        }
+
+        // Check if rate already exists
+        const exists = rates.some(r => 
+          r.skill_id === skill.id && 
+          r.base_location_id === location.id && 
+          r.proficiency_level === proficiencyLevel
+        );
+        if (exists) {
+          skipped++;
+          continue;
+        }
+
+        try {
+          await axios.post(`${API}/proficiency-rates`, {
+            skill_id: skill.id,
+            skill_name: skill.name,
+            technology_id: skill.technology_id,
+            technology_name: skill.technology_name,
+            base_location_id: location.id,
+            base_location_name: location.name,
+            proficiency_level: proficiencyLevel,
+            avg_monthly_salary: salary,
+          });
+          added++;
+        } catch {
+          skipped++;
+        }
+      }
+
+      toast.success(`Upload complete: ${added} added, ${skipped} skipped`);
+      fetchRates();
+    } catch (error) {
+      toast.error("Failed to process Excel file");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div data-testid="proficiency-rates">
       <div className="flex items-center justify-between mb-8">
