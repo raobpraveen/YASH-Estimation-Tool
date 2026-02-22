@@ -826,8 +826,8 @@ const ProjectEstimator = () => {
     setProjectName("");
     setCustomerId("");
     setProjectLocations([]);
-    setTechnologyId("");
-    setProjectTypeId("");
+    setTechnologyIds([]);
+    setProjectTypeIds([]);
     setProjectDescription("");
     setProfitMarginPercentage(35);
     setVersionNotes("");
