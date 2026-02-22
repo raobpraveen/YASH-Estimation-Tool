@@ -392,7 +392,11 @@ async def create_project(input: ProjectCreate):
 
 @api_router.get("/projects", response_model=List[Project])
 async def get_projects(latest_only: bool = True):
-    query = {"is_latest_version": True} if latest_only else {}
+    # Handle legacy data: show projects where is_latest_version is True OR not set
+    if latest_only:
+        query = {"$or": [{"is_latest_version": True}, {"is_latest_version": {"$exists": False}}]}
+    else:
+        query = {}
     projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
     for project in projects:
         if isinstance(project.get('created_at'), str):
