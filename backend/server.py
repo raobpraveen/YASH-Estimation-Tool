@@ -132,8 +132,9 @@ class WaveGridAllocation(BaseModel):
     base_location_name: str
     overhead_percentage: float
     is_onsite: bool = False
+    travel_required: bool = False  # Indicates if travel logistics apply
     phase_allocations: Dict[str, float] = {}
-    # Logistics costs - editable per resource
+    # Logistics costs - editable per resource (legacy fields, now calculated at wave level)
     per_diem_daily: float = 50
     per_diem_days: int = 30
     accommodation_daily: float = 80
