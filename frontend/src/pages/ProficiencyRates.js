@@ -64,7 +64,8 @@ const ProficiencyRates = () => {
       await axios.post(`${API}/proficiency-rates`, {
         skill_id: newRate.skill_id,
         skill_name: selectedSkill.name,
-        technology: selectedSkill.technology,
+        technology_id: selectedSkill.technology_id,
+        technology_name: selectedSkill.technology_name,
         base_location_id: selectedSkill.base_location_id,
         base_location_name: selectedSkill.base_location_name,
         proficiency_level: newRate.proficiency_level,
@@ -117,7 +118,7 @@ const ProficiencyRates = () => {
                   <SelectContent>
                     {skills.map((skill) => (
                       <SelectItem key={skill.id} value={skill.id}>
-                        {skill.name} ({skill.technology}) - {skill.base_location_name}
+                        {skill.name} ({skill.technology_name}) - {skill.base_location_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
