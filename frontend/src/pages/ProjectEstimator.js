@@ -125,6 +125,9 @@ const ProjectEstimator = () => {
       setProjectDescription(project.description || "");
       setProfitMarginPercentage(project.profit_margin_percentage || 35);
       setVersionNotes(project.version_notes || "");
+      setProjectStatus(project.status || "draft");
+      setApproverEmail(project.approver_email || "");
+      setApprovalComments(project.approval_comments || "");
       
       if (project.waves && project.waves.length > 0) {
         setWaves(project.waves);
