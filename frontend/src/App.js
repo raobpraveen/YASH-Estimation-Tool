@@ -1,5 +1,6 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
@@ -12,26 +13,67 @@ import ProjectEstimator from "@/pages/ProjectEstimator";
 import Projects from "@/pages/Projects";
 import ProjectSummary from "@/pages/ProjectSummary";
 import CompareVersions from "@/pages/CompareVersions";
+import Login from "@/pages/Login";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for existing session
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    if (storedUser && token) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="technologies" element={<Technologies />} />
-            <Route path="project-types" element={<ProjectTypes />} />
-            <Route path="base-locations" element={<BaseLocations />} />
-            <Route path="skills" element={<SkillsManagement />} />
-            <Route path="proficiency-rates" element={<ProficiencyRates />} />
-            <Route path="estimator" element={<ProjectEstimator />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="projects/:projectId/summary" element={<ProjectSummary />} />
-            <Route path="projects/:projectId/compare" element={<CompareVersions />} />
-          </Route>
+          {!user ? (
+            <>
+              <Route path="/login" element={<Login onLogin={handleLogin} />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </>
+          ) : (
+            <Route path="/" element={<Layout user={user} onLogout={handleLogout} />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="technologies" element={<Technologies />} />
+              <Route path="project-types" element={<ProjectTypes />} />
+              <Route path="base-locations" element={<BaseLocations />} />
+              <Route path="skills" element={<SkillsManagement />} />
+              <Route path="proficiency-rates" element={<ProficiencyRates />} />
+              <Route path="estimator" element={<ProjectEstimator />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="projects/:projectId/summary" element={<ProjectSummary />} />
+              <Route path="projects/:projectId/compare" element={<CompareVersions />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Route>
+          )}
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" />
