@@ -61,6 +61,7 @@ const ProjectEstimator = () => {
   const [newAllocation, setNewAllocation] = useState({
     rate_id: "",
     is_onsite: false,
+    travel_required: false,
     custom_salary: "",
   });
   
@@ -301,6 +302,7 @@ const ProjectEstimator = () => {
       base_location_name: selectedRate.base_location_name,
       overhead_percentage: location.overhead_percentage,
       is_onsite: newAllocation.is_onsite,
+      travel_required: newAllocation.travel_required,
       phase_allocations: {},
     };
 
@@ -313,6 +315,7 @@ const ProjectEstimator = () => {
     setNewAllocation({
       rate_id: "",
       is_onsite: false,
+      travel_required: false,
       custom_salary: "",
     });
     setAddResourceDialogOpen(false);
@@ -334,6 +337,19 @@ const ProjectEstimator = () => {
             ...w,
             grid_allocations: w.grid_allocations.map(a =>
               a.id === allocationId ? { ...a, is_onsite: !a.is_onsite } : a
+            )
+          }
+        : w
+    ));
+  };
+
+  const handleToggleTravelRequired = (waveId, allocationId) => {
+    setWaves(waves.map(w => 
+      w.id === waveId
+        ? {
+            ...w,
+            grid_allocations: w.grid_allocations.map(a =>
+              a.id === allocationId ? { ...a, travel_required: !a.travel_required } : a
             )
           }
         : w
