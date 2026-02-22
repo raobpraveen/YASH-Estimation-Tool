@@ -17,15 +17,18 @@ const API = `${BACKEND_URL}/api`;
 const ProficiencyRates = () => {
   const [rates, setRates] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newRate, setNewRate] = useState({
     skill_id: "",
+    base_location_id: "",
     proficiency_level: "",
     avg_monthly_salary: "",
   });
 
   useEffect(() => {
     fetchSkills();
+    fetchLocations();
     fetchRates();
   }, []);
 
@@ -35,6 +38,15 @@ const ProficiencyRates = () => {
       setSkills(response.data);
     } catch (error) {
       toast.error("Failed to fetch skills");
+    }
+  };
+
+  const fetchLocations = async () => {
+    try {
+      const response = await axios.get(`${API}/base-locations`);
+      setLocations(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch base locations");
     }
   };
 
@@ -48,14 +60,16 @@ const ProficiencyRates = () => {
   };
 
   const handleAddRate = async () => {
-    if (!newRate.skill_id || !newRate.proficiency_level || !newRate.avg_monthly_salary) {
+    if (!newRate.skill_id || !newRate.base_location_id || !newRate.proficiency_level || !newRate.avg_monthly_salary) {
       toast.error("Please fill all fields");
       return;
     }
 
     const selectedSkill = skills.find((s) => s.id === newRate.skill_id);
-    if (!selectedSkill) {
-      toast.error("Invalid skill selected");
+    const selectedLocation = locations.find((l) => l.id === newRate.base_location_id);
+    
+    if (!selectedSkill || !selectedLocation) {
+      toast.error("Invalid selections");
       return;
     }
 
@@ -65,13 +79,13 @@ const ProficiencyRates = () => {
         skill_name: selectedSkill.name,
         technology_id: selectedSkill.technology_id,
         technology_name: selectedSkill.technology_name,
-        base_location_id: selectedSkill.base_location_id,
-        base_location_name: selectedSkill.base_location_name,
+        base_location_id: newRate.base_location_id,
+        base_location_name: selectedLocation.name,
         proficiency_level: newRate.proficiency_level,
         avg_monthly_salary: parseFloat(newRate.avg_monthly_salary),
       });
       toast.success("Proficiency rate added successfully");
-      setNewRate({ skill_id: "", proficiency_level: "", avg_monthly_salary: "" });
+      setNewRate({ skill_id: "", base_location_id: "", proficiency_level: "", avg_monthly_salary: "" });
       setDialogOpen(false);
       fetchRates();
     } catch (error) {
