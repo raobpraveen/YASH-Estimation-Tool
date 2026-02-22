@@ -881,8 +881,8 @@ const ProjectEstimator = () => {
     summaryData.push(["Customer Name", selectedCustomer?.name || ""]);
     summaryData.push(["Project Name", projectName]);
     summaryData.push(["Project Location(s)", projectLocations.map(code => COUNTRIES.find(c => c.code === code)?.name || code).join(", ") || "—"]);
-    summaryData.push(["Technology", technologies.find(t => t.id === technologyId)?.name || ""]);
-    summaryData.push(["Project Type", projectTypes.find(t => t.id === projectTypeId)?.name || ""]);
+    summaryData.push(["Technology", technologyIds.map(id => technologies.find(t => t.id === id)?.name).filter(Boolean).join(", ") || ""]);
+    summaryData.push(["Project Type", projectTypeIds.map(id => projectTypes.find(t => t.id === id)?.name).filter(Boolean).join(", ") || ""]);
     summaryData.push(["Description", projectDescription]);
     summaryData.push(["Profit Margin %", `${profitMarginPercentage}%`]);
     summaryData.push([]);
@@ -2212,12 +2212,12 @@ const ProjectEstimator = () => {
                   <p className="font-semibold">{projectLocations.map(code => COUNTRIES.find(c => c.code === code)?.name || code).join(", ") || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Technology</p>
-                  <p className="font-semibold">{technologies.find(t => t.id === technologyId)?.name || "—"}</p>
+                  <p className="text-gray-600">Technology(s)</p>
+                  <p className="font-semibold">{technologyIds.map(id => technologies.find(t => t.id === id)?.name).filter(Boolean).join(", ") || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Project Type</p>
-                  <p className="font-semibold">{projectTypes.find(t => t.id === projectTypeId)?.name || "—"}</p>
+                  <p className="text-gray-600">Project Type(s)</p>
+                  <p className="font-semibold">{projectTypeIds.map(id => projectTypes.find(t => t.id === id)?.name).filter(Boolean).join(", ") || "—"}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Profit Margin</p>
