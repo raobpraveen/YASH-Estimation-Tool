@@ -246,7 +246,7 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [ ] Email notifications (SendGrid/Resend integration)
 - [ ] Project templates (save as template, create from template)
 - [ ] Advanced dashboard filters (date range, customer filter)
-- [ ] Export to Excel Enhancement - reflect complex grid structure
+- [x] Export to Excel Enhancement - reflect complex grid structure with Overhead, Selling Price, and all KPIs
 
 ### P2 - Low Priority
 - [ ] Export to PDF
