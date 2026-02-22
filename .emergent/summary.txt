@@ -1,0 +1,181 @@
+<analysis>**original_problem_statement:**
+Build an IT/Software Project estimator tool.
+
+**PRODUCT REQUIREMENTS:**
+- **Skills Management**: Maintain skills with technology and proficiency levels.
+- **Cost Calculation**:
+    - Calculate costs based on the average monthly salary for a resource's skill and proficiency. This salary should be editable per estimation.
+    - Add a percentage-based Overheads cost, configurable per base location.
+    - Add a percentage-based Profit Margin (defaulting to 35%).
+    - **Selling Price Formula**: .
+- **Logistics Costs (Onsite Resources)**:
+    - An on/off indicator within the grid to mark resources as Onsite.
+    - Calculate logistics costs at the wave level. All rates (per-diems, accommodation, etc.) should be editable.
+    - Batch update logistics to apply settings to all onsite resources in a wave at once.
+    - **Calculation Formulas (based on user image)**:
+        - Per-diems, Accommodation, Conveyance: 
+        - Air Fare, Visa & Medical: 
+- **Estimator Header Data**:
+    - Customer Name, Project Location, Technology, Project Type.
+- **Estimator Structure**:
+    - Wave-based estimation with its own duration in months.
+    - The grid should have dynamic columns for each month, with editable phase names.
+- **Master Data Management**:
+    - Manage Customers, Technologies, Base Locations, and Project Types.
+- **Versioning**:
+    - Each project estimation should have a unique project number and version management.
+    - Ability to compare different versions of an estimation.
+- **Summary Screen**:
+    - A summary screen per project showing wave-wise breakdowns.
+- **Other Features**:
+    - Currency is always USD.
+    - Export to Excel functionality.
+
+**User's preferred language**: English
+
+**what currently exists?**
+A full-stack application (FastAPI backend, React frontend) for IT project estimation. The app includes:
+-   **Master Data Management**: CRUD for Technologies, Project Types, Base Locations, and Customers.
+-   **Core Data Management**: CRUD for Skills and Proficiency Rates.
+-   **Project Estimation**: A feature-rich estimator page supporting wave-based planning, dynamic monthly phases, editable salaries, and an on/off toggle for onsite resources.
+-   **Project Lifecycle**: Functionality to save, edit, clone (creating new versions), and delete estimations.
+-   **Project Listing & Summary**: A main projects page lists all estimations with version tracking, and a dedicated summary page provides a high-level overview of a selected project.
+-   **Backend Support**: The FastAPI backend supports all frontend features, including version management logic with a , , and  flag.
+
+**Last working item**:
+-   Last item agent was working: Implementing a Compare Versions feature and a new logistics cost calculation model based on a user-provided image. The agent's last action was creating the skeleton file for the version comparison page ().
+-   Status: **IN PROGRESS**
+-   Agent Testing Done: N
+-   Which testing method agent to use? **frontend testing agent**. The upcoming changes involve complex new UI (version comparison, batch logistics update) and critical calculation logic that requires comprehensive testing.
+-   User Testing Done: N
+
+**All Pending/In progress Issue list**:
+There are no outstanding bugs. All work is focused on new feature implementation.
+
+**In progress Task List**:
+-   **Task 1**: Implement New Logistics Calculations & Batch Update (P0)
+    -   Where to resume: Update the  file.
+    -   What will be achieved with this?:
+        1.  The logistics cost calculation logic will be updated to perform calculations at the **wave level**, matching the formulas provided by the user.
+        2.  A Batch update logistics feature will be added to allow users to apply logistics settings (like rates and days) to all onsite resources within a wave simultaneously.
+    -   Status: **NOT STARTED**
+    -   Should Test frontend/backend/both after fix?: Both. The frontend contains the new logic and UI, and the backend needs to correctly store the updated wave-level logistics data.
+    -   Blocked on something: No.
+
+-   **Task 2**: Complete and Integrate Compare Versions Feature (P1)
+    -   Where to resume: The file  exists but is empty. It needs to be fully implemented.
+    -   What will be achieved with this?: Users will be able to select two versions of the same project and see a side-by-side comparison of their details and costs. This requires fetching data for both versions and rendering it in a comparative view. The feature also needs to be linked from the  page.
+    -   Status: **IN PROGRESS**
+    -   Should Test frontend/backend/both after fix?: Both. Frontend for the comparison UI, and backend for a new API endpoint to fetch data for two specific project versions.
+    -   Blocked on something: No.
+
+**Upcoming and Future Tasks**
+-   **Future Tasks:**
+    -   **Export to Excel Enhancement**: Update the Export to Excel functionality to reflect the new complex grid structure, including waves, phases, versions, and all detailed cost components.
+
+**Completed work in this session**
+-   **Project Versioning**: Implemented a complete versioning system.
+    -   Added  and  tracking in the backend ().
+    -   Added Clone functionality to create new versions and Edit to create revisions.
+    -   Updated the  list to display version badges and group projects by .
+-   **New Features & UI Enhancements**:
+    -   Created a  page to display a high-level overview.
+    -   Added an Onsite on/off switch directly in the estimator grid.
+    -   Allowed the average monthly salary for a skill to be edited within an estimation.
+    -   Made all logistics cost rates (per-diems, accommodation, etc.) editable per wave.
+-   **Bug Fixes**:
+    -   Resolved an issue on the  page where projects with a selling price of /bin/bash were displayed incorrectly.
+    -   Fixed a bug preventing legacy projects (created before versioning) from appearing in the project list.
+    -   The testing agent identified and fixed a  bug during project saving.
+
+**Earlier issues found/mentioned but not fixed**
+None.
+
+**Known issue recurrence from previous fork**
+-   Issue recurrence in previous fork: N/A
+-   Recurrence count: 0
+-   Status: N/A
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Backend**: FastAPI
+-   **Frontend**: React.js
+-   **Database**: MongoDB
+-   **UI**: Shadcn UI components, Tailwind CSS
+-   **Data Handling**:  library for Excel export.
+
+**key DB schema**
+-   : 
+-   : 
+-   : 
+-   : 
+-   : 
+-   : 
+-   : 
+
+**changes in tech stack**
+None.
+
+**All files of reference**
+-   **/app/backend/server.py**: Contains all API endpoints, including new logic for versioning, editing, and cloning projects.
+-   **/app/frontend/src/pages/ProjectEstimator.js**: The core estimator component. Needs updates for new logistics calculations and batch updates.
+-   **/app/frontend/src/pages/Projects.js**: The main project listing page, updated to support versioning and new actions (Summary, Edit, Clone).
+-   **/app/frontend/src/pages/ProjectSummary.js**: A new page to show a high-level summary of a project.
+-   **/app/frontend/src/pages/CompareVersions.js**: A new, placeholder file for the version comparison feature.
+-   **/app/frontend/src/App.js**: The main React router, updated with routes for editing and summarizing projects.
+
+**Areas that need refactoring**:
+-   The  file is very large. It should be broken down into smaller components (, , etc.) after the current feature set is stable.
+
+**key api endpoints**
+-    (GET, POST)
+-    (GET, PUT)
+-    (POST)
+-    (GET)
+-   , , etc. (GET, POST)
+
+**Critical Info for New Agent**
+-   You are mid-implementation. The immediate tasks are to build out the **new logistics calculation logic** and the **version comparison** feature.
+-   The logistics formulas provided by the user (from the image) are critical. They are calculated at the **wave level**, which is a change from the previous per-resource model. Refer to the  for the exact formulas.
+-   The  page exists but is an empty shell. It needs to be built and integrated. You will likely need a new backend endpoint to fetch two project versions for comparison.
+-   The  file is the main focus for the logistics and batch update changes.
+
+**documents and test reports created in this job**
+-   /app/memory/PRD.md
+-   /app/test_reports/iteration_2.json
+-   /app/test_reports/iteration_3.json
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **user**: Asks to complete next action items (version management, editable salary, onsite toggle) and adds new requirements for logistics cost calculation and editable rates.
+2.  **agent**: Plans to implement all the new features, starting with backend changes for versioning.
+3.  **user**: (No message, agent proceeds with implementation).
+4.  **agent**: Implements backend and frontend changes for versioning, summary page, edit/clone functionality.
+5.  **user**: (No message, agent proceeds with testing).
+6.  **agent**: Runs the testing agent, which finds and fixes a bug related to .
+7.  **user**: 
+8.  **user**: Also 
+9.  **user**: (Provides an image, now removed) 
+10. **agent**: Analyzes the image, derives the new wave-level logistics formulas, and plans to implement the compare feature and logistics updates. The last action was creating the  file.
+
+**Project Health Check:**
+-   **Broken**: The version comparison feature is incomplete. The logistics calculations in  do not match the latest user requirements and must be updated.
+-   **Mocked**: None.
+
+**3rd Party Integrations**
+-   **xlsx**: Used for Excel export functionality.
+
+**Testing status**
+-   Testing agent used after significant changes: YES. The agent ran comprehensive tests twice in the last session.
+-   Troubleshoot agent used after agent stuck in loop: NO
+-   Test files created: None.
+-   Known regressions: None, but the logistics feature is pending a required update.
+
+**Credentials to test flow:**
+No authentication is implemented.
+
+**What agent forgot to execute**
+-   After creating the  file, the agent did not add the corresponding route to  or link to it from the UI.
+-   The core implementation for the new wave-level logistics calculations in  has not been started.
+-   The Batch update logistics feature has not been started.</analysis>
