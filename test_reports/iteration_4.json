@@ -1,0 +1,129 @@
+{
+  "summary": "Comprehensive testing of Travel Required toggle feature and Compare Versions feature. All 10 features tested and verified working. Backend API tests: 7/7 passed. Frontend UI tests: All features working correctly.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "Project waves",
+        "issue": "Field naming mismatch: Frontend uses 'logistics_config', backend model has 'logistics_defaults'. Not a breaking issue as data flows correctly.",
+        "priority": "LOW"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "component": "Add Wave Dialog",
+        "issue": "Formula description text says 'Total Onsite MM' but should say 'Total Traveling MM' since logistics now use travel_required flag",
+        "priority": "LOW"
+      }
+    ]
+  },
+
+  "passed_tests": [
+    "Travel Required toggle appears in estimator grid (purple YES/NO button)",
+    "Onsite toggle (amber ON/OFF) and Travel toggle (purple YES/NO) work independently",
+    "Logistics breakdown only shows when there are traveling resources (travel_required=true)",
+    "Logistics calculations correctly use traveling resources count, not onsite count",
+    "Per-diem/Accommodation/Conveyance formula: Traveling MM × Rate × Days",
+    "Air Fare/Visa formula: Traveling Resources × Rate × Trips",
+    "Compare Versions button (GitCompare icon) appears in Projects page",
+    "Compare Versions page loads correctly with version selection dropdowns",
+    "Side-by-side comparison table shows Traveling Resources row",
+    "Add Wave dialog with logistics configuration works",
+    "Add Resource dialog has both Onsite and Travel Required switches",
+    "Wave summary shows Traveling count and MM separately from Onsite",
+    "Batch Update Logistics button is present in wave header",
+    "travel_required field correctly saved to database",
+    "Version comparison data includes travel_required calculations"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_travel_required.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+
+  "action_items": [
+    "Minor: Update Add Wave dialog formula text from 'Total Onsite MM' to 'Total Traveling MM'"
+  ],
+
+  "critical_code_review_comments": [
+    "Travel Required implementation is correct - toggles work independently",
+    "Logistics calculation formula correctly uses traveling resources only",
+    "Compare Versions page correctly shows Traveling Resources metric",
+    "Backend model WaveGridAllocation has travel_required field properly defined"
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_travel_required.py - Created comprehensive test suite for travel_required and compare versions features"
+  ],
+
+  "success_rate": {
+    "backend": "100% (7/7 tests passed)",
+    "frontend": "100% (All 10 features verified working)"
+  },
+
+  "seed_data_creation": "Created test projects: PRJ-0003 (TEST_TravelRequired_Project with travel_required=true resource)",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+
+  "context_for_next_testing_agent": "Travel Required feature fully tested. Key implementation: 1) travel_required is SEPARATE from is_onsite (they can be set independently), 2) Logistics calculations only count resources with travel_required=true, 3) Compare Versions page includes Traveling Resources in comparison metrics. Backend model has travel_required field in WaveGridAllocation. Test file at /app/backend/tests/test_travel_required.py.",
+
+  "features_verified": {
+    "travel_required_toggle": {
+      "location": "Estimator grid - Travel column",
+      "appearance": "Purple YES/NO button",
+      "function": "Controls whether logistics apply to resource"
+    },
+    "onsite_toggle": {
+      "location": "Estimator grid - Onsite column",
+      "appearance": "Amber ON/OFF button",
+      "function": "Marks resource as onsite (separate from logistics)"
+    },
+    "logistics_calculation": {
+      "formula_per_diem_accomodation_conveyance": "Total Traveling MM × Daily Rate × Days",
+      "formula_air_fare_visa": "Number of Traveling Resources × Rate × Number of Trips",
+      "note": "Only resources with travel_required=true are counted"
+    },
+    "compare_versions": {
+      "route": "/projects/:projectId/compare",
+      "features": "Version selectors, Side-by-side comparison, Wave comparison",
+      "includes_traveling": "Yes - shows Traveling Resources metric"
+    }
+  },
+
+  "calculation_verification": {
+    "test_case": {
+      "description": "1 Traveling Resource with 1.5 MM",
+      "inputs": {
+        "traveling_mm": 1.5,
+        "per_diem_daily": 50,
+        "per_diem_days": 30,
+        "accommodation_daily": 80,
+        "accommodation_days": 30,
+        "conveyance_daily": 20,
+        "conveyance_days": 21,
+        "flight_cost_per_trip": 450,
+        "visa_medical_per_trip": 400,
+        "num_trips": 6,
+        "contingency_percentage": 5
+      },
+      "calculated": {
+        "per_diem": "1.5 × 50 × 30 = $2,250",
+        "accommodation": "1.5 × 80 × 30 = $3,600",
+        "conveyance": "1.5 × 20 × 21 = $630",
+        "air_fare": "1 × 450 × 6 = $2,700",
+        "visa_medical": "1 × 400 × 6 = $2,400",
+        "subtotal": "$11,580",
+        "contingency_5pct": "$579",
+        "total_logistics": "$12,159"
+      },
+      "status": "PASS - Formula correctly implemented"
+    }
+  }
+}
