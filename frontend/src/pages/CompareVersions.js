@@ -70,12 +70,17 @@ const CompareVersions = () => {
   // Calculate summary for a project version
   const calculateSummary = (project) => {
     if (!project || !project.waves) {
-      return { totalMM: 0, onsiteMM: 0, offshoreMM: 0, travelingMM: 0, totalLogistics: 0, sellingPrice: 0, resourceCount: 0, travelingResourceCount: 0 };
+      return { 
+        totalMM: 0, onsiteMM: 0, offshoreMM: 0, travelingMM: 0, totalLogistics: 0, sellingPrice: 0, 
+        resourceCount: 0, travelingResourceCount: 0, onsiteSalaryCost: 0, offshoreSalaryCost: 0,
+        onsiteSellingPrice: 0, offshoreSellingPrice: 0
+      };
     }
 
     const profitMargin = project.profit_margin_percentage || 35;
     let totalMM = 0, onsiteMM = 0, offshoreMM = 0, travelingMM = 0, totalLogistics = 0;
     let totalBaseCost = 0, resourceCount = 0, travelingResourceCount = 0;
+    let onsiteSalaryCost = 0, offshoreSalaryCost = 0;
 
     project.waves.forEach(wave => {
       const config = wave.logistics_config || {
@@ -90,13 +95,16 @@ const CompareVersions = () => {
 
       (wave.grid_allocations || []).forEach(alloc => {
         const mm = Object.values(alloc.phase_allocations || {}).reduce((s, v) => s + v, 0);
+        const salaryCost = alloc.avg_monthly_salary * mm;
         totalMM += mm;
         resourceCount++;
 
         if (alloc.is_onsite) {
           onsiteMM += mm;
+          onsiteSalaryCost += salaryCost;
         } else {
           offshoreMM += mm;
+          offshoreSalaryCost += salaryCost;
         }
 
         // Count traveling resources for logistics
@@ -107,7 +115,7 @@ const CompareVersions = () => {
           travelingResourceCount++;
         }
 
-        totalBaseCost += alloc.avg_monthly_salary * mm;
+        totalBaseCost += salaryCost;
       });
 
       // Wave logistics - only for traveling resources
@@ -125,8 +133,18 @@ const CompareVersions = () => {
     // Assume avg 30% overhead
     const costToCompany = baseCostWithLogistics * 1.3;
     const sellingPrice = costToCompany / (1 - profitMargin / 100);
+    
+    // Calculate onsite and offshore selling prices
+    const onsiteOverheadCost = onsiteSalaryCost * 0.3;
+    const offshoreOverheadCost = offshoreSalaryCost * 0.3;
+    const onsiteSellingPrice = (onsiteSalaryCost + onsiteOverheadCost + totalLogistics) / (1 - profitMargin / 100);
+    const offshoreSellingPrice = (offshoreSalaryCost + offshoreOverheadCost) / (1 - profitMargin / 100);
 
-    return { totalMM, onsiteMM, offshoreMM, travelingMM, totalLogistics, sellingPrice, resourceCount, travelingResourceCount };
+    return { 
+      totalMM, onsiteMM, offshoreMM, travelingMM, totalLogistics, sellingPrice, 
+      resourceCount, travelingResourceCount, onsiteSalaryCost, offshoreSalaryCost,
+      onsiteSellingPrice, offshoreSellingPrice
+    };
   };
 
   const leftSummary = calculateSummary(leftVersion);
