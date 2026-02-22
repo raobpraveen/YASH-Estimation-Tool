@@ -122,23 +122,27 @@ class ProficiencyRateCreate(BaseModel):
 
 # Models for Wave Grid Allocation
 class WaveGridAllocation(BaseModel):
+    id: str = ""
     skill_id: str
     skill_name: str
     proficiency_level: str
-    avg_monthly_salary: float
+    avg_monthly_salary: float  # Can be overridden per estimation
+    original_monthly_salary: float = 0  # Original rate from master
     base_location_id: str
     base_location_name: str
     overhead_percentage: float
     is_onsite: bool = False
     phase_allocations: Dict[str, float] = {}
-    per_diem_monthly: float = 0
-    accommodation_monthly: float = 0
+    # Logistics costs - editable per resource
+    per_diem_daily: float = 50
+    per_diem_days: int = 30
+    accommodation_daily: float = 80
+    accommodation_days: int = 30
+    local_conveyance_daily: float = 20
+    local_conveyance_days: int = 21
     flight_cost_per_trip: float = 0
+    visa_insurance_per_trip: float = 0
     num_trips: int = 0
-    visa_cost: float = 0
-    insurance_cost: float = 0
-    local_conveyance_monthly: float = 0
-    misc_cost: float = 0
 
 
 # Models for Project Waves
