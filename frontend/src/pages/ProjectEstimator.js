@@ -1162,6 +1162,19 @@ const ProjectEstimator = () => {
                 onChange={(e) => setProjectDescription(e.target.value)}
                 data-testid="project-description-input"
                 rows={2}
+                disabled={isReadOnly}
+              />
+            </div>
+            <div className="md:col-span-2 lg:col-span-3">
+              <Label htmlFor="version-notes">Version Notes</Label>
+              <Textarea
+                id="version-notes"
+                placeholder="Notes for this version (e.g., changes made, reason for update)"
+                value={versionNotes}
+                onChange={(e) => setVersionNotes(e.target.value)}
+                data-testid="version-notes-input"
+                rows={2}
+                disabled={isReadOnly}
               />
             </div>
           </div>
@@ -1169,7 +1182,7 @@ const ProjectEstimator = () => {
       </Card>
 
       {/* Overall Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="border border-[#E2E8F0] shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Total Man-Months</CardTitle>
@@ -1188,6 +1201,13 @@ const ProjectEstimator = () => {
             <p className="text-2xl font-extrabold font-mono text-[#F59E0B]" data-testid="onsite-mm">
               {overall.onsiteMM.toFixed(1)}
             </p>
+            {overall.onsiteMM > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                Avg: ${(overall.sellingPrice > 0 && overall.onsiteMM > 0 
+                  ? (overall.onsiteSalaryCost / overall.onsiteMM * (1 + profitMarginPercentage/100)).toFixed(0) 
+                  : 0).toLocaleString()}/MM
+              </p>
+            )}
           </CardContent>
         </Card>
         <Card className="border border-[#E2E8F0] shadow-sm">
