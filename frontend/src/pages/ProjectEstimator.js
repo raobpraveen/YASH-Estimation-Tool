@@ -28,12 +28,15 @@ const STATUS_CONFIG = {
   rejected: { label: "Rejected", color: "bg-red-100 text-red-700", icon: XCircle },
 };
 
+const PROFICIENCY_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Architect", "Project Management", "Delivery"];
+
 const ProjectEstimator = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const editProjectId = searchParams.get("edit");
   
   const [rates, setRates] = useState([]);
+  const [skills, setSkills] = useState([]);
   const [locations, setLocations] = useState([]);
   const [technologies, setTechnologies] = useState([]);
   const [projectTypes, setProjectTypes] = useState([]);
@@ -46,8 +49,8 @@ const ProjectEstimator = () => {
   const [projectName, setProjectName] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [projectLocations, setProjectLocations] = useState([]); // Multiple locations
-  const [technologyId, setTechnologyId] = useState("");
-  const [projectTypeId, setProjectTypeId] = useState("");
+  const [technologyIds, setTechnologyIds] = useState([]); // Multiple technologies
+  const [projectTypeIds, setProjectTypeIds] = useState([]); // Multiple project types
   const [projectDescription, setProjectDescription] = useState("");
   const [profitMarginPercentage, setProfitMarginPercentage] = useState(35);
   const [versionNotes, setVersionNotes] = useState("");
