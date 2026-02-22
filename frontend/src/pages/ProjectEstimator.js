@@ -483,7 +483,7 @@ const ProjectEstimator = () => {
       }
     });
 
-    // Get wave-level logistics
+    // Get wave-level logistics (calculated based on travel_required flag)
     const logistics = calculateWaveLogistics(wave);
     
     // Calculate costs
@@ -514,6 +514,8 @@ const ProjectEstimator = () => {
       totalCostToCompany: costToCompany,
       sellingPrice,
       onsiteResourceCount: logistics.onsiteResourceCount,
+      travelingResourceCount: logistics.travelingResourceCount,
+      travelingMM: logistics.totalTravelingMM,
       logistics,
     };
   };
