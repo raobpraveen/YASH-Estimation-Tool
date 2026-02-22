@@ -1,0 +1,129 @@
+{
+  "project_name": "Project Estimator Tool",
+  "theme": {
+    "mode": "light",
+    "strategy": "The Financial Architect",
+    "description": "A precision-focused, trustworthy, and clean aesthetic designed for financial clarity. High contrast data against subtle, structured backgrounds."
+  },
+  "typography": {
+    "headings": {
+      "family": "Manrope",
+      "weights": ["600", "800"],
+      "usage": "Page titles, Section headers, Card titles",
+      "letterSpacing": "tracking-tight"
+    },
+    "body": {
+      "family": "Inter",
+      "weights": ["400", "500"],
+      "usage": "General text, labels, form inputs"
+    },
+    "data": {
+      "family": "JetBrains Mono",
+      "weights": ["400", "500"],
+      "usage": "All currency values, percentages, and tabular data"
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "surface_subtle": "#F1F5F9",
+      "primary": "#0F172A",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#E2E8F0",
+      "secondary_foreground": "#0F172A",
+      "accent": "#0EA5E9",
+      "accent_foreground": "#FFFFFF",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "destructive": "#EF4444",
+      "border": "#E2E8F0",
+      "ring": "#0F172A"
+    },
+    "usage_rules": [
+      "Use Primary (Deep Navy) for main actions and heavy text.",
+      "Use JetBrains Mono for ANY number that affects money.",
+      "Use specific color coding for financial status: Green (Profit), Orange (Cost/Overhead), Blue (Revenue).",
+      "Never use pure black (#000000). Use #0F172A."
+    ]
+  },
+  "visual_enhancers": {
+    "surface_strategy": "Grid Borders",
+    "description": "Expose the skeleton. Use 'border-collapse' style layouts for data density.",
+    "radius": "rounded-none",
+    "shadows": "shadow-sm",
+    "borders": "border border-border/60",
+    "textures": "Subtle noise on the sidebar or header to reduce sterility."
+  },
+  "layout_strategies": {
+    "dashboard": {
+      "type": "Sidebar Layout",
+      "structure": "Fixed Sidebar (Left) + Scrollable Content (Right)",
+      "spacing": "p-8",
+      "grid_mode": "Bento Mode B (High Density)"
+    },
+    "estimator_page": {
+      "type": "Split Panel",
+      "structure": "Top: Global Config (Margins/Overheads) -> Sticky. Bottom: Resource Grid.",
+      "visuals": "The 'Estimator' should look like a high-end spreadsheet, not a basic HTML table."
+    }
+  },
+  "components": [
+    {
+      "name": "EstimatorGrid",
+      "description": "The core calculator table. Must support inline editing.",
+      "path": "src/components/estimator/EstimatorGrid.js",
+      "styling": "Table cells should have 'focus-within' states. Use tabular-nums."
+    },
+    {
+      "name": "ProfitMarginSlider",
+      "description": "Interactive slider to adjust profit margin % and see real-time impact on selling price.",
+      "path": "src/components/estimator/ProfitMarginSlider.js",
+      "styling": "Custom range slider with a tooltip showing the calculated value."
+    },
+    {
+      "name": "CostSummaryCard",
+      "description": "High-level metrics display.",
+      "path": "src/components/dashboard/CostSummaryCard.js",
+      "styling": "Big font (text-4xl) for numbers. Subtle trend indicator."
+    },
+    {
+      "name": "ResourceRow",
+      "description": "A row in the estimator for adding a resource.",
+      "path": "src/components/estimator/ResourceRow.js",
+      "styling": "Includes 'Onsite' toggle switch with plane icon animation."
+    }
+  ],
+  "motion": {
+    "hover": "transition-colors duration-200",
+    "interaction": "Micro-interactions on toggles (Onsite/Offsite).",
+    "data_updates": "Numbers should animate (count up) when recalculating totals."
+  },
+  "image_urls": {
+    "hero_background": "https://images.unsplash.com/photo-1491183846256-33aec7637311",
+    "avatars": [
+      "https://images.unsplash.com/photo-1655249493799-9cee4fe983bb",
+      "https://images.unsplash.com/photo-1689600944138-da3b150d9cb8",
+      "https://images.unsplash.com/photo-1576558656222-ba66febe3dec"
+    ],
+    "empty_state": "https://images.unsplash.com/photo-1763902595572-67b405bce4ec"
+  },
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur)",
+    "You MUST NOT apply universal transition. Eg: transition: all.",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; }.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations.",
+    "NEVER use AI assistant Emoji characters for icons.",
+    "Main agent relies on these image URLs. Missing categories = main agent will use placeholder text which is FORBIDDEN"
+  ],
+  "instructions_to_main_agent": [
+    "1. Setup Shadcn UI components first (Button, Input, Select, Table, Card, Switch, Slider, Dialog).",
+    "2. Install 'lucide-react' for icons.",
+    "3. Create the 'Estimator' page as the heart of the app. It needs to feel responsive and fast.",
+    "4. Use 'recharts' for the Cost Breakdown visuals (Pie/Bar charts).",
+    "5. Ensure the 'Onsite' toggle significantly changes the row visual (maybe adds a plane icon or changes bg color slightly) to denote travel costs are applied."
+  ]
+}
