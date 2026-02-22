@@ -870,32 +870,32 @@ const ProjectEstimator = () => {
   return (
     <TooltipProvider>
     <div data-testid="project-estimator" className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Project Estimator</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">Project Estimator</h1>
             {projectNumber && (
-              <Badge variant="outline" className="text-lg font-mono" data-testid="project-number-badge">
+              <Badge variant="outline" className="text-sm font-mono" data-testid="project-number-badge">
                 {projectNumber} v{projectVersion}
               </Badge>
             )}
             {projectId && getStatusBadge()}
           </div>
-          <p className="text-base text-gray-600 mt-2">Wave-based project estimation with version management</p>
+          <p className="text-sm text-gray-600 mt-1">Wave-based project estimation with version management</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handleNewProject} variant="outline" data-testid="new-project-button">
-            <Plus className="w-4 h-4 mr-2" />
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={handleNewProject} variant="outline" size="sm" data-testid="new-project-button">
+            <Plus className="w-4 h-4 mr-1" />
             New
           </Button>
           {projectId && (
             <>
-              <Button onClick={handleCloneProject} variant="outline" className="border-[#8B5CF6] text-[#8B5CF6]" data-testid="clone-project-button">
-                <Copy className="w-4 h-4 mr-2" />
+              <Button onClick={handleCloneProject} variant="outline" size="sm" className="border-[#8B5CF6] text-[#8B5CF6]" data-testid="clone-project-button">
+                <Copy className="w-4 h-4 mr-1" />
                 Clone
               </Button>
-              <Button onClick={() => setSaveAsNewVersionDialog(true)} variant="outline" className="border-[#F59E0B] text-[#F59E0B]" data-testid="new-version-button">
-                <History className="w-4 h-4 mr-2" />
+              <Button onClick={() => setSaveAsNewVersionDialog(true)} variant="outline" size="sm" className="border-[#F59E0B] text-[#F59E0B]" data-testid="new-version-button">
+                <History className="w-4 h-4 mr-1" />
                 New Version
               </Button>
               {projectStatus === "draft" && !isReadOnly && (
