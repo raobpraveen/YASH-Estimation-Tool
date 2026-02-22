@@ -243,6 +243,12 @@ const CompareVersions = () => {
                   <span className="text-gray-600">Waves</span>
                   <span className="font-semibold">{leftVersion.waves?.length || 0}</span>
                 </div>
+                {leftVersion.version_notes && (
+                  <div className="border-t pt-3 mt-3">
+                    <span className="text-gray-600 block mb-1">Version Notes:</span>
+                    <p className="text-sm bg-gray-50 p-2 rounded italic">{leftVersion.version_notes}</p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -283,6 +289,12 @@ const CompareVersions = () => {
                   <span className="text-gray-600">Waves</span>
                   <span className="font-semibold">{rightVersion.waves?.length || 0}</span>
                 </div>
+                {rightVersion.version_notes && (
+                  <div className="border-t pt-3 mt-3">
+                    <span className="text-gray-600 block mb-1">Version Notes:</span>
+                    <p className="text-sm bg-green-50 p-2 rounded italic">{rightVersion.version_notes}</p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
