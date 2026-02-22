@@ -1,9 +1,10 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { LayoutDashboard, Briefcase, Layers, Calculator, FolderKanban } from "lucide-react";
+import { LayoutDashboard, MapPin, Layers, Briefcase, Calculator, FolderKanban } from "lucide-react";
 
 const Layout = () => {
   const navItems = [
     { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/base-locations", icon: MapPin, label: "Base Locations" },
     { path: "/skills", icon: Layers, label: "Skills" },
     { path: "/proficiency-rates", icon: Briefcase, label: "Proficiency Rates" },
     { path: "/estimator", icon: Calculator, label: "Estimator" },

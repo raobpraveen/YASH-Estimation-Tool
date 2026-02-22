@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
+import BaseLocations from "@/pages/BaseLocations";
 import SkillsManagement from "@/pages/SkillsManagement";
 import ProficiencyRates from "@/pages/ProficiencyRates";
 import ProjectEstimator from "@/pages/ProjectEstimator";
@@ -15,6 +16,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
+            <Route path="base-locations" element={<BaseLocations />} />
             <Route path="skills" element={<SkillsManagement />} />
             <Route path="proficiency-rates" element={<ProficiencyRates />} />
             <Route path="estimator" element={<ProjectEstimator />} />
