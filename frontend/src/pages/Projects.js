@@ -49,21 +49,33 @@ const Projects = () => {
   };
 
   const calculateProjectValue = (project) => {
-    const baseCost = project.resources.reduce((sum, r) => {
-      const resourceCost = r.avg_monthly_salary * r.man_months;
-      const logisticsCost = r.is_onsite
-        ? (r.per_diem_monthly + r.accommodation_monthly + r.local_conveyance_monthly) * r.man_months +
-          r.flight_cost_per_trip * r.num_trips +
-          r.visa_cost +
-          r.insurance_cost +
-          r.misc_cost
+    if (!project.grid_allocations || project.grid_allocations.length === 0) {
+      return { baseCost: 0, withOverhead: 0, sellingPrice: 0 };
+    }
+    
+    let baseCost = 0;
+    let costWithOverhead = 0;
+    
+    project.grid_allocations.forEach((allocation) => {
+      const totalManMonths = Object.values(allocation.phase_allocations || {}).reduce((s, v) => s + v, 0);
+      const baseSalaryCost = allocation.avg_monthly_salary * totalManMonths;
+      const logisticsCost = allocation.is_onsite
+        ? (allocation.per_diem_monthly + allocation.accommodation_monthly + allocation.local_conveyance_monthly) *
+            totalManMonths +
+          allocation.flight_cost_per_trip * allocation.num_trips +
+          allocation.visa_cost +
+          allocation.insurance_cost +
+          allocation.misc_cost
         : 0;
-      return sum + resourceCost + logisticsCost;
-    }, 0);
+      const subtotal = baseSalaryCost + logisticsCost;
+      const withOverhead = subtotal * (1 + allocation.overhead_percentage / 100);
+      
+      baseCost += subtotal;
+      costWithOverhead += withOverhead;
+    });
 
-    const withOverhead = baseCost * (1 + project.overhead_percentage / 100);
-    const sellingPrice = withOverhead * (1 + project.profit_margin_percentage / 100);
-    return { baseCost, withOverhead, sellingPrice };
+    const sellingPrice = costWithOverhead * (1 + project.profit_margin_percentage / 100);
+    return { baseCost, withOverhead: costWithOverhead, sellingPrice };
   };
 
   return (
