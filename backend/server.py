@@ -22,6 +22,30 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 
+# Models for Technologies
+class Technology(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TechnologyCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+
+
+# Models for Project Types
+class ProjectType(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ProjectTypeCreate(BaseModel):
+    name: str
+
+
 # Models for Base Locations
 class BaseLocation(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -40,14 +64,16 @@ class Skill(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
-    technology: str
+    technology_id: str
+    technology_name: str
     base_location_id: str
     base_location_name: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class SkillCreate(BaseModel):
     name: str
-    technology: str
+    technology_id: str
+    technology_name: str
     base_location_id: str
     base_location_name: str
 
@@ -58,7 +84,8 @@ class ProficiencyRate(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     skill_id: str
     skill_name: str
-    technology: str
+    technology_id: str
+    technology_name: str
     base_location_id: str
     base_location_name: str
     proficiency_level: str
@@ -68,15 +95,16 @@ class ProficiencyRate(BaseModel):
 class ProficiencyRateCreate(BaseModel):
     skill_id: str
     skill_name: str
-    technology: str
+    technology_id: str
+    technology_name: str
     base_location_id: str
     base_location_name: str
     proficiency_level: str
     avg_monthly_salary: float
 
 
-# Models for Project Grid Allocation
-class GridAllocation(BaseModel):
+# Models for Wave Grid Allocation
+class WaveGridAllocation(BaseModel):
     skill_id: str
     skill_name: str
     proficiency_level: str
@@ -85,7 +113,7 @@ class GridAllocation(BaseModel):
     base_location_name: str
     overhead_percentage: float
     is_onsite: bool = False
-    phase_allocations: Dict[str, float] = {}  # {"Discovery": 1.5, "Prepare": 2.0, ...}
+    phase_allocations: Dict[str, float] = {}
     per_diem_monthly: float = 0
     accommodation_monthly: float = 0
     flight_cost_per_trip: float = 0
@@ -96,30 +124,107 @@ class GridAllocation(BaseModel):
     misc_cost: float = 0
 
 
+# Models for Project Waves
+class ProjectWave(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    duration_months: float
+    phases: List[str] = ["Discovery", "Prepare", "Explore", "Realize", "Deploy", "Run"]
+    grid_allocations: List[WaveGridAllocation] = []
+
+
 # Models for Projects
 class Project(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
+    customer_name: str = ""
+    project_location: str = ""  # ISO country code
+    project_location_name: str = ""
+    technology_id: str = ""
+    technology_name: str = ""
+    project_type_id: str = ""
+    project_type_name: str = ""
     description: Optional[str] = ""
-    phases: List[str] = ["Discovery", "Prepare", "Explore", "Realize", "Deploy", "Run"]
     profit_margin_percentage: float = 15.0
-    grid_allocations: List[GridAllocation] = []
+    waves: List[ProjectWave] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProjectCreate(BaseModel):
     name: str
+    customer_name: str = ""
+    project_location: str = ""
+    project_location_name: str = ""
+    technology_id: str = ""
+    technology_name: str = ""
+    project_type_id: str = ""
+    project_type_name: str = ""
     description: Optional[str] = ""
-    phases: List[str] = ["Discovery", "Prepare", "Explore", "Realize", "Deploy", "Run"]
     profit_margin_percentage: float = 15.0
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
+    customer_name: Optional[str] = None
+    project_location: Optional[str] = None
+    project_location_name: Optional[str] = None
+    technology_id: Optional[str] = None
+    technology_name: Optional[str] = None
+    project_type_id: Optional[str] = None
+    project_type_name: Optional[str] = None
     description: Optional[str] = None
-    phases: Optional[List[str]] = None
     profit_margin_percentage: Optional[float] = None
-    grid_allocations: Optional[List[Dict]] = None
+    waves: Optional[List[Dict]] = None
+
+
+# Technologies Routes
+@api_router.post("/technologies", response_model=Technology)
+async def create_technology(input: TechnologyCreate):
+    tech_obj = Technology(**input.model_dump())
+    doc = tech_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.technologies.insert_one(doc)
+    return tech_obj
+
+@api_router.get("/technologies", response_model=List[Technology])
+async def get_technologies():
+    technologies = await db.technologies.find({}, {"_id": 0}).to_list(1000)
+    for tech in technologies:
+        if isinstance(tech['created_at'], str):
+            tech['created_at'] = datetime.fromisoformat(tech['created_at'])
+    return technologies
+
+@api_router.delete("/technologies/{tech_id}")
+async def delete_technology(tech_id: str):
+    result = await db.technologies.delete_one({"id": tech_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Technology not found")
+    return {"message": "Technology deleted successfully"}
+
+
+# Project Types Routes
+@api_router.post("/project-types", response_model=ProjectType)
+async def create_project_type(input: ProjectTypeCreate):
+    type_obj = ProjectType(**input.model_dump())
+    doc = type_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.project_types.insert_one(doc)
+    return type_obj
+
+@api_router.get("/project-types", response_model=List[ProjectType])
+async def get_project_types():
+    types = await db.project_types.find({}, {"_id": 0}).to_list(1000)
+    for ptype in types:
+        if isinstance(ptype['created_at'], str):
+            ptype['created_at'] = datetime.fromisoformat(ptype['created_at'])
+    return types
+
+@api_router.delete("/project-types/{type_id}")
+async def delete_project_type(type_id: str):
+    result = await db.project_types.delete_one({"id": type_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Project type not found")
+    return {"message": "Project type deleted successfully"}
 
 
 # Base Locations Routes
