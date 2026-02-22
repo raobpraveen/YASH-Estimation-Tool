@@ -267,6 +267,41 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 
 ---
 
+## December 22, 2025 - Iteration 8 Features
+
+### JWT Authentication (COMPLETE)
+- [x] Login page with Login/Register tabs
+- [x] JWT token-based authentication (HS256, 24hr expiration)
+- [x] User session persisted in localStorage
+- [x] Protected routes redirect to login when not authenticated
+- [x] User info and Sign Out button in sidebar
+- [x] API endpoints: `/auth/register`, `/auth/login`, `/auth/me`
+
+### Grid Total Cost Column (COMPLETE)
+- [x] Added "Total Cost" column between Overhead and Selling Price
+- [x] Calculation: Salary Cost + Overhead
+- [x] Gray background to distinguish from Selling Price (green)
+- [x] Excel export updated to include Total Cost column
+
+### Excel Upload for Master Data (COMPLETE)
+- [x] Skills page: Template download + Upload Excel buttons
+- [x] Proficiency Rates page: Template download + Upload Excel buttons
+- [x] Template columns match screen columns
+- [x] Duplicate records skipped during upload
+- [x] Success toast with "X added, Y skipped" message
+
+### Project Templates (COMPLETE)
+- [x] "Save as Template" button (bookmark icon) on each project
+- [x] Template name input dialog
+- [x] "From Template" button in Projects header
+- [x] Template dropdown with wave count
+- [x] Template badge (green) shown on template projects
+- [x] Projects created from template show "(from template)" in name
+- [x] New project number assigned, status reset to draft
+- [x] API endpoints: `/templates`, `/save-as-template`, `/create-from-template`, `/remove-template`
+
+---
+
 ## Test Coverage
 - Test reports: `/app/test_reports/iteration_7.json`
 - All 8 iteration 7 features tested and verified working
