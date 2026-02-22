@@ -870,6 +870,38 @@ const ProjectEstimator = () => {
                 <History className="w-4 h-4 mr-2" />
                 New Version
               </Button>
+              {projectStatus === "draft" && (
+                <Button 
+                  onClick={() => setSubmitForReviewDialog(true)} 
+                  variant="outline" 
+                  className="border-purple-600 text-purple-600"
+                  data-testid="submit-review-button"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Submit for Review
+                </Button>
+              )}
+              {projectStatus === "in_review" && (
+                <>
+                  <Button 
+                    onClick={() => { setApprovalAction("approve"); setApprovalActionDialog(true); }}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    data-testid="approve-button"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button 
+                    onClick={() => { setApprovalAction("reject"); setApprovalActionDialog(true); }}
+                    variant="outline"
+                    className="border-red-600 text-red-600"
+                    data-testid="reject-button"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Reject
+                  </Button>
+                </>
+              )}
             </>
           )}
           <Button onClick={() => setSummaryDialogOpen(true)} variant="outline" className="border-[#0EA5E9] text-[#0EA5E9]" data-testid="view-summary-button">
@@ -885,6 +917,86 @@ const ProjectEstimator = () => {
           </Button>
         </div>
       </div>
+
+      {/* Submit for Review Dialog */}
+      <Dialog open={submitForReviewDialog} onOpenChange={setSubmitForReviewDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-[#0F172A]">Submit for Review</DialogTitle>
+            <DialogDescription>Enter the approver's email address to submit this project for review.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="approver-email">Approver Email *</Label>
+              <Input
+                id="approver-email"
+                type="email"
+                placeholder="approver@company.com"
+                value={approverEmail}
+                onChange={(e) => setApproverEmail(e.target.value)}
+                data-testid="approver-email-input"
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+              The approver will receive a notification and can approve, reject, or request changes to this estimate.
+            </p>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setSubmitForReviewDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleSubmitForReview} 
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+              data-testid="confirm-submit-review"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approval Action Dialog */}
+      <Dialog open={approvalActionDialog} onOpenChange={setApprovalActionDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-[#0F172A]">
+              {approvalAction === "approve" ? "Approve Project" : "Reject Project"}
+            </DialogTitle>
+            <DialogDescription>
+              {approvalAction === "approve" 
+                ? "Add any comments for the approval."
+                : "Please provide a reason for rejection."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="approval-comments">Comments</Label>
+              <Textarea
+                id="approval-comments"
+                placeholder={approvalAction === "approve" ? "Optional approval comments..." : "Reason for rejection..."}
+                value={approvalComments}
+                onChange={(e) => setApprovalComments(e.target.value)}
+                rows={3}
+                data-testid="approval-comments-input"
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setApprovalActionDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleApprovalAction}
+              className={approvalAction === "approve" ? "bg-green-600 hover:bg-green-700 text-white" : "bg-red-600 hover:bg-red-700 text-white"}
+              data-testid="confirm-approval-action"
+            >
+              {approvalAction === "approve" ? (
+                <><CheckCircle className="w-4 h-4 mr-2" /> Approve</>
+              ) : (
+                <><XCircle className="w-4 h-4 mr-2" /> Reject</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Project Header */}
       <Card className="border border-[#E2E8F0] shadow-sm">
