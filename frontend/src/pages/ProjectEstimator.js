@@ -1984,8 +1984,8 @@ const ProjectEstimator = () => {
                   <p className="font-semibold">{projectName || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Location</p>
-                  <p className="font-semibold">{COUNTRIES.find(c => c.code === projectLocation)?.name || "—"}</p>
+                  <p className="text-gray-600">Location(s)</p>
+                  <p className="font-semibold">{projectLocations.map(code => COUNTRIES.find(c => c.code === code)?.name || code).join(", ") || "—"}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Technology</p>
