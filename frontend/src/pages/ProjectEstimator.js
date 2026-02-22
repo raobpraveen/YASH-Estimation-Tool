@@ -1409,7 +1409,7 @@ const ProjectEstimator = () => {
                                   <td></td>
                                   <td></td>
                                   <td></td>
-                                  <td className="text-right font-mono text-[#F59E0B]">${waveSummary.logistics.totalLogistics.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                  <td className="text-right font-mono text-purple-600">${waveSummary.logistics.totalLogistics.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -1425,7 +1425,7 @@ const ProjectEstimator = () => {
                           <CardTitle className="text-lg font-bold text-[#0F172A]">{wave.name} Summary</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                             <div>
                               <p className="text-gray-600">Total Man-Months</p>
                               <p className="font-mono font-semibold text-lg">{waveSummary.totalMM.toFixed(1)}</p>
@@ -1441,12 +1441,12 @@ const ProjectEstimator = () => {
                               <p className="text-xs text-gray-500">${waveSummary.offshoreSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                             </div>
                             <div>
+                              <p className="text-gray-600">Traveling ({waveSummary.travelingResourceCount} resources)</p>
+                              <p className="font-mono font-semibold text-lg text-purple-600">{waveSummary.travelingMM.toFixed(1)} MM</p>
+                            </div>
+                            <div>
                               <p className="text-gray-600">Total Logistics</p>
                               <p className="font-mono font-semibold text-lg">${waveSummary.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                            </div>
-                            <div className="col-span-2">
-                              <p className="text-gray-600">Cost to Company</p>
-                              <p className="font-mono font-semibold text-xl">${waveSummary.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                             </div>
                             <div className="col-span-2">
                               <p className="text-gray-600">Wave Selling Price</p>
