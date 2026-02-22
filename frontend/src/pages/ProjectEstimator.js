@@ -1338,12 +1338,15 @@ const ProjectEstimator = () => {
                     )}
 
                     {/* Logistics Breakdown */}
-                    {wave.grid_allocations.length > 0 && waveSummary.onsiteResourceCount > 0 && (
-                      <Card className="bg-amber-50/50 border border-amber-200">
+                    {wave.grid_allocations.length > 0 && waveSummary.travelingResourceCount > 0 && (
+                      <Card className="bg-purple-50/50 border border-purple-200">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base font-bold text-[#0F172A] flex items-center gap-2">
-                            <Plane className="w-4 h-4 text-[#F59E0B]" />
+                            <Plane className="w-4 h-4 text-purple-600" />
                             Logistics Cost Breakdown
+                            <Badge variant="outline" className="ml-2 text-purple-600 border-purple-300">
+                              {waveSummary.travelingResourceCount} traveling resource(s), {waveSummary.travelingMM.toFixed(1)} MM
+                            </Badge>
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -1352,7 +1355,7 @@ const ProjectEstimator = () => {
                               <thead>
                                 <tr className="border-b">
                                   <th className="text-left py-2">Description</th>
-                                  <th className="text-right py-2">Total Man</th>
+                                  <th className="text-right py-2">Traveling MM/Res</th>
                                   <th className="text-right py-2">Rate (USD)</th>
                                   <th className="text-right py-2">Qty</th>
                                   <th className="text-right py-2 font-bold">Total</th>
@@ -1361,35 +1364,35 @@ const ProjectEstimator = () => {
                               <tbody>
                                 <tr>
                                   <td className="py-1">Per-diems</td>
-                                  <td className="text-right font-mono">{waveSummary.onsiteMM.toFixed(2)}</td>
+                                  <td className="text-right font-mono">{waveSummary.travelingMM.toFixed(2)}</td>
                                   <td className="text-right font-mono">${waveSummary.logistics.config.per_diem_daily}</td>
                                   <td className="text-right font-mono">{waveSummary.logistics.config.per_diem_days}</td>
                                   <td className="text-right font-mono font-semibold">${waveSummary.logistics.perDiemCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                 </tr>
                                 <tr>
                                   <td className="py-1">Accommodation</td>
-                                  <td className="text-right font-mono">{waveSummary.onsiteMM.toFixed(2)}</td>
+                                  <td className="text-right font-mono">{waveSummary.travelingMM.toFixed(2)}</td>
                                   <td className="text-right font-mono">${waveSummary.logistics.config.accommodation_daily}</td>
                                   <td className="text-right font-mono">{waveSummary.logistics.config.accommodation_days}</td>
                                   <td className="text-right font-mono font-semibold">${waveSummary.logistics.accommodationCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                 </tr>
                                 <tr>
                                   <td className="py-1">Local Conveyance</td>
-                                  <td className="text-right font-mono">{waveSummary.onsiteMM.toFixed(2)}</td>
+                                  <td className="text-right font-mono">{waveSummary.travelingMM.toFixed(2)}</td>
                                   <td className="text-right font-mono">${waveSummary.logistics.config.local_conveyance_daily}</td>
                                   <td className="text-right font-mono">{waveSummary.logistics.config.local_conveyance_days}</td>
                                   <td className="text-right font-mono font-semibold">${waveSummary.logistics.conveyanceCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                 </tr>
                                 <tr>
                                   <td className="py-1">Travel - Air Fare</td>
-                                  <td className="text-right font-mono">{waveSummary.onsiteResourceCount}</td>
+                                  <td className="text-right font-mono">{waveSummary.travelingResourceCount}</td>
                                   <td className="text-right font-mono">${waveSummary.logistics.config.flight_cost_per_trip}</td>
                                   <td className="text-right font-mono">{waveSummary.logistics.config.num_trips}</td>
                                   <td className="text-right font-mono font-semibold">${waveSummary.logistics.flightCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                 </tr>
                                 <tr>
                                   <td className="py-1">Visa & Medical</td>
-                                  <td className="text-right font-mono">{waveSummary.onsiteResourceCount}</td>
+                                  <td className="text-right font-mono">{waveSummary.travelingResourceCount}</td>
                                   <td className="text-right font-mono">${waveSummary.logistics.config.visa_medical_per_trip}</td>
                                   <td className="text-right font-mono">{waveSummary.logistics.config.num_trips}</td>
                                   <td className="text-right font-mono font-semibold">${waveSummary.logistics.visaMedicalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
