@@ -10,6 +10,7 @@ import SkillsManagement from "@/pages/SkillsManagement";
 import ProficiencyRates from "@/pages/ProficiencyRates";
 import ProjectEstimator from "@/pages/ProjectEstimator";
 import Projects from "@/pages/Projects";
+import ProjectSummary from "@/pages/ProjectSummary";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
             <Route path="proficiency-rates" element={<ProficiencyRates />} />
             <Route path="estimator" element={<ProjectEstimator />} />
             <Route path="projects" element={<Projects />} />
+            <Route path="projects/:projectId/summary" element={<ProjectSummary />} />
           </Route>
         </Routes>
       </BrowserRouter>
