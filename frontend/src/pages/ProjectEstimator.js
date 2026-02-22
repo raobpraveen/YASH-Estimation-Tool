@@ -1828,6 +1828,7 @@ const ProjectEstimator = () => {
                               <th className="text-right p-3 font-semibold text-sm">Total MM</th>
                               <th className="text-right p-3 font-semibold text-sm">Salary Cost</th>
                               <th className="text-right p-3 font-semibold text-sm">Overhead</th>
+                              <th className="text-right p-3 font-semibold text-sm bg-gray-100">Total Cost</th>
                               <th className="text-right p-3 font-semibold text-sm bg-green-50">Selling Price</th>
                               <th className="text-center p-3 font-semibold text-sm">Actions</th>
                             </tr>
