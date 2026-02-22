@@ -339,6 +339,17 @@ async def delete_base_location(location_id: str):
 # Skills Routes
 @api_router.post("/skills", response_model=Skill)
 async def create_skill(input: SkillCreate):
+    # Check for duplicate: same skill name + technology combination
+    existing = await db.skills.find_one({
+        "name": input.name,
+        "technology_id": input.technology_id
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Skill '{input.name}' already exists for this technology"
+        )
+    
     skill_obj = Skill(**input.model_dump())
     doc = skill_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
@@ -365,6 +376,18 @@ async def delete_skill(skill_id: str):
 # Proficiency Rates Routes
 @api_router.post("/proficiency-rates", response_model=ProficiencyRate)
 async def create_proficiency_rate(input: ProficiencyRateCreate):
+    # Check for duplicate: Technology + Skill + Base Location + Proficiency Level
+    existing = await db.proficiency_rates.find_one({
+        "skill_id": input.skill_id,
+        "base_location_id": input.base_location_id,
+        "proficiency_level": input.proficiency_level
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Rate already exists for this Skill, Location, and Proficiency Level combination"
+        )
+    
     rate_obj = ProficiencyRate(**input.model_dump())
     doc = rate_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
