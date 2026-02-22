@@ -66,7 +66,11 @@ const SkillsManagement = () => {
       setDialogOpen(false);
       fetchSkills();
     } catch (error) {
-      toast.error("Failed to add skill");
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.detail || "Skill already exists");
+      } else {
+        toast.error("Failed to add skill");
+      }
     }
   };
 
