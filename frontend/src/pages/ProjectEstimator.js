@@ -2235,11 +2235,18 @@ const ProjectEstimator = () => {
             {/* Wave Summaries */}
             {waves.map(wave => {
               const summary = calculateWaveSummary(wave);
+              const onsiteAvgPrice = summary.onsiteMM > 0 
+                ? (summary.onsiteSalaryCost / summary.onsiteMM) * (1 + profitMarginPercentage/100) 
+                : 0;
+              const offshoreAvgPrice = summary.offshoreMM > 0 
+                ? (summary.offshoreSalaryCost / summary.offshoreMM) * (1 + profitMarginPercentage/100) 
+                : 0;
               return (
                 <Card key={wave.id} className="border-2 border-[#0EA5E9]">
                   <CardHeader className="pb-3 bg-[#E0F2FE]">
-                    <CardTitle className="text-lg font-bold text-[#0F172A]">
-                      {wave.name} - {wave.duration_months} months ({wave.grid_allocations.length} resources)
+                    <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center justify-between">
+                      <span>{wave.name} - {wave.duration_months} months ({wave.grid_allocations.length} resources)</span>
+                      <Badge className="bg-green-100 text-green-700">Profit: {profitMarginPercentage}%</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4">
@@ -2251,10 +2258,12 @@ const ProjectEstimator = () => {
                       <div className="text-center p-3 bg-amber-50 rounded">
                         <p className="text-sm text-gray-600">Onsite MM</p>
                         <p className="text-2xl font-bold font-mono text-[#F59E0B]">{summary.onsiteMM.toFixed(1)}</p>
+                        <p className="text-xs text-gray-500 mt-1">Avg: ${onsiteAvgPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}/MM</p>
                       </div>
                       <div className="text-center p-3 bg-blue-50 rounded">
                         <p className="text-sm text-gray-600">Offshore MM</p>
                         <p className="text-2xl font-bold font-mono text-[#0EA5E9]">{summary.offshoreMM.toFixed(1)}</p>
+                        <p className="text-xs text-gray-500 mt-1">Avg: ${offshoreAvgPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}/MM</p>
                       </div>
                       <div className="text-center p-3 bg-purple-50 rounded">
                         <p className="text-sm text-gray-600">Logistics</p>
