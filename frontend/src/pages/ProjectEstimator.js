@@ -1183,11 +1183,22 @@ const ProjectEstimator = () => {
                                 </Label>
                               </div>
 
-                              {newAllocation.is_onsite && (
-                                <div className="bg-amber-50 p-3 rounded text-xs border border-amber-200">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={newAllocation.travel_required}
+                                  onCheckedChange={(checked) => setNewAllocation({ ...newAllocation, travel_required: checked })}
+                                  data-testid="travel-required-switch"
+                                />
+                                <Label className="flex items-center gap-2 text-purple-600">
+                                  Travel Required (Logistics Apply)
+                                </Label>
+                              </div>
+
+                              {newAllocation.travel_required && (
+                                <div className="bg-purple-50 p-3 rounded text-xs border border-purple-200">
                                   <p className="font-semibold mb-1">Logistics will be calculated at wave level:</p>
-                                  <p>Per-diem, Accommodation, Conveyance: Total Onsite MM × Rate × Days</p>
-                                  <p>Flights, Visa/Medical: Onsite Resources × Rate × Trips</p>
+                                  <p>Per-diem, Accommodation, Conveyance: Total Traveling MM × Rate × Days</p>
+                                  <p>Flights, Visa/Medical: Traveling Resources × Rate × Trips</p>
                                 </div>
                               )}
                               
