@@ -6,7 +6,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timezone
 
@@ -14,16 +14,25 @@ from datetime import datetime, timezone
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
 app = FastAPI()
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+
+# Models for Base Locations
+class BaseLocation(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    overhead_percentage: float
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class BaseLocationCreate(BaseModel):
+    name: str
+    overhead_percentage: float
 
 
 # Models for Skills
@@ -32,11 +41,15 @@ class Skill(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     technology: str
+    base_location_id: str
+    base_location_name: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class SkillCreate(BaseModel):
     name: str
     technology: str
+    base_location_id: str
+    base_location_name: str
 
 
 # Models for Proficiency Rates
@@ -46,7 +59,9 @@ class ProficiencyRate(BaseModel):
     skill_id: str
     skill_name: str
     technology: str
-    proficiency_level: str  # Junior, Mid, Senior, Expert
+    base_location_id: str
+    base_location_name: str
+    proficiency_level: str
     avg_monthly_salary: float
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -54,37 +69,23 @@ class ProficiencyRateCreate(BaseModel):
     skill_id: str
     skill_name: str
     technology: str
+    base_location_id: str
+    base_location_name: str
     proficiency_level: str
     avg_monthly_salary: float
 
 
-# Models for Project Resources
-class ProjectResource(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+# Models for Project Grid Allocation
+class GridAllocation(BaseModel):
+    skill_id: str
     skill_name: str
-    technology: str
     proficiency_level: str
     avg_monthly_salary: float
-    man_months: float
+    base_location_id: str
+    base_location_name: str
+    overhead_percentage: float
     is_onsite: bool = False
-    # Logistics costs (only if onsite)
-    per_diem_monthly: float = 0
-    accommodation_monthly: float = 0
-    flight_cost_per_trip: float = 0
-    num_trips: int = 0
-    visa_cost: float = 0
-    insurance_cost: float = 0
-    local_conveyance_monthly: float = 0
-    misc_cost: float = 0
-
-class ProjectResourceCreate(BaseModel):
-    skill_name: str
-    technology: str
-    proficiency_level: str
-    avg_monthly_salary: float
-    man_months: float
-    is_onsite: bool = False
+    phase_allocations: Dict[str, float] = {}  # {"Discovery": 1.5, "Prepare": 2.0, ...}
     per_diem_monthly: float = 0
     accommodation_monthly: float = 0
     flight_cost_per_trip: float = 0
@@ -101,24 +102,49 @@ class Project(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     description: Optional[str] = ""
-    overhead_percentage: float = 20.0
+    phases: List[str] = ["Discovery", "Prepare", "Explore", "Realize", "Deploy", "Run"]
     profit_margin_percentage: float = 15.0
-    resources: List[ProjectResource] = []
+    grid_allocations: List[GridAllocation] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProjectCreate(BaseModel):
     name: str
     description: Optional[str] = ""
-    overhead_percentage: float = 20.0
+    phases: List[str] = ["Discovery", "Prepare", "Explore", "Realize", "Deploy", "Run"]
     profit_margin_percentage: float = 15.0
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    overhead_percentage: Optional[float] = None
+    phases: Optional[List[str]] = None
     profit_margin_percentage: Optional[float] = None
-    resources: Optional[List[ProjectResourceCreate]] = None
+    grid_allocations: Optional[List[Dict]] = None
+
+
+# Base Locations Routes
+@api_router.post("/base-locations", response_model=BaseLocation)
+async def create_base_location(input: BaseLocationCreate):
+    location_obj = BaseLocation(**input.model_dump())
+    doc = location_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.base_locations.insert_one(doc)
+    return location_obj
+
+@api_router.get("/base-locations", response_model=List[BaseLocation])
+async def get_base_locations():
+    locations = await db.base_locations.find({}, {"_id": 0}).to_list(1000)
+    for location in locations:
+        if isinstance(location['created_at'], str):
+            location['created_at'] = datetime.fromisoformat(location['created_at'])
+    return locations
+
+@api_router.delete("/base-locations/{location_id}")
+async def delete_base_location(location_id: str):
+    result = await db.base_locations.delete_one({"id": location_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Base location not found")
+    return {"message": "Base location deleted successfully"}
 
 
 # Skills Routes
@@ -143,7 +169,6 @@ async def delete_skill(skill_id: str):
     result = await db.skills.delete_one({"id": skill_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Skill not found")
-    # Also delete related proficiency rates
     await db.proficiency_rates.delete_many({"skill_id": skill_id})
     return {"message": "Skill deleted successfully"}
 
@@ -230,7 +255,6 @@ async def delete_project(project_id: str):
     return {"message": "Project deleted successfully"}
 
 
-# Include the router in the main app
 app.include_router(api_router)
 
 app.add_middleware(
@@ -241,7 +265,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
