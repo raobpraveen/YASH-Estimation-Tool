@@ -596,14 +596,19 @@ const ProjectEstimator = () => {
     const selectedCustomer = customers.find(c => c.id === customerId);
     const selectedTech = technologies.find(t => t.id === technologyId);
     const selectedType = projectTypes.find(t => t.id === projectTypeId);
-    const selectedCountry = COUNTRIES.find(c => c.code === projectLocation);
+    const selectedLocationNames = projectLocations.map(code => 
+      COUNTRIES.find(c => c.code === code)?.name || code
+    );
 
     return {
       name: projectName,
       customer_id: customerId,
       customer_name: selectedCustomer?.name || "",
-      project_location: projectLocation,
-      project_location_name: selectedCountry?.name || "",
+      project_locations: projectLocations,
+      project_location_names: selectedLocationNames,
+      // Keep single location for backward compatibility
+      project_location: projectLocations[0] || "",
+      project_location_name: selectedLocationNames[0] || "",
       technology_id: technologyId,
       technology_name: selectedTech?.name || "",
       project_type_id: projectTypeId,
