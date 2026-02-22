@@ -600,7 +600,51 @@ const ProjectEstimator = () => {
         grid_allocations: w.grid_allocations,
       })),
       version_notes: versionNotes,
+      status: projectStatus,
+      approver_email: approverEmail,
     };
+  };
+
+  const handleSubmitForReview = async () => {
+    if (!projectId) {
+      toast.error("Please save the project first");
+      return;
+    }
+    if (!approverEmail || !approverEmail.includes("@")) {
+      toast.error("Please enter a valid approver email");
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/projects/${projectId}/submit-for-review?approver_email=${encodeURIComponent(approverEmail)}`);
+      setProjectStatus("in_review");
+      setSubmitForReviewDialog(false);
+      toast.success("Project submitted for review");
+    } catch (error) {
+      toast.error("Failed to submit for review");
+      console.error(error);
+    }
+  };
+
+  const handleApprovalAction = async () => {
+    if (!projectId) return;
+
+    try {
+      if (approvalAction === "approve") {
+        await axios.post(`${API}/projects/${projectId}/approve?comments=${encodeURIComponent(approvalComments)}`);
+        setProjectStatus("approved");
+        toast.success("Project approved");
+      } else if (approvalAction === "reject") {
+        await axios.post(`${API}/projects/${projectId}/reject?comments=${encodeURIComponent(approvalComments)}`);
+        setProjectStatus("rejected");
+        toast.success("Project rejected");
+      }
+      setApprovalActionDialog(false);
+      setApprovalComments("");
+    } catch (error) {
+      toast.error(`Failed to ${approvalAction} project`);
+      console.error(error);
+    }
   };
 
   const handleSaveProject = async () => {
