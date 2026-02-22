@@ -394,8 +394,9 @@ const ProjectEstimator = () => {
   };
 
   // Calculate wave-level logistics based on the formula from the image
-  // Per-diem/Accommodation/Conveyance: Total Onsite MM × Rate × Days
-  // Flights/Visa: Num Onsite Resources × Rate × Trips
+  // Per-diem/Accommodation/Conveyance: Total Traveling MM × Rate × Days
+  // Flights/Visa: Num Traveling Resources × Rate × Trips
+  // Only resources with travel_required=true are counted for logistics
   const calculateWaveLogistics = (wave) => {
     const config = wave.logistics_config || {
       per_diem_daily: 50,
@@ -410,24 +411,34 @@ const ProjectEstimator = () => {
       contingency_percentage: 5,
     };
 
-    // Calculate total onsite MM and count of onsite resources
+    // Calculate total traveling MM and count of traveling resources
+    let totalTravelingMM = 0;
+    let travelingResourceCount = 0;
     let totalOnsiteMM = 0;
     let onsiteResourceCount = 0;
     
     wave.grid_allocations.forEach(allocation => {
+      const mm = Object.values(allocation.phase_allocations || {}).reduce((sum, val) => sum + val, 0);
+      
+      // Track all onsite resources for display
       if (allocation.is_onsite) {
-        const mm = Object.values(allocation.phase_allocations || {}).reduce((sum, val) => sum + val, 0);
         totalOnsiteMM += mm;
         onsiteResourceCount++;
       }
+      
+      // Only count resources with travel_required for logistics calculations
+      if (allocation.travel_required) {
+        totalTravelingMM += mm;
+        travelingResourceCount++;
+      }
     });
 
-    // Calculate logistics costs using formula from image
-    const perDiemCost = totalOnsiteMM * config.per_diem_daily * config.per_diem_days;
-    const accommodationCost = totalOnsiteMM * config.accommodation_daily * config.accommodation_days;
-    const conveyanceCost = totalOnsiteMM * config.local_conveyance_daily * config.local_conveyance_days;
-    const flightCost = onsiteResourceCount * config.flight_cost_per_trip * config.num_trips;
-    const visaMedicalCost = onsiteResourceCount * config.visa_medical_per_trip * config.num_trips;
+    // Calculate logistics costs using formula - only for traveling resources
+    const perDiemCost = totalTravelingMM * config.per_diem_daily * config.per_diem_days;
+    const accommodationCost = totalTravelingMM * config.accommodation_daily * config.accommodation_days;
+    const conveyanceCost = totalTravelingMM * config.local_conveyance_daily * config.local_conveyance_days;
+    const flightCost = travelingResourceCount * config.flight_cost_per_trip * config.num_trips;
+    const visaMedicalCost = travelingResourceCount * config.visa_medical_per_trip * config.num_trips;
     
     const subtotal = perDiemCost + accommodationCost + conveyanceCost + flightCost + visaMedicalCost;
     const contingencyCost = subtotal * (config.contingency_percentage / 100);
@@ -436,6 +447,8 @@ const ProjectEstimator = () => {
     return {
       totalOnsiteMM,
       onsiteResourceCount,
+      totalTravelingMM,
+      travelingResourceCount,
       perDiemCost,
       accommodationCost,
       conveyanceCost,
