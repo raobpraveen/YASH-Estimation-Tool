@@ -336,6 +336,59 @@ const ProjectEstimator = () => {
     setBatchLogisticsDialogOpen(false);
   };
 
+  // Function to lookup salary from proficiency rates based on skill + level + location
+  const lookupSalary = (skillId, proficiencyLevel, baseLocationId) => {
+    const rate = rates.find(r => 
+      r.skill_id === skillId && 
+      r.proficiency_level === proficiencyLevel && 
+      r.base_location_id === baseLocationId
+    );
+    return rate ? rate.avg_monthly_salary : null;
+  };
+
+  // Handle inline grid edit for skill, level, or location
+  const handleGridFieldChange = (waveId, allocationId, field, value) => {
+    setWaves(waves.map(w => {
+      if (w.id !== waveId) return w;
+      
+      return {
+        ...w,
+        grid_allocations: w.grid_allocations.map(a => {
+          if (a.id !== allocationId) return a;
+          
+          const updatedAllocation = { ...a, [field]: value };
+          
+          // If skill, level, or location changed, lookup new salary
+          if (field === 'skill_id' || field === 'proficiency_level' || field === 'base_location_id') {
+            const skillId = field === 'skill_id' ? value : a.skill_id;
+            const level = field === 'proficiency_level' ? value : a.proficiency_level;
+            const locationId = field === 'base_location_id' ? value : a.base_location_id;
+            
+            // Update related fields
+            if (field === 'skill_id') {
+              const skill = skills.find(s => s.id === value);
+              updatedAllocation.skill_name = skill?.name || '';
+            }
+            if (field === 'base_location_id') {
+              const location = locations.find(l => l.id === value);
+              updatedAllocation.base_location_name = location?.name || '';
+              updatedAllocation.overhead_percentage = location?.overhead_percentage || 0;
+            }
+            
+            // Lookup new salary
+            const newSalary = lookupSalary(skillId, level, locationId);
+            if (newSalary !== null) {
+              updatedAllocation.avg_monthly_salary = newSalary;
+              updatedAllocation.original_monthly_salary = newSalary;
+            }
+          }
+          
+          return updatedAllocation;
+        })
+      };
+    }));
+  };
+
   const handleAddAllocation = () => {
     if (!activeWaveId) {
       toast.error("Please add a wave first");
