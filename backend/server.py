@@ -383,6 +383,9 @@ async def create_project(input: ProjectCreate):
     project_data["project_number"] = project_number
     project_data["version"] = 1
     project_data["is_latest_version"] = True
+    # Ensure waves is a list (can be None from input)
+    if project_data.get("waves") is None:
+        project_data["waves"] = []
     project_obj = Project(**project_data)
     doc = project_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
