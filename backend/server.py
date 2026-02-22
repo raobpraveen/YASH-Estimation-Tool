@@ -361,9 +361,29 @@ async def delete_proficiency_rate(rate_id: str):
 
 
 # Projects Routes
+async def generate_project_number():
+    """Generate a unique project number like PRJ-0001"""
+    last_project = await db.projects.find_one(
+        {"project_number": {"$regex": "^PRJ-"}},
+        {"project_number": 1},
+        sort=[("project_number", -1)]
+    )
+    if last_project and last_project.get("project_number"):
+        try:
+            last_num = int(last_project["project_number"].split("-")[1])
+            return f"PRJ-{str(last_num + 1).zfill(4)}"
+        except:
+            pass
+    return "PRJ-0001"
+
 @api_router.post("/projects", response_model=Project)
 async def create_project(input: ProjectCreate):
-    project_obj = Project(**input.model_dump())
+    project_number = await generate_project_number()
+    project_data = input.model_dump()
+    project_data["project_number"] = project_number
+    project_data["version"] = 1
+    project_data["is_latest_version"] = True
+    project_obj = Project(**project_data)
     doc = project_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
@@ -371,8 +391,9 @@ async def create_project(input: ProjectCreate):
     return project_obj
 
 @api_router.get("/projects", response_model=List[Project])
-async def get_projects():
-    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+async def get_projects(latest_only: bool = True):
+    query = {"is_latest_version": True} if latest_only else {}
+    projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
     for project in projects:
         if isinstance(project.get('created_at'), str):
             project['created_at'] = datetime.fromisoformat(project['created_at'])
@@ -391,6 +412,31 @@ async def get_project(project_id: str):
         project['updated_at'] = datetime.fromisoformat(project['updated_at'])
     return project
 
+@api_router.get("/projects/{project_id}/versions", response_model=List[Project])
+async def get_project_versions(project_id: str):
+    """Get all versions of a project"""
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Find the root project number
+    project_number = project.get("project_number", "")
+    if not project_number:
+        return [project]
+    
+    # Get all versions with same project number
+    versions = await db.projects.find(
+        {"project_number": project_number},
+        {"_id": 0}
+    ).sort("version", -1).to_list(100)
+    
+    for v in versions:
+        if isinstance(v.get('created_at'), str):
+            v['created_at'] = datetime.fromisoformat(v['created_at'])
+        if isinstance(v.get('updated_at'), str):
+            v['updated_at'] = datetime.fromisoformat(v['updated_at'])
+    return versions
+
 @api_router.put("/projects/{project_id}", response_model=Project)
 async def update_project(project_id: str, input: ProjectUpdate):
     existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
@@ -408,6 +454,78 @@ async def update_project(project_id: str, input: ProjectUpdate):
     if isinstance(updated.get('updated_at'), str):
         updated['updated_at'] = datetime.fromisoformat(updated['updated_at'])
     return updated
+
+@api_router.post("/projects/{project_id}/new-version", response_model=Project)
+async def create_new_version(project_id: str, input: ProjectUpdate):
+    """Create a new version of an existing project"""
+    existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Mark current as not latest
+    await db.projects.update_one(
+        {"id": project_id},
+        {"$set": {"is_latest_version": False, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Get current max version for this project number
+    project_number = existing.get("project_number", "")
+    max_version = await db.projects.find_one(
+        {"project_number": project_number},
+        {"version": 1},
+        sort=[("version", -1)]
+    )
+    new_version = (max_version.get("version", 1) if max_version else 1) + 1
+    
+    # Create new version
+    new_project_data = {**existing}
+    new_project_data["id"] = str(uuid.uuid4())
+    new_project_data["version"] = new_version
+    new_project_data["is_latest_version"] = True
+    new_project_data["parent_project_id"] = project_id
+    new_project_data["created_at"] = datetime.now(timezone.utc)
+    new_project_data["updated_at"] = datetime.now(timezone.utc)
+    
+    # Apply updates
+    update_data = input.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        if value is not None:
+            new_project_data[key] = value
+    
+    project_obj = Project(**new_project_data)
+    doc = project_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    await db.projects.insert_one(doc)
+    return project_obj
+
+@api_router.post("/projects/{project_id}/clone", response_model=Project)
+async def clone_project(project_id: str):
+    """Clone a project as a new project with new project number"""
+    existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Generate new project number
+    new_project_number = await generate_project_number()
+    
+    # Create cloned project
+    cloned_data = {**existing}
+    cloned_data["id"] = str(uuid.uuid4())
+    cloned_data["project_number"] = new_project_number
+    cloned_data["version"] = 1
+    cloned_data["is_latest_version"] = True
+    cloned_data["parent_project_id"] = ""
+    cloned_data["name"] = f"{existing.get('name', 'Project')} (Copy)"
+    cloned_data["created_at"] = datetime.now(timezone.utc)
+    cloned_data["updated_at"] = datetime.now(timezone.utc)
+    
+    project_obj = Project(**cloned_data)
+    doc = project_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    await db.projects.insert_one(doc)
+    return project_obj
 
 @api_router.delete("/projects/{project_id}")
 async def delete_project(project_id: str):
