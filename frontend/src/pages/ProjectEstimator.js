@@ -958,13 +958,14 @@ const ProjectEstimator = () => {
       waveData.push([`${wave.name} - ${wave.duration_months} months`]);
       waveData.push([]);
       
-      const header = ["Skill", "Level", "Location", "$/Month", "Onsite", "Travel", ...wave.phase_names, "Total MM", "Salary Cost", "Overhead", "Overhead %", "Selling Price"];
+      const header = ["Skill", "Level", "Location", "$/Month", "Onsite", "Travel", ...wave.phase_names, "Total MM", "Salary Cost", "Overhead", "Overhead %", "Total Cost", "Selling Price"];
       waveData.push(header);
 
       wave.grid_allocations.forEach(alloc => {
         const { totalManMonths, baseSalaryCost } = calculateResourceBaseCost(alloc);
         const overheadCost = baseSalaryCost * (alloc.overhead_percentage / 100);
-        const resourceSellingPrice = (baseSalaryCost + overheadCost) / (1 - profitMarginPercentage / 100);
+        const totalCost = baseSalaryCost + overheadCost;
+        const resourceSellingPrice = totalCost / (1 - profitMarginPercentage / 100);
         const row = [
           alloc.skill_name,
           alloc.proficiency_level,
@@ -977,6 +978,7 @@ const ProjectEstimator = () => {
           baseSalaryCost.toFixed(2),
           overheadCost.toFixed(2),
           `${alloc.overhead_percentage}%`,
+          totalCost.toFixed(2),
           resourceSellingPrice.toFixed(2),
         ];
         waveData.push(row);
