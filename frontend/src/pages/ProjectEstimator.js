@@ -1006,7 +1006,7 @@ const ProjectEstimator = () => {
                   
                   <div className="border-t pt-4">
                     <Label className="text-base font-semibold">Logistics Configuration</Label>
-                    <p className="text-xs text-gray-500 mb-3">Per-diem/Accommodation/Conveyance: Total Onsite MM × Rate × Days | Flights/Visa: Onsite Resources × Rate × Trips</p>
+                    <p className="text-xs text-gray-500 mb-3">Per-diem/Accommodation/Conveyance: Traveling MM × Rate × Days | Flights/Visa: Traveling Resources × Rate × Trips</p>
                     
                     <div className="grid grid-cols-3 gap-3">
                       <div>
