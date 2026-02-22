@@ -159,7 +159,11 @@ class ProjectWave(BaseModel):
 class Project(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_number: str = ""  # Unique project number like PRJ-0001
+    version: int = 1  # Version number for tracking changes
+    version_notes: str = ""  # Notes for this version
     name: str
+    customer_id: str = ""
     customer_name: str = ""
     project_location: str = ""  # ISO country code
     project_location_name: str = ""
@@ -168,13 +172,16 @@ class Project(BaseModel):
     project_type_id: str = ""
     project_type_name: str = ""
     description: Optional[str] = ""
-    profit_margin_percentage: float = 15.0
+    profit_margin_percentage: float = 35.0
     waves: List[ProjectWave] = []
+    is_latest_version: bool = True  # Flag to identify latest version
+    parent_project_id: str = ""  # For version tracking - links to original project
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProjectCreate(BaseModel):
     name: str
+    customer_id: str = ""
     customer_name: str = ""
     project_location: str = ""
     project_location_name: str = ""
@@ -183,10 +190,12 @@ class ProjectCreate(BaseModel):
     project_type_id: str = ""
     project_type_name: str = ""
     description: Optional[str] = ""
-    profit_margin_percentage: float = 15.0
+    profit_margin_percentage: float = 35.0
+    waves: Optional[List[Dict]] = None
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
+    customer_id: Optional[str] = None
     customer_name: Optional[str] = None
     project_location: Optional[str] = None
     project_location_name: Optional[str] = None
@@ -197,6 +206,7 @@ class ProjectUpdate(BaseModel):
     description: Optional[str] = None
     profit_margin_percentage: Optional[float] = None
     waves: Optional[List[Dict]] = None
+    version_notes: Optional[str] = None
 
 
 # Customers Routes
