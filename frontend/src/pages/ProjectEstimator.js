@@ -1274,6 +1274,20 @@ const ProjectEstimator = () => {
                                       {allocation.is_onsite ? "ON" : "OFF"}
                                     </button>
                                   </td>
+                                  <td className="p-3 text-center">
+                                    <button
+                                      onClick={() => handleToggleTravelRequired(wave.id, allocation.id)}
+                                      className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+                                        allocation.travel_required 
+                                          ? "bg-purple-500 text-white" 
+                                          : "bg-gray-200 text-gray-600"
+                                      }`}
+                                      data-testid={`travel-toggle-${allocation.id}`}
+                                      title={allocation.travel_required ? "Travel logistics will be calculated" : "No travel logistics"}
+                                    >
+                                      {allocation.travel_required ? "YES" : "NO"}
+                                    </button>
+                                  </td>
                                   {wave.phase_names.map((_, phaseIndex) => (
                                     <td key={phaseIndex} className="p-2">
                                       <Input
