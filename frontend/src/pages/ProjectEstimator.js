@@ -939,6 +939,13 @@ const ProjectEstimator = () => {
     summaryData.push(["Total Logistics", `$${overall.totalLogisticsCost.toFixed(2)}`]);
     summaryData.push(["Total Cost to Company", `$${overall.totalCostToCompany.toFixed(2)}`]);
     summaryData.push(["Profit Margin %", `${profitMarginPercentage}%`]);
+    summaryData.push([]);
+    summaryData.push(["PRICE BREAKDOWN"]);
+    summaryData.push(["Onsite Selling Price (incl. logistics)", `$${overall.onsiteSellingPrice.toFixed(2)}`]);
+    summaryData.push(["Offshore Selling Price", `$${overall.offshoreSellingPrice.toFixed(2)}`]);
+    summaryData.push(["Onsite Avg. $/MM", overall.onsiteMM > 0 ? `$${(overall.onsiteSellingPrice / overall.onsiteMM).toFixed(2)}` : "$0"]);
+    summaryData.push(["Offshore Avg. $/MM", overall.offshoreMM > 0 ? `$${(overall.offshoreSellingPrice / overall.offshoreMM).toFixed(2)}` : "$0"]);
+    summaryData.push([]);
     summaryData.push(["GRAND TOTAL (Selling Price)", `$${overall.sellingPrice.toFixed(2)}`]);
 
     const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
