@@ -164,41 +164,50 @@ const Projects = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h3 className="font-semibold text-[#0F172A] mb-1">Overhead Percentage</h3>
-                    <p className="font-mono text-lg">{selectedProject.overhead_percentage}%</p>
-                  </div>
-                  <div>
                     <h3 className="font-semibold text-[#0F172A] mb-1">Profit Margin Percentage</h3>
                     <p className="font-mono text-lg">{selectedProject.profit_margin_percentage}%</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-[#0F172A] mb-1">Project Phases</h3>
+                    <p className="text-sm">{selectedProject.phases?.join(", ") || "N/A"}</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-[#0F172A] mb-3">Resources</h3>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Skill</TableHead>
-                        <TableHead>Level</TableHead>
-                        <TableHead className="text-right">Salary/Month</TableHead>
-                        <TableHead className="text-right">Man-Months</TableHead>
-                        <TableHead className="text-center">Onsite</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedProject.resources.map((resource, idx) => (
-                        <TableRow key={idx} className={resource.is_onsite ? "bg-blue-50/50" : ""}>
-                          <TableCell className="font-medium">{resource.skill_name}</TableCell>
-                          <TableCell>{resource.proficiency_level}</TableCell>
-                          <TableCell className="text-right font-mono">${resource.avg_monthly_salary.toLocaleString()}</TableCell>
-                          <TableCell className="text-right font-mono">{resource.man_months}</TableCell>
-                          <TableCell className="text-center">
-                            {resource.is_onsite && <Plane className="w-4 h-4 inline text-[#0EA5E9]" />}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <h3 className="font-semibold text-[#0F172A] mb-3">Resource Allocations</h3>
+                  {selectedProject.grid_allocations && selectedProject.grid_allocations.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-[#E2E8F0]">
+                        <thead>
+                          <tr className="bg-[#F1F5F9]">
+                            <th className="border border-[#E2E8F0] p-2 text-left text-sm">Skill</th>
+                            <th className="border border-[#E2E8F0] p-2 text-left text-sm">Level</th>
+                            <th className="border border-[#E2E8F0] p-2 text-left text-sm">Location</th>
+                            <th className="border border-[#E2E8F0] p-2 text-center text-sm">Onsite</th>
+                            <th className="border border-[#E2E8F0] p-2 text-right text-sm">Total MM</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedProject.grid_allocations.map((allocation, idx) => {
+                            const totalMM = Object.values(allocation.phase_allocations || {}).reduce((s, v) => s + v, 0);
+                            return (
+                              <tr key={idx} className={allocation.is_onsite ? "bg-blue-50/30" : ""}>
+                                <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.skill_name}</td>
+                                <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.proficiency_level}</td>
+                                <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.base_location_name}</td>
+                                <td className="border border-[#E2E8F0] p-2 text-center">
+                                  {allocation.is_onsite && <Plane className="w-4 h-4 inline text-[#0EA5E9]" />}
+                                </td>
+                                <td className="border border-[#E2E8F0] p-2 text-right font-mono">{totalMM.toFixed(1)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">No resources allocated</p>
+                  )}
                 </div>
 
                 <div className="border-t pt-4">
