@@ -313,6 +313,8 @@ class Project(BaseModel):
     waves: List[ProjectWave] = []
     is_latest_version: bool = True  # Flag to identify latest version
     parent_project_id: str = ""  # For version tracking - links to original project
+    is_template: bool = False  # Flag to mark as template
+    template_name: str = ""  # Name for the template
     # Approval workflow fields
     status: str = "draft"  # draft, in_review, approved, rejected
     approver_email: str = ""
