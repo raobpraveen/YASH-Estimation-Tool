@@ -187,7 +187,7 @@ const ProficiencyRates = () => {
                   {rates.map((rate) => (
                     <TableRow key={rate.id} data-testid={`rate-row-${rate.id}`}>
                       <TableCell className="font-medium">{rate.skill_name}</TableCell>
-                      <TableCell>{rate.technology}</TableCell>
+                      <TableCell>{rate.technology_name}</TableCell>
                       <TableCell>{rate.base_location_name}</TableCell>
                       <TableCell>{rate.proficiency_level}</TableCell>
                       <TableCell className="text-right font-mono tabular-nums">
