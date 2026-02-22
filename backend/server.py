@@ -205,6 +205,7 @@ class ProjectCreate(BaseModel):
     description: Optional[str] = ""
     profit_margin_percentage: float = 35.0
     waves: Optional[List[Dict]] = None
+    version_notes: str = ""
     status: str = "draft"
     approver_email: str = ""
 
@@ -580,6 +581,11 @@ async def clone_project(project_id: str):
     cloned_data["is_latest_version"] = True
     cloned_data["parent_project_id"] = ""
     cloned_data["name"] = f"{existing.get('name', 'Project')} (Copy)"
+    cloned_data["status"] = "draft"  # Reset status to draft when cloning
+    cloned_data["approver_email"] = ""  # Clear approval fields
+    cloned_data["approval_comments"] = ""
+    cloned_data["submitted_at"] = None
+    cloned_data["approved_at"] = None
     cloned_data["created_at"] = datetime.now(timezone.utc)
     cloned_data["updated_at"] = datetime.now(timezone.utc)
     
