@@ -1734,9 +1734,63 @@ const ProjectEstimator = () => {
                                   className={`border-b border-[#E2E8F0] ${allocation.is_onsite ? "bg-amber-50/30" : ""}`}
                                   data-testid={`allocation-row-${allocation.id}`}
                                 >
-                                  <td className="p-3 font-medium text-sm">{allocation.skill_name}</td>
-                                  <td className="p-3 text-sm">{allocation.proficiency_level}</td>
-                                  <td className="p-3 text-sm">{allocation.base_location_name}</td>
+                                  <td className="p-2">
+                                    {isReadOnly ? (
+                                      <span className="font-medium text-sm">{allocation.skill_name}</span>
+                                    ) : (
+                                      <Select 
+                                        value={allocation.skill_id} 
+                                        onValueChange={(value) => handleGridFieldChange(wave.id, allocation.id, 'skill_id', value)}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs w-[120px]">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {skills.map(s => (
+                                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  </td>
+                                  <td className="p-2">
+                                    {isReadOnly ? (
+                                      <span className="text-sm">{allocation.proficiency_level}</span>
+                                    ) : (
+                                      <Select 
+                                        value={allocation.proficiency_level} 
+                                        onValueChange={(value) => handleGridFieldChange(wave.id, allocation.id, 'proficiency_level', value)}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs w-[100px]">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {PROFICIENCY_LEVELS.map(level => (
+                                            <SelectItem key={level} value={level}>{level}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  </td>
+                                  <td className="p-2">
+                                    {isReadOnly ? (
+                                      <span className="text-sm">{allocation.base_location_name}</span>
+                                    ) : (
+                                      <Select 
+                                        value={allocation.base_location_id} 
+                                        onValueChange={(value) => handleGridFieldChange(wave.id, allocation.id, 'base_location_id', value)}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs w-[100px]">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {locations.map(loc => (
+                                            <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    )}
+                                  </td>
                                   <td className="p-3 text-right">
                                     <Input
                                       type="number"
