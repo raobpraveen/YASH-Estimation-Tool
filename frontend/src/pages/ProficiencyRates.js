@@ -89,7 +89,11 @@ const ProficiencyRates = () => {
       setDialogOpen(false);
       fetchRates();
     } catch (error) {
-      toast.error("Failed to add proficiency rate");
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.detail || "Rate already exists for this combination");
+      } else {
+        toast.error("Failed to add proficiency rate");
+      }
     }
   };
 
