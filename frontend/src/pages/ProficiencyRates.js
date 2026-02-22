@@ -13,7 +13,7 @@ import { toast } from "sonner";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const PROFICIENCY_LEVELS = ["Junior", "Mid", "Senior", "Expert"];
+const PROFICIENCY_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Architect", "Project Management", "Delivery"];
 
 const ProficiencyRates = () => {
   const [rates, setRates] = useState([]);
@@ -65,6 +65,8 @@ const ProficiencyRates = () => {
         skill_id: newRate.skill_id,
         skill_name: selectedSkill.name,
         technology: selectedSkill.technology,
+        base_location_id: selectedSkill.base_location_id,
+        base_location_name: selectedSkill.base_location_name,
         proficiency_level: newRate.proficiency_level,
         avg_monthly_salary: parseFloat(newRate.avg_monthly_salary),
       });
@@ -115,7 +117,7 @@ const ProficiencyRates = () => {
                   <SelectContent>
                     {skills.map((skill) => (
                       <SelectItem key={skill.id} value={skill.id}>
-                        {skill.name} ({skill.technology})
+                        {skill.name} ({skill.technology}) - {skill.base_location_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -168,40 +170,44 @@ const ProficiencyRates = () => {
               <p className="text-gray-500">No proficiency rates configured yet.</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Skill Name</TableHead>
-                  <TableHead>Technology</TableHead>
-                  <TableHead>Proficiency Level</TableHead>
-                  <TableHead className="text-right">Avg. Monthly Salary</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rates.map((rate) => (
-                  <TableRow key={rate.id} data-testid={`rate-row-${rate.id}`}>
-                    <TableCell className="font-medium">{rate.skill_name}</TableCell>
-                    <TableCell>{rate.technology}</TableCell>
-                    <TableCell>{rate.proficiency_level}</TableCell>
-                    <TableCell className="text-right font-mono tabular-nums">
-                      ${rate.avg_monthly_salary.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteRate(rate.id)}
-                        className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
-                        data-testid={`delete-rate-${rate.id}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Skill Name</TableHead>
+                    <TableHead>Technology</TableHead>
+                    <TableHead>Base Location</TableHead>
+                    <TableHead>Proficiency Level</TableHead>
+                    <TableHead className="text-right">Avg. Monthly Salary</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {rates.map((rate) => (
+                    <TableRow key={rate.id} data-testid={`rate-row-${rate.id}`}>
+                      <TableCell className="font-medium">{rate.skill_name}</TableCell>
+                      <TableCell>{rate.technology}</TableCell>
+                      <TableCell>{rate.base_location_name}</TableCell>
+                      <TableCell>{rate.proficiency_level}</TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        ${rate.avg_monthly_salary.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteRate(rate.id)}
+                          className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                          data-testid={`delete-rate-${rate.id}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

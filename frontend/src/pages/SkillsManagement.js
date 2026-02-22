@@ -3,6 +3,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -14,11 +15,13 @@ const API = `${BACKEND_URL}/api`;
 
 const SkillsManagement = () => {
   const [skills, setSkills] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newSkill, setNewSkill] = useState({ name: "", technology: "" });
+  const [newSkill, setNewSkill] = useState({ name: "", technology: "", base_location_id: "" });
 
   useEffect(() => {
     fetchSkills();
+    fetchLocations();
   }, []);
 
   const fetchSkills = async () => {
@@ -30,16 +33,36 @@ const SkillsManagement = () => {
     }
   };
 
+  const fetchLocations = async () => {
+    try {
+      const response = await axios.get(`${API}/base-locations`);
+      setLocations(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch base locations");
+    }
+  };
+
   const handleAddSkill = async () => {
-    if (!newSkill.name || !newSkill.technology) {
+    if (!newSkill.name || !newSkill.technology || !newSkill.base_location_id) {
       toast.error("Please fill all fields");
       return;
     }
 
+    const selectedLocation = locations.find(l => l.id === newSkill.base_location_id);
+    if (!selectedLocation) {
+      toast.error("Invalid location selected");
+      return;
+    }
+
     try {
-      await axios.post(`${API}/skills`, newSkill);
+      await axios.post(`${API}/skills`, {
+        name: newSkill.name,
+        technology: newSkill.technology,
+        base_location_id: newSkill.base_location_id,
+        base_location_name: selectedLocation.name,
+      });
       toast.success("Skill added successfully");
-      setNewSkill({ name: "", technology: "" });
+      setNewSkill({ name: "", technology: "", base_location_id: "" });
       setDialogOpen(false);
       fetchSkills();
     } catch (error) {
@@ -96,6 +119,21 @@ const SkillsManagement = () => {
                   data-testid="technology-input"
                 />
               </div>
+              <div>
+                <Label htmlFor="base-location">Base Location</Label>
+                <Select value={newSkill.base_location_id} onValueChange={(value) => setNewSkill({ ...newSkill, base_location_id: value })}>
+                  <SelectTrigger id="base-location" data-testid="base-location-select">
+                    <SelectValue placeholder="Select base location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((location) => (
+                      <SelectItem key={location.id} value={location.id}>
+                        {location.name} (Overhead: {location.overhead_percentage}%)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button onClick={handleAddSkill} className="w-full bg-[#0F172A] hover:bg-[#0F172A]/90" data-testid="submit-skill-button">
                 Add Skill
               </Button>
@@ -119,6 +157,7 @@ const SkillsManagement = () => {
                 <TableRow>
                   <TableHead>Skill Name</TableHead>
                   <TableHead>Technology</TableHead>
+                  <TableHead>Base Location</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -127,6 +166,7 @@ const SkillsManagement = () => {
                   <TableRow key={skill.id} data-testid={`skill-row-${skill.id}`}>
                     <TableCell className="font-medium">{skill.name}</TableCell>
                     <TableCell>{skill.technology}</TableCell>
+                    <TableCell>{skill.base_location_name}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
