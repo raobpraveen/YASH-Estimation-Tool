@@ -1224,6 +1224,7 @@ const ProjectEstimator = () => {
                               <th className="text-left p-3 font-semibold text-sm">Location</th>
                               <th className="text-right p-3 font-semibold text-sm">$/Month</th>
                               <th className="text-center p-3 font-semibold text-sm">Onsite</th>
+                              <th className="text-center p-3 font-semibold text-sm">Travel</th>
                               {wave.phase_names.map((phaseName, index) => (
                                 <th key={index} className="text-center p-2 bg-[#E0F2FE]">
                                   <Input
