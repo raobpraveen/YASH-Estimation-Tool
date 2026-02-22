@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Trash2, Edit2, Copy, FileText, History } from "lucide-react";
+import { Eye, Trash2, Edit2, Copy, FileText, History, GitCompare } from "lucide-react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -157,6 +157,16 @@ const Projects = () => {
                             data-testid={`summary-project-${project.id}`}
                           >
                             <FileText className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/projects/${project.id}/compare`)}
+                            className="text-indigo-600 hover:text-indigo-600 hover:bg-indigo-600/10"
+                            title="Compare Versions"
+                            data-testid={`compare-project-${project.id}`}
+                          >
+                            <GitCompare className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
