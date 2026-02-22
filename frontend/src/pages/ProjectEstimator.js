@@ -898,7 +898,7 @@ const ProjectEstimator = () => {
                 <History className="w-4 h-4 mr-2" />
                 New Version
               </Button>
-              {projectStatus === "draft" && (
+              {projectStatus === "draft" && !isReadOnly && (
                 <Button 
                   onClick={() => setSubmitForReviewDialog(true)} 
                   variant="outline" 
@@ -939,10 +939,12 @@ const ProjectEstimator = () => {
             <FileDown className="w-4 h-4 mr-2" />
             Export Excel
           </Button>
+          {!isReadOnly && (
           <Button onClick={handleSaveProject} className="bg-[#10B981] hover:bg-[#10B981]/90 text-white" data-testid="save-project-button">
             <Save className="w-4 h-4 mr-2" />
             Save
           </Button>
+          )}
         </div>
       </div>
 
