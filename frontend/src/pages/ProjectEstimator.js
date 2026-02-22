@@ -1019,6 +1019,42 @@ const ProjectEstimator = () => {
             {projectId && getStatusBadge()}
           </div>
           <p className="text-sm text-gray-600 mt-1">Wave-based project estimation with version management</p>
+          {/* Approval/Rejection Comments Display */}
+          {approvalComments && (projectStatus === "approved" || projectStatus === "rejected") && (
+            <div className={`mt-3 p-3 rounded-lg border ${
+              projectStatus === "approved" 
+                ? "bg-green-50 border-green-200" 
+                : "bg-red-50 border-red-200"
+            }`} data-testid="approval-comments-display">
+              <div className="flex items-start gap-2">
+                {projectStatus === "approved" ? (
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+                )}
+                <div>
+                  <p className={`text-sm font-semibold ${projectStatus === "approved" ? "text-green-700" : "text-red-700"}`}>
+                    {projectStatus === "approved" ? "Approval Comments" : "Rejection Reason"}
+                  </p>
+                  <p className="text-sm text-gray-700 mt-1">{approvalComments}</p>
+                  {approverEmail && (
+                    <p className="text-xs text-gray-500 mt-1">By: {approverEmail}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          {/* In Review Status Info */}
+          {projectStatus === "in_review" && approverEmail && (
+            <div className="mt-3 p-3 rounded-lg border bg-purple-50 border-purple-200" data-testid="in-review-info">
+              <div className="flex items-center gap-2">
+                <Send className="w-4 h-4 text-purple-600" />
+                <p className="text-sm text-purple-700">
+                  Submitted for review to: <span className="font-semibold">{approverEmail}</span>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={handleNewProject} variant="outline" size="sm" data-testid="new-project-button">
