@@ -5,7 +5,7 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - Skills management with technology and proficiency levels
 - Cost calculation based on monthly salaries, overheads, and profit margins
 - Wave-based project estimation
-- Logistics costs for onsite resources
+- Logistics costs for onsite/traveling resources
 - Master data management
 - Summary and export capabilities
 
@@ -20,18 +20,20 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - Add percentage-based "Profit Margin" (default 35%) to determine final selling price
 - **Selling Price Formula**: `(Base Cost + Overheads) / (1 - (Profit Margin / 100))`
 
-### Logistics Costs (Onsite Resources)
-- Per-diems: daily rate × days per month × man-months
-- Accommodation: daily rate × days per month × man-months
-- Local conveyance: daily rate × days per month × man-months
-- Flights: cost per trip × number of trips
-- Visa & Insurance: cost per trip × number of trips
+### Logistics Costs (Traveling Resources)
+- **Travel Required toggle** per skill row to indicate if resource needs travel logistics
+- Calculated at wave level for resources with `travel_required=true`
+- **Formulas:**
+  - Per-diems, Accommodation, Conveyance: `Traveling MM × Daily Rate × Days`
+  - Air Fare, Visa & Medical: `Number of Traveling Resources × Rate × Number of Trips`
+- Editable rates per wave
 
 ### Version Management
 - Unique project numbers (PRJ-0001, PRJ-0002, etc.)
 - Version tracking (v1, v2, v3, etc.)
 - Clone projects with new project number
 - Create new versions with same project number
+- **Compare Versions** feature for side-by-side comparison
 
 ### Estimator Header Data
 - Customer Name (from Customer Master)
@@ -45,6 +47,8 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - Dynamic columns matching wave duration in months
 - Phase names editable per column
 - Custom salary override per resource/estimation
+- **Onsite toggle** per resource (indicates work location)
+- **Travel Required toggle** per resource (controls logistics calculation)
 
 ### Master Data Management
 - **Customers**: Name, Location, City, Industry Vertical, Sub Industry Vertical
@@ -58,7 +62,7 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 
 ## What's Been Implemented
 
-### December 2025 - Full MVP Completion
+### December 2025 - Full MVP + Travel Required Feature
 
 #### Master Data Pages (COMPLETE)
 - [x] Dashboard with overview
@@ -77,16 +81,19 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [x] Editable phase names per column
 - [x] Resource allocation per wave (select skill/proficiency)
 - [x] **Custom salary override** when adding resource
-- [x] **ON/OFF toggle** for onsite indicator in grid
+- [x] **Onsite toggle** (amber ON/OFF) for location indicator
+- [x] **Travel Required toggle** (purple YES/NO) for logistics calculation
 - [x] Logistics defaults per wave (editable via dialog)
-- [x] **Per-resource logistics editing** (daily rates, days, trips)
+- [x] **Batch Update Logistics** button for wave-level settings
 - [x] Phase effort allocation inputs
 - [x] Real-time calculations:
   - Total Man-Months
+  - Traveling MM (resources with travel_required=true)
   - Base Cost (salary * MM + logistics)
   - OH Cost (Base Cost * overhead %)
   - Selling Price: `Cost to Company / (1 - Profit Margin %)`
-- [x] Wave summary cards
+- [x] Logistics breakdown table (only shows when traveling resources exist)
+- [x] Wave summary cards with Traveling resources count
 - [x] View Summary dialog with project-wide breakdown
 - [x] Export to Excel functionality
 - [x] Save Project functionality
@@ -97,23 +104,22 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [x] **Clone project** - creates copy with new project number
 - [x] **New Version** - increments version, same project number
 - [x] **Edit project** - updates without creating new version
+- [x] **Compare Versions** - side-by-side comparison of two versions
 
 #### Saved Projects Page (COMPLETE)
 - [x] List with Project #, Name, Customer, Version, Resources, Man-Months, Selling Price
 - [x] **Summary button** - links to dedicated summary page
+- [x] **Compare button** - links to version comparison page
 - [x] **Edit button** - opens project in estimator
 - [x] **Clone button** - clones project
 - [x] Delete functionality
 
-#### Project Summary Page (COMPLETE - NEW)
-- [x] Print-friendly layout with @media print styles
-- [x] Project details card
-- [x] Overall summary with MM, Onsite, Offshore, Logistics, CTC, Selling Price
-- [x] Wave-by-wave breakdown with resource tables
-- [x] **Version history** - switch between v1, v2, v3
-- [x] Print button
-- [x] Export to Excel button
-- [x] Edit button - navigates to estimator
+#### Compare Versions Page (NEW - COMPLETE)
+- [x] Version selectors (left: baseline, right: compare)
+- [x] Side-by-side comparison table
+- [x] Metrics: Total MM, Onsite MM, Offshore MM, Traveling Resources, Logistics, Selling Price
+- [x] Change indicators with percentages
+- [x] Wave comparison section
 
 ---
 
@@ -168,7 +174,16 @@ Build an IT/Software Project estimator tool with comprehensive features for:
   skill_id: string,
   avg_monthly_salary: number,  // Can override master rate
   original_monthly_salary: number,
-  is_onsite: boolean,
+  is_onsite: boolean,          // Work location indicator
+  travel_required: boolean,    // Controls logistics calculation
+  phase_allocations: {},
+  ...
+}
+```
+
+### Wave Logistics Config (wave level)
+```javascript
+{
   per_diem_daily: number,
   per_diem_days: number,
   accommodation_daily: number,
@@ -176,10 +191,9 @@ Build an IT/Software Project estimator tool with comprehensive features for:
   local_conveyance_daily: number,
   local_conveyance_days: number,
   flight_cost_per_trip: number,
-  visa_insurance_per_trip: number,
+  visa_medical_per_trip: number,
   num_trips: number,
-  phase_allocations: {},
-  ...
+  contingency_percentage: number
 }
 ```
 
@@ -187,11 +201,13 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 
 ## Prioritized Backlog
 
-### P0 - High Priority
-- All P0 items completed!
+### P0 - High Priority (COMPLETE)
+- [x] Travel Required toggle per skill row
+- [x] Logistics calculations at wave level for traveling resources
+- [x] Compare Versions feature
 
 ### P1 - Medium Priority
-- [ ] Batch update logistics for all onsite resources in wave
+- [ ] Batch update logistics for all traveling resources in wave (UI exists, enhance UX)
 - [ ] Project templates (save as template, create from template)
 - [ ] Dashboard analytics (total projects, revenue, charts)
 
@@ -209,17 +225,25 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 ---
 
 ## Test Data Available
-- **Customer**: Saif Al Ghurair (UAE)
+- **Customers**: Saif Al Ghurair (UAE)
 - **Technologies**: SAP S/4HANA, SAP SF, PMO
 - **Base Locations**: UAE (30%), India (30%), KSA (20%), Egypt (25%), Qatar (20%)
 - **Skills**: Finance (SAP S/4HANA), Project Manager (PMO), Delivery Manager (PMO)
-- **Test Projects**: PRJ-0001 (v1, v2), PRJ-0002 (cloned)
+- **Test Projects**: PRJ-0001, PRJ-0002, PRJ-0003 (TravelRequired test)
 
 ---
 
 ## Notes
 - Currency is always USD
-- All calculations verified with testing agent
+- Travel Required is SEPARATE from Onsite (can be set independently)
+- Logistics only calculated for resources with travel_required=true
+- Compare Versions includes Traveling Resources metric
 - Wave-based structure fully supports multiple waves per project
 - Legacy projects (without project_number) are supported
 - Print styles optimized for A4 layout
+
+---
+
+## Test Coverage
+- Backend tests: `/app/backend/tests/test_travel_required.py`
+- Test reports: `/app/test_reports/iteration_4.json`
