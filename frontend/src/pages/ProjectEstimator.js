@@ -1502,6 +1502,8 @@ const ProjectEstimator = () => {
                             </div>
                           </DialogContent>
                         </Dialog>
+                        )}
+                        {!isReadOnly && (
                         <Button 
                           size="sm" 
                           variant="outline" 
@@ -1512,6 +1514,7 @@ const ProjectEstimator = () => {
                           <X className="w-4 h-4 mr-2" />
                           Delete Wave
                         </Button>
+                        )}
                       </div>
                     </div>
 
@@ -1537,6 +1540,7 @@ const ProjectEstimator = () => {
                                     onChange={(e) => handleUpdatePhaseName(wave.id, index, e.target.value)}
                                     className="w-24 text-center font-semibold text-xs border-0 bg-transparent focus:bg-white"
                                     data-testid={`phase-name-${index}`}
+                                    disabled={isReadOnly}
                                   />
                                 </th>
                               ))}
