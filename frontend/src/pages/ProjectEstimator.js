@@ -10,15 +10,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Plane, Save, FileDown, X, Settings, Copy, History, RefreshCw } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Plus, Trash2, Plane, Save, FileDown, X, Settings, Copy, History, RefreshCw, Send, CheckCircle, XCircle, Clock, Calculator } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { COUNTRIES, LOGISTICS_DEFAULTS } from "@/utils/constants";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+const STATUS_CONFIG = {
+  draft: { label: "Draft", color: "bg-gray-100 text-gray-700", icon: Clock },
+  in_review: { label: "In Review", color: "bg-amber-100 text-amber-700", icon: Clock },
+  approved: { label: "Approved", color: "bg-green-100 text-green-700", icon: CheckCircle },
+  rejected: { label: "Rejected", color: "bg-red-100 text-red-700", icon: XCircle },
+};
 
 const ProjectEstimator = () => {
   const [searchParams] = useSearchParams();
@@ -43,6 +51,14 @@ const ProjectEstimator = () => {
   const [projectDescription, setProjectDescription] = useState("");
   const [profitMarginPercentage, setProfitMarginPercentage] = useState(35);
   const [versionNotes, setVersionNotes] = useState("");
+  
+  // Approval workflow
+  const [projectStatus, setProjectStatus] = useState("draft");
+  const [approverEmail, setApproverEmail] = useState("");
+  const [approvalComments, setApprovalComments] = useState("");
+  const [submitForReviewDialog, setSubmitForReviewDialog] = useState(false);
+  const [approvalActionDialog, setApprovalActionDialog] = useState(false);
+  const [approvalAction, setApprovalAction] = useState("");
   
   // Waves
   const [waves, setWaves] = useState([]);
