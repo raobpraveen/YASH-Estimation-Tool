@@ -738,12 +738,16 @@ const ProjectEstimator = () => {
     setProjectVersion(1);
     setProjectName("");
     setCustomerId("");
-    setProjectLocation("");
+    setProjectLocations([]);
     setTechnologyId("");
     setProjectTypeId("");
     setProjectDescription("");
     setProfitMarginPercentage(35);
     setVersionNotes("");
+    setProjectStatus("draft");
+    setApproverEmail("");
+    setApprovalComments("");
+    setIsLatestVersion(true);
     setWaves([]);
     setActiveWaveId("");
     navigate("/estimator");
