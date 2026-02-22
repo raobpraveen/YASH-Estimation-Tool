@@ -177,6 +177,14 @@ class Project(BaseModel):
     waves: List[ProjectWave] = []
     is_latest_version: bool = True  # Flag to identify latest version
     parent_project_id: str = ""  # For version tracking - links to original project
+    # Approval workflow fields
+    status: str = "draft"  # draft, in_review, approved, rejected
+    approver_email: str = ""
+    approval_comments: str = ""
+    submitted_at: Optional[str] = None
+    approved_at: Optional[str] = None
+    submitted_by: str = ""
+    approved_by: str = ""
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -193,6 +201,8 @@ class ProjectCreate(BaseModel):
     description: Optional[str] = ""
     profit_margin_percentage: float = 35.0
     waves: Optional[List[Dict]] = None
+    status: str = "draft"
+    approver_email: str = ""
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
@@ -208,6 +218,22 @@ class ProjectUpdate(BaseModel):
     profit_margin_percentage: Optional[float] = None
     waves: Optional[List[Dict]] = None
     version_notes: Optional[str] = None
+    status: Optional[str] = None
+    approver_email: Optional[str] = None
+    approval_comments: Optional[str] = None
+
+# Notification model
+class Notification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str  # Who receives the notification
+    type: str  # review_request, approved, rejected, revision_needed
+    title: str
+    message: str
+    project_id: str
+    project_number: str
+    is_read: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # Customers Routes
