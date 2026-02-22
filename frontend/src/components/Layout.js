@@ -1,9 +1,20 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { LayoutDashboard, MapPin, Layers, Briefcase, Calculator, FolderKanban } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Cpu, 
+  Briefcase as BriefcaseIcon,
+  MapPin, 
+  Layers, 
+  Briefcase, 
+  Calculator, 
+  FolderKanban 
+} from "lucide-react";
 
 const Layout = () => {
   const navItems = [
     { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/technologies", icon: Cpu, label: "Technologies" },
+    { path: "/project-types", icon: BriefcaseIcon, label: "Project Types" },
     { path: "/base-locations", icon: MapPin, label: "Base Locations" },
     { path: "/skills", icon: Layers, label: "Skills" },
     { path: "/proficiency-rates", icon: Briefcase, label: "Proficiency Rates" },
@@ -18,7 +29,7 @@ const Layout = () => {
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Project Estimator</h1>
           <p className="text-xs text-white/60 mt-1">IT Cost Calculator</p>
         </div>
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
             {navItems.map((item) => (
               <li key={item.path}>
