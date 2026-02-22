@@ -1400,6 +1400,7 @@ const ProjectEstimator = () => {
                           variant="outline"
                           onClick={() => handleOpenLogisticsEditor(wave.id)}
                           data-testid={`edit-logistics-${wave.id}`}
+                          disabled={isReadOnly}
                         >
                           <Settings className="w-4 h-4 mr-2" />
                           Logistics Config
@@ -1410,10 +1411,12 @@ const ProjectEstimator = () => {
                           className="border-[#F59E0B] text-[#F59E0B]"
                           onClick={() => handleOpenBatchLogistics(wave.id)}
                           data-testid={`batch-logistics-${wave.id}`}
+                          disabled={isReadOnly}
                         >
                           <RefreshCw className="w-4 h-4 mr-2" />
                           Batch Update
                         </Button>
+                        {!isReadOnly && (
                         <Dialog open={addResourceDialogOpen && activeWaveId === wave.id} onOpenChange={setAddResourceDialogOpen}>
                           <DialogTrigger asChild>
                             <Button size="sm" className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white" data-testid="add-resource-button">
