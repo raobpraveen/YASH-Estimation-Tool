@@ -144,8 +144,22 @@ const ProjectEstimator = () => {
       } else {
         setProjectLocations([]);
       }
-      setTechnologyId(project.technology_id || "");
-      setProjectTypeId(project.project_type_id || "");
+      // Handle multiple technologies
+      if (project.technology_ids && project.technology_ids.length > 0) {
+        setTechnologyIds(project.technology_ids);
+      } else if (project.technology_id) {
+        setTechnologyIds([project.technology_id]);
+      } else {
+        setTechnologyIds([]);
+      }
+      // Handle multiple project types
+      if (project.project_type_ids && project.project_type_ids.length > 0) {
+        setProjectTypeIds(project.project_type_ids);
+      } else if (project.project_type_id) {
+        setProjectTypeIds([project.project_type_id]);
+      } else {
+        setProjectTypeIds([]);
+      }
       setProjectDescription(project.description || "");
       setProfitMarginPercentage(project.profit_margin_percentage || 35);
       setVersionNotes(project.version_notes || "");
@@ -164,6 +178,8 @@ const ProjectEstimator = () => {
         toast.info(`Loaded ${versionInfo} (Read-only: older version)`);
       } else if (project.status === "approved") {
         toast.info(`Loaded ${versionInfo} (Read-only: approved)`);
+      } else if (project.status === "in_review") {
+        toast.info(`Loaded ${versionInfo} (Read-only: in review)`);
       } else {
         toast.success(`Loaded ${versionInfo}`);
       }
