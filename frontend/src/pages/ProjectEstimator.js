@@ -31,7 +31,7 @@ const ProjectEstimator = () => {
   const [technologyId, setTechnologyId] = useState("");
   const [projectTypeId, setProjectTypeId] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [profitMarginPercentage, setProfitMarginPercentage] = useState(15);
+  const [profitMarginPercentage, setProfitMarginPercentage] = useState(35);
   
   // Waves
   const [waves, setWaves] = useState([]);
