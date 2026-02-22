@@ -87,6 +87,80 @@ const SkillsManagement = () => {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const template = [
+      ["Technology", "Skill Name"],
+      ["SAP S/4HANA", "Finance Consultant"],
+      ["SAP S/4HANA", "Technical Architect"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Skills Template");
+    XLSX.writeFile(wb, "skills_upload_template.xlsx");
+    toast.success("Template downloaded");
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Skip header row
+      const dataRows = rows.slice(1).filter(row => row.length >= 2 && row[0] && row[1]);
+      
+      let added = 0;
+      let skipped = 0;
+
+      for (const row of dataRows) {
+        const technologyName = String(row[0]).trim();
+        const skillName = String(row[1]).trim();
+
+        // Find technology by name
+        const technology = technologies.find(t => t.name.toLowerCase() === technologyName.toLowerCase());
+        if (!technology) {
+          skipped++;
+          continue;
+        }
+
+        // Check if skill already exists
+        const exists = skills.some(s => 
+          s.name.toLowerCase() === skillName.toLowerCase() && 
+          s.technology_id === technology.id
+        );
+        if (exists) {
+          skipped++;
+          continue;
+        }
+
+        try {
+          await axios.post(`${API}/skills`, {
+            name: skillName,
+            technology_id: technology.id,
+            technology_name: technology.name,
+          });
+          added++;
+        } catch {
+          skipped++;
+        }
+      }
+
+      toast.success(`Upload complete: ${added} added, ${skipped} skipped`);
+      fetchSkills();
+    } catch (error) {
+      toast.error("Failed to process Excel file");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div data-testid="skills-management">
       <div className="flex items-center justify-between mb-8">
