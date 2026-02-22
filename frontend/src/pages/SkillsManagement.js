@@ -16,12 +16,14 @@ const API = `${BACKEND_URL}/api`;
 const SkillsManagement = () => {
   const [skills, setSkills] = useState([]);
   const [locations, setLocations] = useState([]);
+  const [technologies, setTechnologies] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newSkill, setNewSkill] = useState({ name: "", technology: "", base_location_id: "" });
+  const [newSkill, setNewSkill] = useState({ name: "", technology_id: "", base_location_id: "" });
 
   useEffect(() => {
     fetchSkills();
     fetchLocations();
+    fetchTechnologies();
   }, []);
 
   const fetchSkills = async () => {
@@ -42,27 +44,39 @@ const SkillsManagement = () => {
     }
   };
 
+  const fetchTechnologies = async () => {
+    try {
+      const response = await axios.get(`${API}/technologies`);
+      setTechnologies(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch technologies");
+    }
+  };
+
   const handleAddSkill = async () => {
-    if (!newSkill.name || !newSkill.technology || !newSkill.base_location_id) {
+    if (!newSkill.name || !newSkill.technology_id || !newSkill.base_location_id) {
       toast.error("Please fill all fields");
       return;
     }
 
     const selectedLocation = locations.find(l => l.id === newSkill.base_location_id);
-    if (!selectedLocation) {
-      toast.error("Invalid location selected");
+    const selectedTechnology = technologies.find(t => t.id === newSkill.technology_id);
+    
+    if (!selectedLocation || !selectedTechnology) {
+      toast.error("Invalid selections");
       return;
     }
 
     try {
       await axios.post(`${API}/skills`, {
         name: newSkill.name,
-        technology: newSkill.technology,
+        technology_id: newSkill.technology_id,
+        technology_name: selectedTechnology.name,
         base_location_id: newSkill.base_location_id,
         base_location_name: selectedLocation.name,
       });
       toast.success("Skill added successfully");
-      setNewSkill({ name: "", technology: "", base_location_id: "" });
+      setNewSkill({ name: "", technology_id: "", base_location_id: "" });
       setDialogOpen(false);
       fetchSkills();
     } catch (error) {
@@ -111,13 +125,18 @@ const SkillsManagement = () => {
               </div>
               <div>
                 <Label htmlFor="technology">Technology</Label>
-                <Input
-                  id="technology"
-                  placeholder="e.g., Frontend, Backend, DevOps"
-                  value={newSkill.technology}
-                  onChange={(e) => setNewSkill({ ...newSkill, technology: e.target.value })}
-                  data-testid="technology-input"
-                />
+                <Select value={newSkill.technology_id} onValueChange={(value) => setNewSkill({ ...newSkill, technology_id: value })}>
+                  <SelectTrigger id="technology" data-testid="technology-select">
+                    <SelectValue placeholder="Select technology" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {technologies.map((tech) => (
+                      <SelectItem key={tech.id} value={tech.id}>
+                        {tech.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="base-location">Base Location</Label>
@@ -165,7 +184,7 @@ const SkillsManagement = () => {
                 {skills.map((skill) => (
                   <TableRow key={skill.id} data-testid={`skill-row-${skill.id}`}>
                     <TableCell className="font-medium">{skill.name}</TableCell>
-                    <TableCell>{skill.technology}</TableCell>
+                    <TableCell>{skill.technology_name}</TableCell>
                     <TableCell>{skill.base_location_name}</TableCell>
                     <TableCell className="text-right">
                       <Button
