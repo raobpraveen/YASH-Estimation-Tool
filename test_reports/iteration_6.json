@@ -1,0 +1,114 @@
+{
+  "summary": "Iteration 6 testing completed - all 13 features verified working. Fixed 2 backend bugs: version_notes not saved on create, clone not resetting status to draft.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Skills Management: Technology column appears first in table",
+    "Skills Management: Duplicate skill+technology combination rejected with error toast",
+    "Proficiency Rates: Technology column appears first in table",
+    "Proficiency Rates: Duplicate key (skill+location+level) combination rejected",
+    "Estimator: Project Location(s) field with '+ Add location' for multiple locations",
+    "Estimator: Version Notes field visible and editable",
+    "Estimator: 5 summary cards displayed (Total MM, Onsite MM, Offshore MM, Avg Price/MM, Selling Price)",
+    "Estimator: Onsite MM card shows avg price per MM",
+    "Estimator: Offshore MM card shows avg price per MM ($10,800/MM for PRJ-0003)",
+    "Projects: Expandable version history shows older versions (v1 appears under v2)",
+    "Estimator: Old version displays 'Read-only: Older Version' badge and disabled fields",
+    "Estimator: Approved project displays 'Read-only: Approved' badge and disabled fields",
+    "View Summary: Shows avg selling price per MM for onsite ($0/MM) and offshore ($10,800/MM)"
+  ],
+
+  "bugs_fixed": [
+    {
+      "issue": "version_notes field not saved on project create",
+      "file": "/app/backend/server.py",
+      "fix": "Added version_notes field to ProjectCreate model"
+    },
+    {
+      "issue": "Clone approved project keeps 'approved' status instead of resetting to 'draft'",
+      "file": "/app/backend/server.py",
+      "fix": "Reset status to 'draft' and clear approval fields in clone_project function"
+    }
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_iteration6_features.py",
+    "/app/test_reports/pytest/pytest_iteration6.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "All 13 requested features are implemented correctly and working",
+    "Read-only mode correctly computed from !isLatestVersion || status=approved",
+    "projectLocations stored as array supporting multiple country codes",
+    "Summary cards correctly show 5 metrics with avg price/MM calculations",
+    "Backend validates unique combinations for skills (name+tech) and rates (skill+location+level)"
+  ],
+
+  "updated_files": [
+    "/app/backend/server.py",
+    "/app/backend/tests/test_iteration6_features.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "100% (All 13 features verified via Playwright)"
+  },
+
+  "seed_data_creation": "No new seed data created. Used existing PRJ-0003 (Approved) for read-only testing.",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+
+  "context_for_next_testing_agent": "All 13 iteration 6 features verified working. Key validations: 1) Skills page - Technology is first column, duplicates rejected; 2) Proficiency Rates - Technology first column, duplicate key rejected; 3) Estimator - multiple locations via array, Version Notes field, 5 summary cards with avg price/MM; 4) Projects - expandable version history, older versions and approved projects show read-only badge with disabled fields; 5) View Summary dialog shows avg selling price per MM for onsite/offshore. Two backend bugs fixed: version_notes in ProjectCreate model, clone resets status to draft.",
+
+  "features_verified": {
+    "skills_management": {
+      "technology_first_column": "PASS - Table headers: [Technology, Skill Name, Actions]",
+      "duplicate_rejection": "PASS - Toast: 'Skill X already exists for this technology'"
+    },
+    "proficiency_rates": {
+      "technology_first_column": "PASS - Table headers: [Technology, Skill Name, Base Location, Proficiency Level, ...]",
+      "duplicate_rejection": "PASS - Returns 400 for duplicate skill+location+level"
+    },
+    "project_estimator": {
+      "multiple_locations": "PASS - Project Location(s) field with '+ Add location' button",
+      "version_notes": "PASS - Textarea field visible below Description",
+      "summary_cards_5": "PASS - Total MM, Onsite MM, Offshore MM, Avg Selling Price/MM, Selling Price",
+      "onsite_avg_price": "PASS - Shows 'Avg: $X/MM' below Onsite MM value",
+      "offshore_avg_price": "PASS - Shows 'Avg: $10,800/MM' for PRJ-0003"
+    },
+    "projects_page": {
+      "expandable_versions": "PASS - Chevron expands to show older versions",
+      "status_badges": "PASS - Draft (gray), Approved (green) badges visible"
+    },
+    "read_only_mode": {
+      "older_version": "PASS - 'Read-only: Older Version' badge, fields disabled, Save hidden",
+      "approved_project": "PASS - 'Read-only: Approved' badge, fields disabled, Save hidden"
+    },
+    "view_summary": {
+      "avg_onsite_price": "PASS - Shows 'Avg: $0/MM' for onsite",
+      "avg_offshore_price": "PASS - Shows 'Avg: $10,800/MM' for offshore"
+    }
+  },
+
+  "api_endpoints_tested": {
+    "POST /api/skills": "Validates unique name+technology combination",
+    "POST /api/proficiency-rates": "Validates unique skill+location+level combination",
+    "POST /api/projects": "Supports project_locations array and version_notes",
+    "POST /api/projects/{id}/new-version": "Marks old version as is_latest_version=false",
+    "POST /api/projects/{id}/clone": "Resets status to draft, clears approval fields",
+    "GET /api/projects/{id}/versions": "Returns all versions sorted by version desc"
+  }
+}
