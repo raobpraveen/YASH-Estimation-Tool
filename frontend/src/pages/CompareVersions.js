@@ -365,6 +365,22 @@ const CompareVersions = () => {
                   <DiffBadge diff={logisticsDiff} prefix="$" isCurrency />
                 </td>
               </tr>
+              <tr className="border-b bg-amber-50/30">
+                <td className="py-3 px-4 font-medium text-[#F59E0B]">Onsite Selling Price</td>
+                <td className="py-3 px-4 text-right font-mono">${leftSummary.onsiteSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                <td className="py-3 px-4 text-right font-mono">${rightSummary.onsiteSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                <td className="py-3 px-4 text-right">
+                  <DiffBadge diff={onsiteSellingPriceDiff} prefix="$" isCurrency />
+                </td>
+              </tr>
+              <tr className="border-b bg-blue-50/30">
+                <td className="py-3 px-4 font-medium text-[#0EA5E9]">Offshore Selling Price</td>
+                <td className="py-3 px-4 text-right font-mono">${leftSummary.offshoreSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                <td className="py-3 px-4 text-right font-mono">${rightSummary.offshoreSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                <td className="py-3 px-4 text-right">
+                  <DiffBadge diff={offshoreSellingPriceDiff} prefix="$" isCurrency />
+                </td>
+              </tr>
               <tr className="border-b-2 bg-green-50">
                 <td className="py-4 px-4 font-bold text-lg">Selling Price</td>
                 <td className="py-4 px-4 text-right font-mono font-bold text-xl">${leftSummary.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
