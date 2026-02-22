@@ -1475,18 +1475,40 @@ const ProjectEstimator = () => {
                                     </button>
                                   </td>
                                   <td className="p-3 text-center">
-                                    <button
-                                      onClick={() => handleToggleTravelRequired(wave.id, allocation.id)}
-                                      className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
-                                        allocation.travel_required 
-                                          ? "bg-purple-500 text-white" 
-                                          : "bg-gray-200 text-gray-600"
-                                      }`}
-                                      data-testid={`travel-toggle-${allocation.id}`}
-                                      title={allocation.travel_required ? "Travel logistics will be calculated" : "No travel logistics"}
-                                    >
-                                      {allocation.travel_required ? "YES" : "NO"}
-                                    </button>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          onClick={() => handleToggleTravelRequired(wave.id, allocation.id)}
+                                          className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+                                            allocation.travel_required 
+                                              ? "bg-purple-500 text-white" 
+                                              : "bg-gray-200 text-gray-600"
+                                          }`}
+                                          data-testid={`travel-toggle-${allocation.id}`}
+                                        >
+                                          {allocation.travel_required ? "YES" : "NO"}
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="bottom" className="max-w-xs p-3 text-xs">
+                                        {allocation.travel_required ? (
+                                          <div className="space-y-2">
+                                            <div className="flex items-center gap-2 font-semibold text-purple-600">
+                                              <Calculator className="w-4 h-4" />
+                                              Logistics Formula Applied
+                                            </div>
+                                            <div className="space-y-1 text-gray-600">
+                                              <p><span className="font-medium">Per-diem:</span> MM × ${waveSummary.logistics?.config?.per_diem_daily || 50} × {waveSummary.logistics?.config?.per_diem_days || 30} days</p>
+                                              <p><span className="font-medium">Accommodation:</span> MM × ${waveSummary.logistics?.config?.accommodation_daily || 80} × {waveSummary.logistics?.config?.accommodation_days || 30} days</p>
+                                              <p><span className="font-medium">Conveyance:</span> MM × ${waveSummary.logistics?.config?.local_conveyance_daily || 15} × {waveSummary.logistics?.config?.local_conveyance_days || 21} days</p>
+                                              <p><span className="font-medium">Air Fare:</span> 1 resource × ${waveSummary.logistics?.config?.flight_cost_per_trip || 450} × {waveSummary.logistics?.config?.num_trips || 6} trips</p>
+                                              <p><span className="font-medium">Visa/Medical:</span> 1 resource × ${waveSummary.logistics?.config?.visa_medical_per_trip || 400} × {waveSummary.logistics?.config?.num_trips || 6} trips</p>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <p>No travel logistics. Click to enable travel costs for this resource.</p>
+                                        )}
+                                      </TooltipContent>
+                                    </Tooltip>
                                   </td>
                                   {wave.phase_names.map((_, phaseIndex) => (
                                     <td key={phaseIndex} className="p-2">
