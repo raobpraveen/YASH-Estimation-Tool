@@ -1218,6 +1218,25 @@ const ProjectEstimator = () => {
             <p className="text-2xl font-extrabold font-mono text-[#0EA5E9]" data-testid="offshore-mm">
               {overall.offshoreMM.toFixed(1)}
             </p>
+            {overall.offshoreMM > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                Avg: ${(overall.offshoreMM > 0 
+                  ? (overall.offshoreSalaryCost / overall.offshoreMM * (1 + profitMarginPercentage/100)).toFixed(0) 
+                  : 0).toLocaleString()}/MM
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="border border-[#E2E8F0] shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Avg. Selling Price/MM</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-extrabold font-mono text-[#8B5CF6]" data-testid="avg-selling-price">
+              ${overall.totalMM > 0 
+                ? (overall.sellingPrice / overall.totalMM).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
+                : 0}
+            </p>
           </CardContent>
         </Card>
         <Card className="border border-[#E2E8F0] shadow-sm">
@@ -1237,6 +1256,7 @@ const ProjectEstimator = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-bold text-[#0F172A]">Project Waves</CardTitle>
+            {!isReadOnly && (
             <Dialog open={addWaveDialogOpen} onOpenChange={setAddWaveDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white" data-testid="add-wave-button">
