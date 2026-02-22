@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Plane, Save, FileDown, X, Settings } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Trash2, Plane, Save, FileDown, X, Settings, Edit2, Copy, History } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { COUNTRIES, LOGISTICS_DEFAULTS } from "@/utils/constants";
@@ -19,6 +21,10 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const ProjectEstimator = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const editProjectId = searchParams.get("edit");
+  
   const [rates, setRates] = useState([]);
   const [locations, setLocations] = useState([]);
   const [technologies, setTechnologies] = useState([]);
@@ -26,6 +32,9 @@ const ProjectEstimator = () => {
   const [customers, setCustomers] = useState([]);
   
   // Project header
+  const [projectId, setProjectId] = useState("");
+  const [projectNumber, setProjectNumber] = useState("");
+  const [projectVersion, setProjectVersion] = useState(1);
   const [projectName, setProjectName] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [projectLocation, setProjectLocation] = useState("");
@@ -33,6 +42,7 @@ const ProjectEstimator = () => {
   const [projectTypeId, setProjectTypeId] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [profitMarginPercentage, setProfitMarginPercentage] = useState(35);
+  const [versionNotes, setVersionNotes] = useState("");
   
   // Waves
   const [waves, setWaves] = useState([]);
@@ -43,18 +53,37 @@ const ProjectEstimator = () => {
   const [addResourceDialogOpen, setAddResourceDialogOpen] = useState(false);
   const [summaryDialogOpen, setSummaryDialogOpen] = useState(false);
   const [editLogisticsDialogOpen, setEditLogisticsDialogOpen] = useState(false);
+  const [editResourceLogisticsOpen, setEditResourceLogisticsOpen] = useState(false);
   const [editingWaveId, setEditingWaveId] = useState("");
+  const [editingAllocationId, setEditingAllocationId] = useState("");
+  const [saveAsNewVersionDialog, setSaveAsNewVersionDialog] = useState(false);
   
   const [newWave, setNewWave] = useState({ name: "", duration_months: "" });
   const [newAllocation, setNewAllocation] = useState({
     rate_id: "",
     is_onsite: false,
+    custom_salary: "",
   });
   
   const [waveLogistics, setWaveLogistics] = useState({
-    per_diem_monthly: LOGISTICS_DEFAULTS.per_diem_daily * LOGISTICS_DEFAULTS.per_diem_days,
-    accommodation_monthly: LOGISTICS_DEFAULTS.accommodation_daily * LOGISTICS_DEFAULTS.accommodation_days,
-    local_conveyance_monthly: LOGISTICS_DEFAULTS.local_conveyance_daily * LOGISTICS_DEFAULTS.conveyance_days,
+    per_diem_daily: LOGISTICS_DEFAULTS.per_diem_daily,
+    per_diem_days: 30,
+    accommodation_daily: LOGISTICS_DEFAULTS.accommodation_daily,
+    accommodation_days: 30,
+    local_conveyance_daily: LOGISTICS_DEFAULTS.local_conveyance_daily,
+    local_conveyance_days: 21,
+    flight_cost_per_trip: 0,
+    visa_insurance_per_trip: 0,
+    num_trips: 0,
+  });
+  
+  const [resourceLogistics, setResourceLogistics] = useState({
+    per_diem_daily: 50,
+    per_diem_days: 30,
+    accommodation_daily: 80,
+    accommodation_days: 30,
+    local_conveyance_daily: 20,
+    local_conveyance_days: 21,
     flight_cost_per_trip: 0,
     visa_insurance_per_trip: 0,
     num_trips: 0,
@@ -67,6 +96,41 @@ const ProjectEstimator = () => {
     fetchProjectTypes();
     fetchCustomers();
   }, []);
+
+  useEffect(() => {
+    if (editProjectId) {
+      loadProject(editProjectId);
+    }
+  }, [editProjectId]);
+
+  const loadProject = async (id) => {
+    try {
+      const response = await axios.get(`${API}/projects/${id}`);
+      const project = response.data;
+      
+      setProjectId(project.id);
+      setProjectNumber(project.project_number || "");
+      setProjectVersion(project.version || 1);
+      setProjectName(project.name);
+      setCustomerId(project.customer_id || "");
+      setProjectLocation(project.project_location || "");
+      setTechnologyId(project.technology_id || "");
+      setProjectTypeId(project.project_type_id || "");
+      setProjectDescription(project.description || "");
+      setProfitMarginPercentage(project.profit_margin_percentage || 35);
+      setVersionNotes(project.version_notes || "");
+      
+      if (project.waves && project.waves.length > 0) {
+        setWaves(project.waves);
+        setActiveWaveId(project.waves[0].id);
+      }
+      
+      toast.success(`Loaded ${project.project_number || "project"} v${project.version || 1}`);
+    } catch (error) {
+      toast.error("Failed to load project");
+      console.error(error);
+    }
+  };
 
   const fetchRates = async () => {
     try {
@@ -127,14 +191,7 @@ const ProjectEstimator = () => {
       name: newWave.name,
       duration_months: parseFloat(newWave.duration_months),
       phase_names: phaseNames,
-      logistics_defaults: {
-        per_diem_monthly: LOGISTICS_DEFAULTS.per_diem_daily * LOGISTICS_DEFAULTS.per_diem_days,
-        accommodation_monthly: LOGISTICS_DEFAULTS.accommodation_daily * LOGISTICS_DEFAULTS.accommodation_days,
-        local_conveyance_monthly: LOGISTICS_DEFAULTS.local_conveyance_daily * LOGISTICS_DEFAULTS.conveyance_days,
-        flight_cost_per_trip: 0,
-        visa_insurance_per_trip: 0,
-        num_trips: 0,
-      },
+      logistics_defaults: { ...waveLogistics },
       grid_allocations: [],
     };
 
@@ -181,6 +238,46 @@ const ProjectEstimator = () => {
     setEditLogisticsDialogOpen(false);
   };
 
+  const handleOpenResourceLogistics = (waveId, allocationId) => {
+    const wave = waves.find(w => w.id === waveId);
+    if (wave) {
+      const alloc = wave.grid_allocations.find(a => a.id === allocationId);
+      if (alloc) {
+        setResourceLogistics({
+          per_diem_daily: alloc.per_diem_daily || 50,
+          per_diem_days: alloc.per_diem_days || 30,
+          accommodation_daily: alloc.accommodation_daily || 80,
+          accommodation_days: alloc.accommodation_days || 30,
+          local_conveyance_daily: alloc.local_conveyance_daily || 20,
+          local_conveyance_days: alloc.local_conveyance_days || 21,
+          flight_cost_per_trip: alloc.flight_cost_per_trip || 0,
+          visa_insurance_per_trip: alloc.visa_insurance_per_trip || 0,
+          num_trips: alloc.num_trips || 0,
+        });
+        setEditingWaveId(waveId);
+        setEditingAllocationId(allocationId);
+        setEditResourceLogisticsOpen(true);
+      }
+    }
+  };
+
+  const handleSaveResourceLogistics = () => {
+    setWaves(waves.map(w => 
+      w.id === editingWaveId 
+        ? {
+            ...w,
+            grid_allocations: w.grid_allocations.map(a =>
+              a.id === editingAllocationId
+                ? { ...a, ...resourceLogistics }
+                : a
+            )
+          }
+        : w
+    ));
+    toast.success("Resource logistics updated");
+    setEditResourceLogisticsOpen(false);
+  };
+
   const handleAddAllocation = () => {
     if (!activeWaveId) {
       toast.error("Please add a wave first");
@@ -202,23 +299,28 @@ const ProjectEstimator = () => {
     }
 
     const activeWave = waves.find(w => w.id === activeWaveId);
+    const customSalary = newAllocation.custom_salary ? parseFloat(newAllocation.custom_salary) : selectedRate.avg_monthly_salary;
     
     const allocation = {
       id: Math.random().toString(36).substr(2, 9),
       skill_id: selectedRate.skill_id,
       skill_name: selectedRate.skill_name,
       proficiency_level: selectedRate.proficiency_level,
-      avg_monthly_salary: selectedRate.avg_monthly_salary,
+      avg_monthly_salary: customSalary,
+      original_monthly_salary: selectedRate.avg_monthly_salary,
       base_location_id: selectedRate.base_location_id,
       base_location_name: selectedRate.base_location_name,
       overhead_percentage: location.overhead_percentage,
       is_onsite: newAllocation.is_onsite,
       phase_allocations: {},
-      per_diem_monthly: newAllocation.is_onsite ? activeWave.logistics_defaults.per_diem_monthly : 0,
-      accommodation_monthly: newAllocation.is_onsite ? activeWave.logistics_defaults.accommodation_monthly : 0,
-      local_conveyance_monthly: newAllocation.is_onsite ? activeWave.logistics_defaults.local_conveyance_monthly : 0,
+      per_diem_daily: newAllocation.is_onsite ? activeWave.logistics_defaults.per_diem_daily : 0,
+      per_diem_days: newAllocation.is_onsite ? activeWave.logistics_defaults.per_diem_days : 0,
+      accommodation_daily: newAllocation.is_onsite ? activeWave.logistics_defaults.accommodation_daily : 0,
+      accommodation_days: newAllocation.is_onsite ? activeWave.logistics_defaults.accommodation_days : 0,
+      local_conveyance_daily: newAllocation.is_onsite ? activeWave.logistics_defaults.local_conveyance_daily : 0,
+      local_conveyance_days: newAllocation.is_onsite ? activeWave.logistics_defaults.local_conveyance_days : 0,
       flight_cost_per_trip: newAllocation.is_onsite ? activeWave.logistics_defaults.flight_cost_per_trip : 0,
-      visa_insurance_cost: newAllocation.is_onsite ? activeWave.logistics_defaults.visa_insurance_per_trip : 0,
+      visa_insurance_per_trip: newAllocation.is_onsite ? activeWave.logistics_defaults.visa_insurance_per_trip : 0,
       num_trips: newAllocation.is_onsite ? activeWave.logistics_defaults.num_trips : 0,
     };
 
@@ -231,6 +333,7 @@ const ProjectEstimator = () => {
     setNewAllocation({
       rate_id: "",
       is_onsite: false,
+      custom_salary: "",
     });
     setAddResourceDialogOpen(false);
     toast.success("Resource added to wave");
@@ -240,6 +343,36 @@ const ProjectEstimator = () => {
     setWaves(waves.map(w => 
       w.id === waveId 
         ? { ...w, grid_allocations: w.grid_allocations.filter(a => a.id !== allocationId) }
+        : w
+    ));
+  };
+
+  const handleToggleOnsite = (waveId, allocationId) => {
+    setWaves(waves.map(w => 
+      w.id === waveId
+        ? {
+            ...w,
+            grid_allocations: w.grid_allocations.map(a =>
+              a.id === allocationId
+                ? { 
+                    ...a, 
+                    is_onsite: !a.is_onsite,
+                    // Reset logistics if switching to offshore
+                    ...(!a.is_onsite ? {} : {
+                      per_diem_daily: 0,
+                      per_diem_days: 0,
+                      accommodation_daily: 0,
+                      accommodation_days: 0,
+                      local_conveyance_daily: 0,
+                      local_conveyance_days: 0,
+                      flight_cost_per_trip: 0,
+                      visa_insurance_per_trip: 0,
+                      num_trips: 0,
+                    })
+                  }
+                : a
+            )
+          }
         : w
     ));
   };
@@ -259,13 +392,37 @@ const ProjectEstimator = () => {
     ));
   };
 
-  const calculateAllocationCost = (allocation) => {
-    const totalManMonths = Object.values(allocation.phase_allocations).reduce((sum, val) => sum + val, 0);
+  const handleSalaryChange = (waveId, allocationId, value) => {
+    setWaves(waves.map(w => 
+      w.id === waveId
+        ? {
+            ...w,
+            grid_allocations: w.grid_allocations.map(a =>
+              a.id === allocationId
+                ? { ...a, avg_monthly_salary: parseFloat(value) || 0 }
+                : a
+            )
+          }
+        : w
+    ));
+  };
+
+  const calculateAllocationCost = (allocation, wave) => {
+    const totalManMonths = Object.values(allocation.phase_allocations || {}).reduce((sum, val) => sum + val, 0);
     const baseSalaryCost = allocation.avg_monthly_salary * totalManMonths;
-    const logisticsCost = allocation.is_onsite
-      ? (allocation.per_diem_monthly + allocation.accommodation_monthly + allocation.local_conveyance_monthly) * totalManMonths +
-        (allocation.flight_cost_per_trip + allocation.visa_insurance_cost) * allocation.num_trips
-      : 0;
+    
+    // Calculate logistics cost
+    // Per-diem, accommodation, conveyance: daily rate * days * MM
+    // Flight and Visa: per trip * num_trips (for ALL onsite resources, so we count per resource)
+    const perDiemCost = allocation.is_onsite ? (allocation.per_diem_daily || 0) * (allocation.per_diem_days || 0) * totalManMonths : 0;
+    const accommodationCost = allocation.is_onsite ? (allocation.accommodation_daily || 0) * (allocation.accommodation_days || 0) * totalManMonths : 0;
+    const conveyanceCost = allocation.is_onsite ? (allocation.local_conveyance_daily || 0) * (allocation.local_conveyance_days || 0) * totalManMonths : 0;
+    
+    // Flights and Visa: num_trips * per_trip_cost (this is per resource)
+    const flightCost = allocation.is_onsite ? (allocation.flight_cost_per_trip || 0) * (allocation.num_trips || 0) : 0;
+    const visaInsuranceCost = allocation.is_onsite ? (allocation.visa_insurance_per_trip || 0) * (allocation.num_trips || 0) : 0;
+    
+    const logisticsCost = perDiemCost + accommodationCost + conveyanceCost + flightCost + visaInsuranceCost;
     
     const baseCost = baseSalaryCost + logisticsCost;
     const overheadCost = baseCost * (allocation.overhead_percentage / 100);
@@ -292,9 +449,10 @@ const ProjectEstimator = () => {
     let totalLogisticsCost = 0;
     let totalCostToCompany = 0;
     let totalSellingPrice = 0;
+    let onsiteResourceCount = 0;
 
     wave.grid_allocations.forEach(allocation => {
-      const { totalManMonths, baseSalaryCost, logisticsCost, costToCompany, sellingPrice } = calculateAllocationCost(allocation);
+      const { totalManMonths, baseSalaryCost, logisticsCost, costToCompany, sellingPrice } = calculateAllocationCost(allocation, wave);
       totalMM += totalManMonths;
       totalCostToCompany += costToCompany;
       totalSellingPrice += sellingPrice;
@@ -303,6 +461,7 @@ const ProjectEstimator = () => {
         onsiteMM += totalManMonths;
         onsiteSalaryCost += baseSalaryCost;
         totalLogisticsCost += logisticsCost;
+        onsiteResourceCount++;
       } else {
         offshoreMM += totalManMonths;
         offshoreSalaryCost += baseSalaryCost;
@@ -318,6 +477,7 @@ const ProjectEstimator = () => {
       totalLogisticsCost,
       totalCostToCompany,
       sellingPrice: totalSellingPrice,
+      onsiteResourceCount,
     };
   };
 
@@ -355,6 +515,36 @@ const ProjectEstimator = () => {
     };
   };
 
+  const getProjectPayload = () => {
+    const selectedCustomer = customers.find(c => c.id === customerId);
+    const selectedTech = technologies.find(t => t.id === technologyId);
+    const selectedType = projectTypes.find(t => t.id === projectTypeId);
+    const selectedCountry = COUNTRIES.find(c => c.code === projectLocation);
+
+    return {
+      name: projectName,
+      customer_id: customerId,
+      customer_name: selectedCustomer?.name || "",
+      project_location: projectLocation,
+      project_location_name: selectedCountry?.name || "",
+      technology_id: technologyId,
+      technology_name: selectedTech?.name || "",
+      project_type_id: projectTypeId,
+      project_type_name: selectedType?.name || "",
+      description: projectDescription,
+      profit_margin_percentage: profitMarginPercentage,
+      waves: waves.map(w => ({
+        id: w.id,
+        name: w.name,
+        duration_months: w.duration_months,
+        phase_names: w.phase_names,
+        logistics_defaults: w.logistics_defaults,
+        grid_allocations: w.grid_allocations,
+      })),
+      version_notes: versionNotes,
+    };
+  };
+
   const handleSaveProject = async () => {
     if (!projectName || !customerId) {
       toast.error("Please enter project name and select customer");
@@ -366,46 +556,79 @@ const ProjectEstimator = () => {
       return;
     }
 
-    const selectedCustomer = customers.find(c => c.id === customerId);
-    const selectedTech = technologies.find(t => t.id === technologyId);
-    const selectedType = projectTypes.find(t => t.id === projectTypeId);
-    const selectedCountry = COUNTRIES.find(c => c.code === projectLocation);
+    const payload = getProjectPayload();
 
     try {
-      await axios.post(`${API}/projects`, {
-        name: projectName,
-        customer_name: selectedCustomer?.name || "",
-        project_location: projectLocation,
-        project_location_name: selectedCountry?.name || "",
-        technology_id: technologyId,
-        technology_name: selectedTech?.name || "",
-        project_type_id: projectTypeId,
-        project_type_name: selectedType?.name || "",
-        description: projectDescription,
-        profit_margin_percentage: profitMarginPercentage,
-      });
-
-      const projectsRes = await axios.get(`${API}/projects`);
-      const createdProject = projectsRes.data.find((p) => p.name === projectName && p.customer_name === selectedCustomer?.name);
-
-      if (createdProject) {
-        await axios.put(`${API}/projects/${createdProject.id}`, {
-          waves: waves.map(w => ({
-            id: w.id,
-            name: w.name,
-            duration_months: w.duration_months,
-            phase_names: w.phase_names,
-            logistics_defaults: w.logistics_defaults,
-            grid_allocations: w.grid_allocations,
-          })),
-        });
+      if (projectId) {
+        // Update existing project
+        await axios.put(`${API}/projects/${projectId}`, payload);
+        toast.success(`Project ${projectNumber} v${projectVersion} updated`);
+      } else {
+        // Create new project
+        const response = await axios.post(`${API}/projects`, payload);
+        setProjectId(response.data.id);
+        setProjectNumber(response.data.project_number);
+        setProjectVersion(response.data.version);
+        toast.success(`Project ${response.data.project_number} created`);
       }
-
-      toast.success("Project saved successfully");
     } catch (error) {
       toast.error("Failed to save project");
       console.error(error);
     }
+  };
+
+  const handleSaveAsNewVersion = async () => {
+    if (!projectId) {
+      toast.error("No existing project to version");
+      return;
+    }
+
+    const payload = getProjectPayload();
+
+    try {
+      const response = await axios.post(`${API}/projects/${projectId}/new-version`, payload);
+      setProjectId(response.data.id);
+      setProjectVersion(response.data.version);
+      setSaveAsNewVersionDialog(false);
+      toast.success(`New version ${response.data.project_number} v${response.data.version} created`);
+    } catch (error) {
+      toast.error("Failed to create new version");
+      console.error(error);
+    }
+  };
+
+  const handleCloneProject = async () => {
+    if (!projectId) {
+      toast.error("Please save the project first");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${API}/projects/${projectId}/clone`);
+      toast.success(`Project cloned as ${response.data.project_number}`);
+      navigate(`/estimator?edit=${response.data.id}`);
+    } catch (error) {
+      toast.error("Failed to clone project");
+      console.error(error);
+    }
+  };
+
+  const handleNewProject = () => {
+    setProjectId("");
+    setProjectNumber("");
+    setProjectVersion(1);
+    setProjectName("");
+    setCustomerId("");
+    setProjectLocation("");
+    setTechnologyId("");
+    setProjectTypeId("");
+    setProjectDescription("");
+    setProfitMarginPercentage(35);
+    setVersionNotes("");
+    setWaves([]);
+    setActiveWaveId("");
+    navigate("/estimator");
+    toast.info("Ready for new project");
   };
 
   const handleExportToExcel = () => {
@@ -421,6 +644,8 @@ const ProjectEstimator = () => {
     const summaryData = [];
     summaryData.push(["PROJECT ESTIMATE SUMMARY"]);
     summaryData.push([]);
+    summaryData.push(["Project Number", projectNumber || "Not Saved"]);
+    summaryData.push(["Version", projectVersion]);
     summaryData.push(["Customer Name", selectedCustomer?.name || ""]);
     summaryData.push(["Project Name", projectName]);
     summaryData.push(["Project Location", COUNTRIES.find(c => c.code === projectLocation)?.name || projectLocation]);
@@ -464,17 +689,17 @@ const ProjectEstimator = () => {
       waveData.push([`${wave.name} - ${wave.duration_months} months`]);
       waveData.push([]);
       
-      const header = ["Skill", "Level", "Location", "Salary", "Onsite", ...wave.phase_names, "Total MM", "Base Cost", "OH Cost", "Selling Price"];
+      const header = ["Skill", "Level", "Location", "$/Month", "Onsite", ...wave.phase_names, "Total MM", "Base Cost", "OH Cost", "Selling Price"];
       waveData.push(header);
 
       wave.grid_allocations.forEach(alloc => {
-        const { totalManMonths, baseCost, overheadCost, sellingPrice } = calculateAllocationCost(alloc);
+        const { totalManMonths, baseCost, overheadCost, sellingPrice } = calculateAllocationCost(alloc, wave);
         const row = [
           alloc.skill_name,
           alloc.proficiency_level,
           alloc.base_location_name,
           alloc.avg_monthly_salary,
-          alloc.is_onsite ? "Yes" : "No",
+          alloc.is_onsite ? "ON" : "OFF",
           ...wave.phase_names.map((_, i) => alloc.phase_allocations[i] || 0),
           totalManMonths.toFixed(2),
           baseCost.toFixed(2),
@@ -493,7 +718,7 @@ const ProjectEstimator = () => {
       XLSX.utils.book_append_sheet(wb, waveWs, wave.name.substring(0, 30));
     });
 
-    XLSX.writeFile(wb, `${projectName || "Project"}_Estimate.xlsx`);
+    XLSX.writeFile(wb, `${projectNumber || projectName || "Project"}_v${projectVersion}_Estimate.xlsx`);
     toast.success("Exported to Excel successfully");
   };
 
@@ -504,10 +729,33 @@ const ProjectEstimator = () => {
     <div data-testid="project-estimator" className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Project Estimator</h1>
-          <p className="text-base text-gray-600 mt-2">Wave-based project estimation with detailed cost breakdown</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Project Estimator</h1>
+            {projectNumber && (
+              <Badge variant="outline" className="text-lg font-mono" data-testid="project-number-badge">
+                {projectNumber} v{projectVersion}
+              </Badge>
+            )}
+          </div>
+          <p className="text-base text-gray-600 mt-2">Wave-based project estimation with version management</p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={handleNewProject} variant="outline" data-testid="new-project-button">
+            <Plus className="w-4 h-4 mr-2" />
+            New
+          </Button>
+          {projectId && (
+            <>
+              <Button onClick={handleCloneProject} variant="outline" className="border-[#8B5CF6] text-[#8B5CF6]" data-testid="clone-project-button">
+                <Copy className="w-4 h-4 mr-2" />
+                Clone
+              </Button>
+              <Button onClick={() => setSaveAsNewVersionDialog(true)} variant="outline" className="border-[#F59E0B] text-[#F59E0B]" data-testid="new-version-button">
+                <History className="w-4 h-4 mr-2" />
+                New Version
+              </Button>
+            </>
+          )}
           <Button onClick={() => setSummaryDialogOpen(true)} variant="outline" className="border-[#0EA5E9] text-[#0EA5E9]" data-testid="view-summary-button">
             View Summary
           </Button>
@@ -517,7 +765,7 @@ const ProjectEstimator = () => {
           </Button>
           <Button onClick={handleSaveProject} className="bg-[#10B981] hover:bg-[#10B981]/90 text-white" data-testid="save-project-button">
             <Save className="w-4 h-4 mr-2" />
-            Save Project
+            Save
           </Button>
         </div>
       </div>
@@ -689,6 +937,7 @@ const ProjectEstimator = () => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold text-[#0F172A]">Add New Wave</DialogTitle>
+                  <DialogDescription>Configure wave details and default logistics rates</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div>
@@ -712,8 +961,86 @@ const ProjectEstimator = () => {
                       onChange={(e) => setNewWave({ ...newWave, duration_months: e.target.value })}
                       data-testid="wave-duration-input"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Number of columns will equal duration months</p>
                   </div>
+                  
+                  <div className="border-t pt-4">
+                    <Label className="text-base font-semibold">Default Logistics Rates (for onsite resources)</Label>
+                    <div className="grid grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <Label className="text-xs">Per-Diem ($/day)</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.per_diem_daily}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Per-Diem Days/Month</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.per_diem_days}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_days: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Accommodation ($/day)</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.accommodation_daily}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Accommodation Days/Month</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.accommodation_days}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_days: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Conveyance ($/day)</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.local_conveyance_daily}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Conveyance Days/Month</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.local_conveyance_days}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Flight ($/trip)</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.flight_cost_per_trip}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, flight_cost_per_trip: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Visa+Insurance ($/trip)</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.visa_insurance_per_trip}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, visa_insurance_per_trip: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label className="text-xs">Default Number of Trips</Label>
+                        <Input
+                          type="number"
+                          value={waveLogistics.num_trips}
+                          onChange={(e) => setWaveLogistics({ ...waveLogistics, num_trips: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
                   <Button onClick={handleAddWave} className="w-full bg-[#0F172A] hover:bg-[#0F172A]/90" data-testid="submit-wave-button">
                     Add Wave
                   </Button>
@@ -753,7 +1080,7 @@ const ProjectEstimator = () => {
                           data-testid={`edit-logistics-${wave.id}`}
                         >
                           <Settings className="w-4 h-4 mr-2" />
-                          Logistics Defaults
+                          Wave Logistics
                         </Button>
                         <Dialog open={addResourceDialogOpen && activeWaveId === wave.id} onOpenChange={setAddResourceDialogOpen}>
                           <DialogTrigger asChild>
@@ -765,11 +1092,19 @@ const ProjectEstimator = () => {
                           <DialogContent className="max-w-md">
                             <DialogHeader>
                               <DialogTitle className="text-2xl font-bold text-[#0F172A]">Add Resource to {wave.name}</DialogTitle>
+                              <DialogDescription>Select skill and optionally override salary for this estimation</DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 mt-4">
                               <div>
                                 <Label htmlFor="resource-rate">Skill & Proficiency</Label>
-                                <Select value={newAllocation.rate_id} onValueChange={(value) => setNewAllocation({ ...newAllocation, rate_id: value })}>
+                                <Select value={newAllocation.rate_id} onValueChange={(value) => {
+                                  const rate = rates.find(r => r.id === value);
+                                  setNewAllocation({ 
+                                    ...newAllocation, 
+                                    rate_id: value,
+                                    custom_salary: rate?.avg_monthly_salary?.toString() || ""
+                                  });
+                                }}>
                                   <SelectTrigger id="resource-rate" data-testid="resource-rate-select">
                                     <SelectValue placeholder="Select skill" />
                                   </SelectTrigger>
@@ -781,6 +1116,19 @@ const ProjectEstimator = () => {
                                     ))}
                                   </SelectContent>
                                 </Select>
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor="custom-salary">Monthly Salary (override for this estimation)</Label>
+                                <Input
+                                  id="custom-salary"
+                                  type="number"
+                                  placeholder="Enter custom salary"
+                                  value={newAllocation.custom_salary}
+                                  onChange={(e) => setNewAllocation({ ...newAllocation, custom_salary: e.target.value })}
+                                  data-testid="custom-salary-input"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Leave as-is to use master rate</p>
                               </div>
                               
                               <div className="flex items-center gap-2">
@@ -796,16 +1144,16 @@ const ProjectEstimator = () => {
                               </div>
 
                               {newAllocation.is_onsite && (
-                                <div className="bg-blue-50 p-3 rounded text-sm">
-                                  <p className="font-semibold text-[#0F172A] mb-2">Logistics will be auto-applied:</p>
-                                  <ul className="space-y-1 text-gray-700">
-                                    <li>• Per-diem: ${wave.logistics_defaults.per_diem_monthly}/month</li>
-                                    <li>• Accommodation: ${wave.logistics_defaults.accommodation_monthly}/month</li>
-                                    <li>• Conveyance: ${wave.logistics_defaults.local_conveyance_monthly}/month</li>
-                                    <li>• Flights: ${wave.logistics_defaults.flight_cost_per_trip}/trip × {wave.logistics_defaults.num_trips} trips</li>
-                                    <li>• Visa/Insurance: ${wave.logistics_defaults.visa_insurance_per_trip}/trip × {wave.logistics_defaults.num_trips} trips</li>
+                                <div className="bg-amber-50 p-3 rounded text-sm border border-amber-200">
+                                  <p className="font-semibold text-[#0F172A] mb-2">Wave default logistics will be applied:</p>
+                                  <ul className="space-y-1 text-gray-700 text-xs">
+                                    <li>Per-diem: ${wave.logistics_defaults.per_diem_daily}/day x {wave.logistics_defaults.per_diem_days} days</li>
+                                    <li>Accommodation: ${wave.logistics_defaults.accommodation_daily}/day x {wave.logistics_defaults.accommodation_days} days</li>
+                                    <li>Conveyance: ${wave.logistics_defaults.local_conveyance_daily}/day x {wave.logistics_defaults.local_conveyance_days} days</li>
+                                    <li>Flights: ${wave.logistics_defaults.flight_cost_per_trip}/trip x {wave.logistics_defaults.num_trips} trips</li>
+                                    <li>Visa+Ins: ${wave.logistics_defaults.visa_insurance_per_trip}/trip x {wave.logistics_defaults.num_trips} trips</li>
                                   </ul>
-                                  <p className="text-xs text-gray-600 mt-2">Edit wave logistics defaults to change these values</p>
+                                  <p className="text-xs text-gray-600 mt-2">You can edit per-resource after adding</p>
                                 </div>
                               )}
                               
@@ -861,7 +1209,7 @@ const ProjectEstimator = () => {
                           </thead>
                           <tbody>
                             {wave.grid_allocations.map((allocation) => {
-                              const { totalManMonths, baseCost, overheadCost, sellingPrice } = calculateAllocationCost(allocation);
+                              const { totalManMonths, baseCost, overheadCost, sellingPrice } = calculateAllocationCost(allocation, wave);
                               return (
                                 <tr
                                   key={allocation.id}
@@ -871,11 +1219,27 @@ const ProjectEstimator = () => {
                                   <td className="p-3 font-medium text-sm">{allocation.skill_name}</td>
                                   <td className="p-3 text-sm">{allocation.proficiency_level}</td>
                                   <td className="p-3 text-sm">{allocation.base_location_name}</td>
-                                  <td className="p-3 text-right font-mono tabular-nums text-sm">
-                                    ${allocation.avg_monthly_salary.toLocaleString()}
+                                  <td className="p-3 text-right">
+                                    <Input
+                                      type="number"
+                                      className="w-24 text-right font-mono text-sm"
+                                      value={allocation.avg_monthly_salary}
+                                      onChange={(e) => handleSalaryChange(wave.id, allocation.id, e.target.value)}
+                                      data-testid={`salary-${allocation.id}`}
+                                    />
                                   </td>
                                   <td className="p-3 text-center">
-                                    {allocation.is_onsite && <Plane className="w-4 h-4 inline text-[#F59E0B]" />}
+                                    <button
+                                      onClick={() => handleToggleOnsite(wave.id, allocation.id)}
+                                      className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+                                        allocation.is_onsite 
+                                          ? "bg-amber-500 text-white" 
+                                          : "bg-gray-200 text-gray-600"
+                                      }`}
+                                      data-testid={`onsite-toggle-${allocation.id}`}
+                                    >
+                                      {allocation.is_onsite ? "ON" : "OFF"}
+                                    </button>
                                   </td>
                                   {wave.phase_names.map((_, phaseIndex) => (
                                     <td key={phaseIndex} className="p-2">
@@ -903,15 +1267,28 @@ const ProjectEstimator = () => {
                                     ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                   </td>
                                   <td className="p-3 text-center">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeleteAllocation(wave.id, allocation.id)}
-                                      className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
-                                      data-testid={`delete-allocation-${allocation.id}`}
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
+                                    <div className="flex gap-1 justify-center">
+                                      {allocation.is_onsite && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleOpenResourceLogistics(wave.id, allocation.id)}
+                                          className="text-[#0EA5E9] hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
+                                          data-testid={`edit-resource-logistics-${allocation.id}`}
+                                        >
+                                          <Edit2 className="w-4 h-4" />
+                                        </Button>
+                                      )}
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeleteAllocation(wave.id, allocation.id)}
+                                        className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                                        data-testid={`delete-allocation-${allocation.id}`}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
                                   </td>
                                 </tr>
                               );
@@ -981,49 +1358,60 @@ const ProjectEstimator = () => {
             <DialogTitle className="text-2xl font-bold text-[#0F172A]">
               Wave Logistics Defaults
             </DialogTitle>
+            <DialogDescription>These defaults apply to new onsite resources in this wave</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
-            <p className="text-sm text-gray-600">
-              These defaults will be applied to all new onsite resources added to this wave.
-            </p>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Per-Diem (Monthly)</Label>
+                <Label>Per-Diem ($/day)</Label>
                 <Input
                   type="number"
-                  value={waveLogistics.per_diem_monthly}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_monthly: parseFloat(e.target.value) || 0 })}
-                />
-                <p className="text-xs text-gray-500 mt-1">Default: ${LOGISTICS_DEFAULTS.per_diem_daily} × 30 days = ${LOGISTICS_DEFAULTS.per_diem_daily * 30}</p>
-              </div>
-              <div>
-                <Label>Accommodation (Monthly)</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.accommodation_monthly}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_monthly: parseFloat(e.target.value) || 0 })}
-                />
-                <p className="text-xs text-gray-500 mt-1">Default: ${LOGISTICS_DEFAULTS.accommodation_daily} × 30 days = ${LOGISTICS_DEFAULTS.accommodation_daily * 30}</p>
-              </div>
-              <div>
-                <Label>Local Conveyance (Monthly)</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.local_conveyance_monthly}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_monthly: parseFloat(e.target.value) || 0 })}
-                />
-                <p className="text-xs text-gray-500 mt-1">Default: ${LOGISTICS_DEFAULTS.local_conveyance_daily} × 21 days = ${LOGISTICS_DEFAULTS.local_conveyance_daily * 21}</p>
-              </div>
-              <div>
-                <Label>Number of Trips</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.num_trips}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, num_trips: parseInt(e.target.value) || 0 })}
+                  value={waveLogistics.per_diem_daily}
+                  onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })}
                 />
               </div>
               <div>
-                <Label>Flight Cost (Per Trip)</Label>
+                <Label>Per-Diem Days/Month</Label>
+                <Input
+                  type="number"
+                  value={waveLogistics.per_diem_days}
+                  onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_days: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Accommodation ($/day)</Label>
+                <Input
+                  type="number"
+                  value={waveLogistics.accommodation_daily}
+                  onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Accommodation Days/Month</Label>
+                <Input
+                  type="number"
+                  value={waveLogistics.accommodation_days}
+                  onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_days: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Local Conveyance ($/day)</Label>
+                <Input
+                  type="number"
+                  value={waveLogistics.local_conveyance_daily}
+                  onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Conveyance Days/Month</Label>
+                <Input
+                  type="number"
+                  value={waveLogistics.local_conveyance_days}
+                  onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Flight Cost ($/trip)</Label>
                 <Input
                   type="number"
                   value={waveLogistics.flight_cost_per_trip}
@@ -1031,13 +1419,20 @@ const ProjectEstimator = () => {
                 />
               </div>
               <div>
-                <Label>Visa + Insurance (Per Trip)</Label>
+                <Label>Visa + Insurance ($/trip)</Label>
                 <Input
                   type="number"
                   value={waveLogistics.visa_insurance_per_trip}
                   onChange={(e) => setWaveLogistics({ ...waveLogistics, visa_insurance_per_trip: parseFloat(e.target.value) || 0 })}
                 />
-                <p className="text-xs text-gray-500 mt-1">Combined visa and insurance cost</p>
+              </div>
+              <div className="col-span-2">
+                <Label>Default Number of Trips</Label>
+                <Input
+                  type="number"
+                  value={waveLogistics.num_trips}
+                  onChange={(e) => setWaveLogistics({ ...waveLogistics, num_trips: parseInt(e.target.value) || 0 })}
+                />
               </div>
             </div>
             <Button onClick={handleSaveWaveLogistics} className="w-full bg-[#0F172A] hover:bg-[#0F172A]/90">
@@ -1047,11 +1442,139 @@ const ProjectEstimator = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Summary Dialog - Keeping from previous version with updated calculations */}
+      {/* Resource Logistics Editor Dialog */}
+      <Dialog open={editResourceLogisticsOpen} onOpenChange={setEditResourceLogisticsOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-[#0F172A]">
+              Edit Resource Logistics
+            </DialogTitle>
+            <DialogDescription>Customize logistics costs for this specific resource</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Per-Diem ($/day)</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.per_diem_daily}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Per-Diem Days/Month</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.per_diem_days}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, per_diem_days: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Accommodation ($/day)</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.accommodation_daily}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Accommodation Days/Month</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.accommodation_days}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, accommodation_days: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Local Conveyance ($/day)</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.local_conveyance_daily}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Conveyance Days/Month</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.local_conveyance_days}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Flight Cost ($/trip)</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.flight_cost_per_trip}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, flight_cost_per_trip: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label>Visa + Insurance ($/trip)</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.visa_insurance_per_trip}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, visa_insurance_per_trip: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="col-span-2">
+                <Label>Number of Trips</Label>
+                <Input
+                  type="number"
+                  value={resourceLogistics.num_trips}
+                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, num_trips: parseInt(e.target.value) || 0 })}
+                />
+                <p className="text-xs text-gray-500 mt-1">Flights + Visa/Insurance calculated as: trips x cost per trip</p>
+              </div>
+            </div>
+            <Button onClick={handleSaveResourceLogistics} className="w-full bg-[#0F172A] hover:bg-[#0F172A]/90">
+              Save Resource Logistics
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Save as New Version Dialog */}
+      <Dialog open={saveAsNewVersionDialog} onOpenChange={setSaveAsNewVersionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-[#0F172A]">Save as New Version</DialogTitle>
+            <DialogDescription>Create a new version of {projectNumber}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label>Version Notes (optional)</Label>
+              <Textarea
+                placeholder="Describe changes in this version..."
+                value={versionNotes}
+                onChange={(e) => setVersionNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="bg-blue-50 p-3 rounded text-sm">
+              <p className="font-semibold">This will:</p>
+              <ul className="list-disc list-inside text-gray-700 mt-1">
+                <li>Create version {projectVersion + 1} of {projectNumber}</li>
+                <li>Mark current version as historical</li>
+                <li>Keep all previous versions accessible</li>
+              </ul>
+            </div>
+            <Button onClick={handleSaveAsNewVersion} className="w-full bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-white">
+              <History className="w-4 h-4 mr-2" />
+              Create Version {projectVersion + 1}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Summary Dialog */}
       <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-[#0F172A]">Project Estimate Summary</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-[#0F172A]">
+              Project Estimate Summary
+              {projectNumber && <span className="ml-2 text-base font-normal text-gray-500">{projectNumber} v{projectVersion}</span>}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 mt-4">
             {/* Project Details */}
