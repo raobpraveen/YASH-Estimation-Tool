@@ -85,8 +85,8 @@ const ProjectEstimator = () => {
     custom_salary: "",
   });
   
-  // Check if project is read-only (not latest version or approved)
-  const isReadOnly = !isLatestVersion || projectStatus === "approved";
+  // Check if project is read-only (not latest version, approved, or in_review)
+  const isReadOnly = !isLatestVersion || projectStatus === "approved" || projectStatus === "in_review";
   
   // Wave-level logistics (applied to all onsite resources based on formula)
   const [waveLogistics, setWaveLogistics] = useState({
