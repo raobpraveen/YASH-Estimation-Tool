@@ -1722,6 +1722,8 @@ const ProjectEstimator = () => {
                               ))}
                               <th className="text-right p-3 font-semibold text-sm">Total MM</th>
                               <th className="text-right p-3 font-semibold text-sm">Salary Cost</th>
+                              <th className="text-right p-3 font-semibold text-sm">Overhead</th>
+                              <th className="text-right p-3 font-semibold text-sm bg-green-50">Selling Price</th>
                               <th className="text-center p-3 font-semibold text-sm">Actions</th>
                             </tr>
                           </thead>
@@ -1871,6 +1873,13 @@ const ProjectEstimator = () => {
                                   </td>
                                   <td className="p-3 text-right font-mono tabular-nums text-sm text-gray-600">
                                     ${baseSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                  </td>
+                                  <td className="p-3 text-right font-mono tabular-nums text-sm text-gray-500">
+                                    ${(baseSalaryCost * (allocation.overhead_percentage / 100)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                    <span className="text-xs ml-1">({allocation.overhead_percentage}%)</span>
+                                  </td>
+                                  <td className="p-3 text-right font-mono tabular-nums text-sm font-semibold text-[#10B981] bg-green-50/50">
+                                    ${((baseSalaryCost + baseSalaryCost * (allocation.overhead_percentage / 100)) / (1 - profitMarginPercentage / 100)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                   </td>
                                   <td className="p-3 text-center">
                                     {!isReadOnly && (
