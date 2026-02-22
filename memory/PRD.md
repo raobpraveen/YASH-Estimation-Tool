@@ -255,12 +255,12 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [ ] Role-based access control
 
 ### Refactoring Tasks
-- [ ] Break down ProjectEstimator.js (~2300 lines) into smaller components:
-  - ProjectHeader component
-  - ResourceGrid component
-  - Wave component
-  - SummaryKPIs component
-  - LogisticsBreakdown component
+- [x] Break down `ProjectEstimator.js` into smaller components:
+  - `/app/frontend/src/components/estimator/KPICards.js` - Summary KPI cards
+  - `/app/frontend/src/components/estimator/WaveSummary.js` - Wave summary card
+  - `/app/frontend/src/components/estimator/LogisticsBreakdown.js` - Logistics table
+  - `/app/frontend/src/components/estimator/ResourceGrid.js` - Resource allocation grid
+  - `/app/frontend/src/components/estimator/SummaryDialog.js` - View Summary modal
 
 ---
 
