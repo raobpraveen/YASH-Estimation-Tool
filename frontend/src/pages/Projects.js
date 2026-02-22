@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Eye, Trash2, Plane } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Eye, Trash2, Edit2, Copy, FileText, History } from "lucide-react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -12,8 +13,7 @@ const API = `${BACKEND_URL}/api`;
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProjects();
@@ -29,6 +29,8 @@ const Projects = () => {
   };
 
   const handleDeleteProject = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this project?")) return;
+    
     try {
       await axios.delete(`${API}/projects/${id}`);
       toast.success("Project deleted successfully");
@@ -38,18 +40,17 @@ const Projects = () => {
     }
   };
 
-  const handleViewProject = async (projectId) => {
+  const handleCloneProject = async (id) => {
     try {
-      const response = await axios.get(`${API}/projects/${projectId}`);
-      setSelectedProject(response.data);
-      setViewDialogOpen(true);
+      const response = await axios.post(`${API}/projects/${id}/clone`);
+      toast.success(`Project cloned as ${response.data.project_number}`);
+      fetchProjects();
     } catch (error) {
-      toast.error("Failed to load project details");
+      toast.error("Failed to clone project");
     }
   };
 
   const calculateProjectValue = (project) => {
-    // Handle wave-based structure
     if (!project.waves || project.waves.length === 0) {
       return { baseCost: 0, withOverhead: 0, sellingPrice: 0, totalMM: 0, resourceCount: 0 };
     }
@@ -69,10 +70,15 @@ const Projects = () => {
         totalMM += manMonths;
         
         const baseSalaryCost = (allocation.avg_monthly_salary || 0) * manMonths;
-        const logisticsCost = allocation.is_onsite
-          ? ((allocation.per_diem_monthly || 0) + (allocation.accommodation_monthly || 0) + (allocation.local_conveyance_monthly || 0)) * manMonths +
-            ((allocation.flight_cost_per_trip || 0) + (allocation.visa_insurance_cost || 0)) * (allocation.num_trips || 0)
-          : 0;
+        
+        // Calculate logistics
+        const perDiemCost = allocation.is_onsite ? (allocation.per_diem_daily || 0) * (allocation.per_diem_days || 0) * manMonths : 0;
+        const accommodationCost = allocation.is_onsite ? (allocation.accommodation_daily || 0) * (allocation.accommodation_days || 0) * manMonths : 0;
+        const conveyanceCost = allocation.is_onsite ? (allocation.local_conveyance_daily || 0) * (allocation.local_conveyance_days || 0) * manMonths : 0;
+        const flightCost = allocation.is_onsite ? (allocation.flight_cost_per_trip || 0) * (allocation.num_trips || 0) : 0;
+        const visaInsuranceCost = allocation.is_onsite ? (allocation.visa_insurance_per_trip || 0) * (allocation.num_trips || 0) : 0;
+        
+        const logisticsCost = perDiemCost + accommodationCost + conveyanceCost + flightCost + visaInsuranceCost;
         
         const baseCost = baseSalaryCost + logisticsCost;
         const overheadCost = baseCost * ((allocation.overhead_percentage || 0) / 100);
@@ -83,7 +89,6 @@ const Projects = () => {
       });
     });
 
-    // Selling Price = Cost to Company / (1 - Profit Margin %)
     const sellingPrice = profitMargin < 100 ? totalCostToCompany / (1 - (profitMargin / 100)) : totalCostToCompany;
     return { baseCost: totalBaseCost, withOverhead: totalCostToCompany, sellingPrice, totalMM, resourceCount };
   };
@@ -103,14 +108,20 @@ const Projects = () => {
           {projects.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500">No projects saved yet. Create an estimate in the Estimator page.</p>
+              <Button className="mt-4 bg-[#0EA5E9]" onClick={() => navigate("/estimator")}>
+                Create New Project
+              </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Project #</TableHead>
                   <TableHead>Project Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Resources</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead className="text-center">Version</TableHead>
+                  <TableHead className="text-center">Resources</TableHead>
+                  <TableHead className="text-right">Man-Months</TableHead>
                   <TableHead className="text-right">Selling Price</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -120,28 +131,59 @@ const Projects = () => {
                   const { sellingPrice, totalMM, resourceCount } = calculateProjectValue(project);
                   return (
                     <TableRow key={project.id} data-testid={`project-row-${project.id}`}>
-                      <TableCell className="font-medium">{project.name}</TableCell>
-                      <TableCell className="max-w-xs truncate">{project.description || "—"}</TableCell>
-                      <TableCell className="text-right">{resourceCount}</TableCell>
+                      <TableCell className="font-mono font-medium">
+                        {project.project_number || "—"}
+                      </TableCell>
+                      <TableCell className="font-medium max-w-xs truncate">{project.name}</TableCell>
+                      <TableCell>{project.customer_name || "—"}</TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline" className="font-mono">
+                          v{project.version || 1}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">{resourceCount}</TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">{totalMM.toFixed(1)}</TableCell>
                       <TableCell className="text-right font-mono tabular-nums font-semibold text-[#10B981]">
                         ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-1 justify-end">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleViewProject(project.id)}
-                            className="text-[#0EA5E9] hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
-                            data-testid={`view-project-${project.id}`}
+                            onClick={() => navigate(`/projects/${project.id}/summary`)}
+                            className="text-[#8B5CF6] hover:text-[#8B5CF6] hover:bg-[#8B5CF6]/10"
+                            title="View Summary"
+                            data-testid={`summary-project-${project.id}`}
                           >
-                            <Eye className="w-4 h-4" />
+                            <FileText className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/estimator?edit=${project.id}`)}
+                            className="text-[#0EA5E9] hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
+                            title="Edit"
+                            data-testid={`edit-project-${project.id}`}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCloneProject(project.id)}
+                            className="text-[#F59E0B] hover:text-[#F59E0B] hover:bg-[#F59E0B]/10"
+                            title="Clone"
+                            data-testid={`clone-project-${project.id}`}
+                          >
+                            <Copy className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteProject(project.id)}
                             className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                            title="Delete"
                             data-testid={`delete-project-${project.id}`}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -156,141 +198,6 @@ const Projects = () => {
           )}
         </CardContent>
       </Card>
-
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedProject && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-[#0F172A]">{selectedProject.name}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-6 mt-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div>
-                    <h3 className="text-sm text-gray-600">Customer</h3>
-                    <p className="font-semibold">{selectedProject.customer_name || "—"}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm text-gray-600">Location</h3>
-                    <p className="font-semibold">{selectedProject.project_location_name || "—"}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm text-gray-600">Technology</h3>
-                    <p className="font-semibold">{selectedProject.technology_name || "—"}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm text-gray-600">Project Type</h3>
-                    <p className="font-semibold">{selectedProject.project_type_name || "—"}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm text-gray-600">Profit Margin</h3>
-                    <p className="font-mono text-lg font-semibold">{selectedProject.profit_margin_percentage}%</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm text-gray-600">Waves</h3>
-                    <p className="font-semibold">{selectedProject.waves?.length || 0}</p>
-                  </div>
-                </div>
-
-                {selectedProject.description && (
-                  <div>
-                    <h3 className="font-semibold text-[#0F172A] mb-1">Description</h3>
-                    <p className="text-gray-600">{selectedProject.description}</p>
-                  </div>
-                )}
-
-                {/* Wave Details */}
-                {selectedProject.waves && selectedProject.waves.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-[#0F172A] mb-3">Waves & Resources</h3>
-                    <div className="space-y-4">
-                      {selectedProject.waves.map((wave, waveIdx) => (
-                        <Card key={waveIdx} className="border border-[#E2E8F0]">
-                          <CardHeader className="py-3 bg-[#F8FAFC]">
-                            <CardTitle className="text-base font-bold">
-                              {wave.name} ({wave.duration_months} months)
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="pt-3">
-                            {wave.grid_allocations && wave.grid_allocations.length > 0 ? (
-                              <div className="overflow-x-auto">
-                                <table className="w-full border-collapse border border-[#E2E8F0]">
-                                  <thead>
-                                    <tr className="bg-[#F1F5F9]">
-                                      <th className="border border-[#E2E8F0] p-2 text-left text-sm">Skill</th>
-                                      <th className="border border-[#E2E8F0] p-2 text-left text-sm">Level</th>
-                                      <th className="border border-[#E2E8F0] p-2 text-left text-sm">Location</th>
-                                      <th className="border border-[#E2E8F0] p-2 text-center text-sm">Onsite</th>
-                                      <th className="border border-[#E2E8F0] p-2 text-right text-sm">Total MM</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {wave.grid_allocations.map((allocation, idx) => {
-                                      const totalMM = Object.values(allocation.phase_allocations || {}).reduce((s, v) => s + v, 0);
-                                      return (
-                                        <tr key={idx} className={allocation.is_onsite ? "bg-amber-50/30" : ""}>
-                                          <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.skill_name}</td>
-                                          <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.proficiency_level}</td>
-                                          <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.base_location_name}</td>
-                                          <td className="border border-[#E2E8F0] p-2 text-center">
-                                            {allocation.is_onsite && <Plane className="w-4 h-4 inline text-[#F59E0B]" />}
-                                          </td>
-                                          <td className="border border-[#E2E8F0] p-2 text-right font-mono">{totalMM.toFixed(1)}</td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            ) : (
-                              <p className="text-gray-500 text-sm">No resources in this wave</p>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold text-[#0F172A] mb-3">Cost Summary</h3>
-                  <div className="space-y-2">
-                    {(() => {
-                      const { baseCost, withOverhead, sellingPrice, totalMM } = calculateProjectValue(selectedProject);
-                      return (
-                        <>
-                          <div className="flex justify-between">
-                            <span>Total Man-Months:</span>
-                            <span className="font-mono font-semibold">{totalMM.toFixed(1)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Base Cost:</span>
-                            <span className="font-mono font-semibold">
-                              ${baseCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Cost to Company (with Overheads):</span>
-                            <span className="font-mono font-semibold">
-                              ${withOverhead.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-lg font-bold pt-2 border-t">
-                            <span>Selling Price ({selectedProject.profit_margin_percentage}% margin):</span>
-                            <span className="font-mono text-[#10B981]">
-                              ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
