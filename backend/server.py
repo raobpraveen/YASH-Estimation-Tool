@@ -22,6 +22,27 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 
+# Models for Customers
+class Customer(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    location: str  # ISO country code
+    location_name: str
+    city: str = ""
+    industry_vertical: str = ""
+    sub_industry_vertical: str = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CustomerCreate(BaseModel):
+    name: str
+    location: str
+    location_name: str
+    city: str = ""
+    industry_vertical: str = ""
+    sub_industry_vertical: str = ""
+
+
 # Models for Technologies
 class Technology(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -125,7 +146,8 @@ class ProjectWave(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     duration_months: float
-    phases: List[str] = ["Discovery", "Prepare", "Explore", "Realize", "Deploy", "Run"]
+    phase_names: List[str] = []  # User-defined phase names per month/column
+    logistics_defaults: Dict[str, float] = {}  # Default logistics for wave
     grid_allocations: List[WaveGridAllocation] = []
 
 
@@ -171,6 +193,31 @@ class ProjectUpdate(BaseModel):
     description: Optional[str] = None
     profit_margin_percentage: Optional[float] = None
     waves: Optional[List[Dict]] = None
+
+
+# Customers Routes
+@api_router.post("/customers", response_model=Customer)
+async def create_customer(input: CustomerCreate):
+    customer_obj = Customer(**input.model_dump())
+    doc = customer_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.customers.insert_one(doc)
+    return customer_obj
+
+@api_router.get("/customers", response_model=List[Customer])
+async def get_customers():
+    customers = await db.customers.find({}, {"_id": 0}).to_list(1000)
+    for customer in customers:
+        if isinstance(customer['created_at'], str):
+            customer['created_at'] = datetime.fromisoformat(customer['created_at'])
+    return customers
+
+@api_router.delete("/customers/{customer_id}")
+async def delete_customer(customer_id: str):
+    result = await db.customers.delete_one({"id": customer_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return {"message": "Customer deleted successfully"}
 
 
 # Technologies Routes
