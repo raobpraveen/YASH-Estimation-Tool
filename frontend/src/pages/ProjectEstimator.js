@@ -1027,15 +1027,20 @@ const ProjectEstimator = () => {
       </Dialog>
 
       {/* Project Header */}
-      <Card className="border border-[#E2E8F0] shadow-sm">
-        <CardHeader>
+      <Card className={`border ${isReadOnly ? 'border-amber-300 bg-amber-50/30' : 'border-[#E2E8F0]'} shadow-sm`}>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl font-bold text-[#0F172A]">Project Information</CardTitle>
+          {isReadOnly && (
+            <Badge className="bg-amber-100 text-amber-800">
+              {!isLatestVersion ? "Read-only: Older Version" : "Read-only: Approved"}
+            </Badge>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="customer">Customer *</Label>
-              <Select value={customerId} onValueChange={setCustomerId}>
+              <Select value={customerId} onValueChange={setCustomerId} disabled={isReadOnly}>
                 <SelectTrigger id="customer" data-testid="customer-select">
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
@@ -1056,26 +1061,54 @@ const ProjectEstimator = () => {
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 data-testid="project-name-input"
+                disabled={isReadOnly}
               />
             </div>
             <div>
-              <Label htmlFor="project-location">Project Location</Label>
-              <Select value={projectLocation} onValueChange={setProjectLocation}>
-                <SelectTrigger id="project-location" data-testid="project-location-select">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Project Location(s)</Label>
+              <div className="flex flex-wrap gap-1 min-h-[40px] p-2 border rounded-md bg-white">
+                {projectLocations.map(code => {
+                  const country = COUNTRIES.find(c => c.code === code);
+                  return (
+                    <Badge key={code} variant="secondary" className="flex items-center gap-1">
+                      {country?.name || code}
+                      {!isReadOnly && (
+                        <button
+                          onClick={() => setProjectLocations(projectLocations.filter(c => c !== code))}
+                          className="ml-1 hover:text-red-500"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  );
+                })}
+                {!isReadOnly && (
+                  <Select 
+                    value="" 
+                    onValueChange={(value) => {
+                      if (value && !projectLocations.includes(value)) {
+                        setProjectLocations([...projectLocations, value]);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[140px] h-7 text-xs border-dashed" data-testid="project-location-select">
+                      <SelectValue placeholder="+ Add location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.filter(c => !projectLocations.includes(c.code)).map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="technology">Technology</Label>
-              <Select value={technologyId} onValueChange={setTechnologyId}>
+              <Select value={technologyId} onValueChange={setTechnologyId} disabled={isReadOnly}>
                 <SelectTrigger id="technology" data-testid="technology-select">
                   <SelectValue placeholder="Select technology" />
                 </SelectTrigger>
@@ -1090,7 +1123,7 @@ const ProjectEstimator = () => {
             </div>
             <div>
               <Label htmlFor="project-type">Project Type</Label>
-              <Select value={projectTypeId} onValueChange={setProjectTypeId}>
+              <Select value={projectTypeId} onValueChange={setProjectTypeId} disabled={isReadOnly}>
                 <SelectTrigger id="project-type" data-testid="project-type-select">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -1113,6 +1146,7 @@ const ProjectEstimator = () => {
               <Slider
                 value={[profitMarginPercentage]}
                 onValueChange={([value]) => setProfitMarginPercentage(value)}
+                disabled={isReadOnly}
                 min={0}
                 max={50}
                 step={1}
