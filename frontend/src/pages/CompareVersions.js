@@ -70,12 +70,12 @@ const CompareVersions = () => {
   // Calculate summary for a project version
   const calculateSummary = (project) => {
     if (!project || !project.waves) {
-      return { totalMM: 0, onsiteMM: 0, offshoreMM: 0, totalLogistics: 0, sellingPrice: 0, resourceCount: 0 };
+      return { totalMM: 0, onsiteMM: 0, offshoreMM: 0, travelingMM: 0, totalLogistics: 0, sellingPrice: 0, resourceCount: 0, travelingResourceCount: 0 };
     }
 
     const profitMargin = project.profit_margin_percentage || 35;
-    let totalMM = 0, onsiteMM = 0, offshoreMM = 0, totalLogistics = 0;
-    let totalBaseCost = 0, resourceCount = 0;
+    let totalMM = 0, onsiteMM = 0, offshoreMM = 0, travelingMM = 0, totalLogistics = 0;
+    let totalBaseCost = 0, resourceCount = 0, travelingResourceCount = 0;
 
     project.waves.forEach(wave => {
       const config = wave.logistics_config || {
@@ -86,7 +86,7 @@ const CompareVersions = () => {
         num_trips: 6, contingency_percentage: 5,
       };
 
-      let waveOnsiteMM = 0, waveOnsiteResources = 0;
+      let waveTravelingMM = 0, waveTravelingResources = 0;
 
       (wave.grid_allocations || []).forEach(alloc => {
         const mm = Object.values(alloc.phase_allocations || {}).reduce((s, v) => s + v, 0);
@@ -95,21 +95,27 @@ const CompareVersions = () => {
 
         if (alloc.is_onsite) {
           onsiteMM += mm;
-          waveOnsiteMM += mm;
-          waveOnsiteResources++;
         } else {
           offshoreMM += mm;
+        }
+
+        // Count traveling resources for logistics
+        if (alloc.travel_required) {
+          travelingMM += mm;
+          waveTravelingMM += mm;
+          waveTravelingResources++;
+          travelingResourceCount++;
         }
 
         totalBaseCost += alloc.avg_monthly_salary * mm;
       });
 
-      // Wave logistics
-      const perDiem = waveOnsiteMM * config.per_diem_daily * config.per_diem_days;
-      const accommodation = waveOnsiteMM * config.accommodation_daily * config.accommodation_days;
-      const conveyance = waveOnsiteMM * config.local_conveyance_daily * config.local_conveyance_days;
-      const flights = waveOnsiteResources * config.flight_cost_per_trip * config.num_trips;
-      const visa = waveOnsiteResources * config.visa_medical_per_trip * config.num_trips;
+      // Wave logistics - only for traveling resources
+      const perDiem = waveTravelingMM * config.per_diem_daily * config.per_diem_days;
+      const accommodation = waveTravelingMM * config.accommodation_daily * config.accommodation_days;
+      const conveyance = waveTravelingMM * config.local_conveyance_daily * config.local_conveyance_days;
+      const flights = waveTravelingResources * config.flight_cost_per_trip * config.num_trips;
+      const visa = waveTravelingResources * config.visa_medical_per_trip * config.num_trips;
       const subtotal = perDiem + accommodation + conveyance + flights + visa;
       const contingency = subtotal * (config.contingency_percentage / 100);
       totalLogistics += subtotal + contingency;
@@ -120,7 +126,7 @@ const CompareVersions = () => {
     const costToCompany = baseCostWithLogistics * 1.3;
     const sellingPrice = costToCompany / (1 - profitMargin / 100);
 
-    return { totalMM, onsiteMM, offshoreMM, totalLogistics, sellingPrice, resourceCount };
+    return { totalMM, onsiteMM, offshoreMM, travelingMM, totalLogistics, sellingPrice, resourceCount, travelingResourceCount };
   };
 
   const leftSummary = calculateSummary(leftVersion);
