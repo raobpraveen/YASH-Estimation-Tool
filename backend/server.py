@@ -166,8 +166,10 @@ class Project(BaseModel):
     name: str
     customer_id: str = ""
     customer_name: str = ""
-    project_location: str = ""  # ISO country code
+    project_location: str = ""  # ISO country code (legacy single location)
     project_location_name: str = ""
+    project_locations: List[str] = []  # Multiple ISO country codes
+    project_location_names: List[str] = []  # Multiple location names
     technology_id: str = ""
     technology_name: str = ""
     project_type_id: str = ""
@@ -194,6 +196,8 @@ class ProjectCreate(BaseModel):
     customer_name: str = ""
     project_location: str = ""
     project_location_name: str = ""
+    project_locations: List[str] = []
+    project_location_names: List[str] = []
     technology_id: str = ""
     technology_name: str = ""
     project_type_id: str = ""
@@ -210,6 +214,8 @@ class ProjectUpdate(BaseModel):
     customer_name: Optional[str] = None
     project_location: Optional[str] = None
     project_location_name: Optional[str] = None
+    project_locations: Optional[List[str]] = None
+    project_location_names: Optional[List[str]] = None
     technology_id: Optional[str] = None
     technology_name: Optional[str] = None
     project_type_id: Optional[str] = None
