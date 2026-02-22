@@ -165,6 +165,8 @@ const CompareVersions = () => {
   const priceDiff = getDiff(leftSummary.sellingPrice, rightSummary.sellingPrice);
   const resourceDiff = getDiff(leftSummary.resourceCount, rightSummary.resourceCount);
   const travelingResourceDiff = getDiff(leftSummary.travelingResourceCount, rightSummary.travelingResourceCount);
+  const onsiteSellingPriceDiff = getDiff(leftSummary.onsiteSellingPrice, rightSummary.onsiteSellingPrice);
+  const offshoreSellingPriceDiff = getDiff(leftSummary.offshoreSellingPrice, rightSummary.offshoreSellingPrice);
 
   if (loading) {
     return (
