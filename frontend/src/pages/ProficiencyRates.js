@@ -138,6 +138,21 @@ const ProficiencyRates = () => {
                 </Select>
               </div>
               <div>
+                <Label htmlFor="base-location-select">Base Location</Label>
+                <Select value={newRate.base_location_id} onValueChange={(value) => setNewRate({ ...newRate, base_location_id: value })}>
+                  <SelectTrigger id="base-location-select" data-testid="base-location-select">
+                    <SelectValue placeholder="Select base location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((location) => (
+                      <SelectItem key={location.id} value={location.id}>
+                        {location.name} (Overhead: {location.overhead_percentage}%)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label htmlFor="proficiency-select">Proficiency Level</Label>
                 <Select
                   value={newRate.proficiency_level}
