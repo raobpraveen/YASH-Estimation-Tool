@@ -328,6 +328,29 @@ const Projects = () => {
             >
               <Copy className="w-4 h-4" />
             </Button>
+            {project.is_template ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRemoveTemplate(project.id)}
+                className="text-emerald-600 hover:text-emerald-600 hover:bg-emerald-600/10"
+                title="Remove Template"
+                data-testid={`remove-template-${project.id}`}
+              >
+                <BookmarkCheck className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => openTemplateDialog(project)}
+                className="text-cyan-600 hover:text-cyan-600 hover:bg-cyan-600/10"
+                title="Save as Template"
+                data-testid={`save-template-${project.id}`}
+              >
+                <Bookmark className="w-4 h-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -346,10 +369,91 @@ const Projects = () => {
 
   return (
     <div data-testid="projects">
-      <div className="mb-8">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Saved Projects</h1>
-        <p className="text-base text-gray-600 mt-2">View and manage your project estimates</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Saved Projects</h1>
+          <p className="text-base text-gray-600 mt-2">View and manage your project estimates</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setCreateFromTemplateDialogOpen(true)}
+            disabled={templates.length === 0}
+            data-testid="create-from-template-button"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            From Template
+          </Button>
+          <Button
+            onClick={() => navigate("/estimator")}
+            className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
+            data-testid="new-project-button"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Project
+          </Button>
+        </div>
       </div>
+
+      {/* Save as Template Dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save as Template</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Template Name</Label>
+              <Input
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder="Enter template name"
+                data-testid="template-name-input"
+              />
+            </div>
+            <p className="text-sm text-gray-500">
+              This will save the project structure (waves, resources, logistics config) as a reusable template.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveAsTemplate} data-testid="confirm-save-template">Save Template</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create from Template Dialog */}
+      <Dialog open={createFromTemplateDialogOpen} onOpenChange={setCreateFromTemplateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create from Template</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Select Template</Label>
+              <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                <SelectTrigger data-testid="template-select">
+                  <SelectValue placeholder="Choose a template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map(template => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.template_name} ({template.waves?.length || 0} waves)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-gray-500">
+              A new project will be created with the template's waves, resources, and configuration.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCreateFromTemplateDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleCreateFromTemplate} data-testid="confirm-create-from-template">Create Project</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card className="border border-[#E2E8F0] shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
