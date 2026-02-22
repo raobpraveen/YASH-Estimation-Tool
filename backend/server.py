@@ -373,7 +373,7 @@ async def generate_project_number():
         try:
             last_num = int(last_project["project_number"].split("-")[1])
             return f"PRJ-{str(last_num + 1).zfill(4)}"
-        except:
+        except (ValueError, IndexError):
             pass
     return "PRJ-0001"
 
