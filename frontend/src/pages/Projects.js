@@ -5,9 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Trash2, Edit2, Copy, FileText, GitCompare, 
-  ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, FileEdit
+  ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, FileEdit,
+  Bookmark, BookmarkCheck, Plus
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,13 +28,20 @@ const STATUS_CONFIG = {
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
+  const [templates, setTemplates] = useState([]);
   const [allVersions, setAllVersions] = useState({});
   const [expandedProjects, setExpandedProjects] = useState({});
   const [loadingVersions, setLoadingVersions] = useState({});
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [createFromTemplateDialogOpen, setCreateFromTemplateDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [templateName, setTemplateName] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchProjects();
+    fetchTemplates();
   }, []);
 
   const fetchProjects = async () => {
@@ -38,6 +50,15 @@ const Projects = () => {
       setProjects(response.data);
     } catch (error) {
       toast.error("Failed to fetch projects");
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(`${API}/templates`);
+      setTemplates(response.data);
+    } catch (error) {
+      console.error("Failed to fetch templates");
     }
   };
 
@@ -55,6 +76,57 @@ const Projects = () => {
     } finally {
       setLoadingVersions(prev => ({ ...prev, [projectNumber]: false }));
     }
+  };
+
+  const handleSaveAsTemplate = async () => {
+    if (!selectedProject || !templateName.trim()) {
+      toast.error("Please enter a template name");
+      return;
+    }
+    try {
+      await axios.post(`${API}/projects/${selectedProject.id}/save-as-template?template_name=${encodeURIComponent(templateName)}`);
+      toast.success("Project saved as template");
+      setTemplateDialogOpen(false);
+      setTemplateName("");
+      setSelectedProject(null);
+      fetchProjects();
+      fetchTemplates();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to save as template");
+    }
+  };
+
+  const handleRemoveTemplate = async (projectId) => {
+    try {
+      await axios.post(`${API}/projects/${projectId}/remove-template`);
+      toast.success("Template removed");
+      fetchProjects();
+      fetchTemplates();
+    } catch (error) {
+      toast.error("Failed to remove template");
+    }
+  };
+
+  const handleCreateFromTemplate = async () => {
+    if (!selectedTemplateId) {
+      toast.error("Please select a template");
+      return;
+    }
+    try {
+      const response = await axios.post(`${API}/projects/create-from-template/${selectedTemplateId}`);
+      toast.success("Project created from template");
+      setCreateFromTemplateDialogOpen(false);
+      setSelectedTemplateId("");
+      navigate(`/estimator?edit=${response.data.id}`);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to create from template");
+    }
+  };
+
+  const openTemplateDialog = (project) => {
+    setSelectedProject(project);
+    setTemplateName(project.name);
+    setTemplateDialogOpen(true);
   };
 
   const toggleExpanded = async (project) => {
