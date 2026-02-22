@@ -45,12 +45,13 @@ const ProjectEstimator = () => {
   const [projectVersion, setProjectVersion] = useState(1);
   const [projectName, setProjectName] = useState("");
   const [customerId, setCustomerId] = useState("");
-  const [projectLocation, setProjectLocation] = useState("");
+  const [projectLocations, setProjectLocations] = useState([]); // Multiple locations
   const [technologyId, setTechnologyId] = useState("");
   const [projectTypeId, setProjectTypeId] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [profitMarginPercentage, setProfitMarginPercentage] = useState(35);
   const [versionNotes, setVersionNotes] = useState("");
+  const [isLatestVersion, setIsLatestVersion] = useState(true);
   
   // Approval workflow
   const [projectStatus, setProjectStatus] = useState("draft");
@@ -80,6 +81,9 @@ const ProjectEstimator = () => {
     travel_required: false,
     custom_salary: "",
   });
+  
+  // Check if project is read-only (not latest version or approved)
+  const isReadOnly = !isLatestVersion || projectStatus === "approved";
   
   // Wave-level logistics (applied to all onsite resources based on formula)
   const [waveLogistics, setWaveLogistics] = useState({
