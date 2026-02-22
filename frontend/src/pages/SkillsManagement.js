@@ -145,16 +145,16 @@ const SkillsManagement = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Skill Name</TableHead>
                   <TableHead>Technology</TableHead>
+                  <TableHead>Skill Name</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {skills.map((skill) => (
                   <TableRow key={skill.id} data-testid={`skill-row-${skill.id}`}>
-                    <TableCell className="font-medium">{skill.name}</TableCell>
                     <TableCell>{skill.technology_name}</TableCell>
+                    <TableCell className="font-medium">{skill.name}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
