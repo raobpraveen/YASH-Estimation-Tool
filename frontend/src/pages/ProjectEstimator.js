@@ -828,7 +828,19 @@ const ProjectEstimator = () => {
   const activeWave = waves.find(w => w.id === activeWaveId);
   const overall = calculateOverallSummary();
 
+  const getStatusBadge = () => {
+    const config = STATUS_CONFIG[projectStatus] || STATUS_CONFIG.draft;
+    const Icon = config.icon;
+    return (
+      <Badge className={`${config.color} flex items-center gap-1`}>
+        <Icon className="w-3 h-3" />
+        {config.label}
+      </Badge>
+    );
+  };
+
   return (
+    <TooltipProvider>
     <div data-testid="project-estimator" className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -839,6 +851,7 @@ const ProjectEstimator = () => {
                 {projectNumber} v{projectVersion}
               </Badge>
             )}
+            {projectId && getStatusBadge()}
           </div>
           <p className="text-base text-gray-600 mt-2">Wave-based project estimation with version management</p>
         </div>
