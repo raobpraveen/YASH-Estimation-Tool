@@ -104,6 +104,7 @@ const ProjectEstimator = () => {
 
   useEffect(() => {
     fetchRates();
+    fetchSkills();
     fetchLocations();
     fetchTechnologies();
     fetchProjectTypes();
@@ -115,6 +116,15 @@ const ProjectEstimator = () => {
       loadProject(editProjectId);
     }
   }, [editProjectId]);
+
+  const fetchSkills = async () => {
+    try {
+      const response = await axios.get(`${API}/skills`);
+      setSkills(response.data);
+    } catch (error) {
+      console.error("Failed to fetch skills");
+    }
+  };
 
   const loadProject = async (id) => {
     try {
