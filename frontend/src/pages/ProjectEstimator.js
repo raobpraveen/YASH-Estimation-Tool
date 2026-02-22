@@ -649,6 +649,8 @@ const ProjectEstimator = () => {
     let totalLogisticsCost = 0;
     let totalCostToCompany = 0;
     let totalSellingPrice = 0;
+    let onsiteOverheadCost = 0;
+    let offshoreOverheadCost = 0;
 
     waves.forEach(wave => {
       const summary = calculateWaveSummary(wave);
@@ -660,7 +662,23 @@ const ProjectEstimator = () => {
       totalLogisticsCost += summary.totalLogisticsCost;
       totalCostToCompany += summary.totalCostToCompany;
       totalSellingPrice += summary.sellingPrice;
+      
+      // Calculate overhead for onsite and offshore separately
+      wave.grid_allocations.forEach(allocation => {
+        const { baseSalaryCost } = calculateResourceBaseCost(allocation);
+        const overheadCost = baseSalaryCost * (allocation.overhead_percentage / 100);
+        if (allocation.is_onsite) {
+          onsiteOverheadCost += overheadCost;
+        } else {
+          offshoreOverheadCost += overheadCost;
+        }
+      });
     });
+
+    // Calculate onsite and offshore selling prices
+    // Onsite includes logistics, offshore doesn't
+    const onsiteSellingPrice = (onsiteSalaryCost + onsiteOverheadCost + totalLogisticsCost) / (1 - profitMarginPercentage / 100);
+    const offshoreSellingPrice = (offshoreSalaryCost + offshoreOverheadCost) / (1 - profitMarginPercentage / 100);
 
     return {
       totalMM,
@@ -671,6 +689,8 @@ const ProjectEstimator = () => {
       totalLogisticsCost,
       totalCostToCompany,
       sellingPrice: totalSellingPrice,
+      onsiteSellingPrice,
+      offshoreSellingPrice,
     };
   };
 
