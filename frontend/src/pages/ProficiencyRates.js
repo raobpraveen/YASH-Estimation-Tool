@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
 import { PROFICIENCY_LEVELS } from "@/utils/constants";
 
@@ -19,6 +20,8 @@ const ProficiencyRates = () => {
   const [skills, setSkills] = useState([]);
   const [locations, setLocations] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const [newRate, setNewRate] = useState({
     skill_id: "",
     base_location_id: "",
