@@ -676,11 +676,15 @@ const ProjectEstimator = () => {
 
   const getProjectPayload = () => {
     const selectedCustomer = customers.find(c => c.id === customerId);
-    const selectedTech = technologies.find(t => t.id === technologyId);
-    const selectedType = projectTypes.find(t => t.id === projectTypeId);
     const selectedLocationNames = projectLocations.map(code => 
       COUNTRIES.find(c => c.code === code)?.name || code
     );
+    const selectedTechNames = technologyIds.map(id => 
+      technologies.find(t => t.id === id)?.name || ''
+    ).filter(Boolean);
+    const selectedTypeNames = projectTypeIds.map(id => 
+      projectTypes.find(t => t.id === id)?.name || ''
+    ).filter(Boolean);
 
     return {
       name: projectName,
@@ -691,10 +695,16 @@ const ProjectEstimator = () => {
       // Keep single location for backward compatibility
       project_location: projectLocations[0] || "",
       project_location_name: selectedLocationNames[0] || "",
-      technology_id: technologyId,
-      technology_name: selectedTech?.name || "",
-      project_type_id: projectTypeId,
-      project_type_name: selectedType?.name || "",
+      // Multiple technologies
+      technology_ids: technologyIds,
+      technology_names: selectedTechNames,
+      technology_id: technologyIds[0] || "",
+      technology_name: selectedTechNames[0] || "",
+      // Multiple project types
+      project_type_ids: projectTypeIds,
+      project_type_names: selectedTypeNames,
+      project_type_id: projectTypeIds[0] || "",
+      project_type_name: selectedTypeNames[0] || "",
       description: projectDescription,
       profit_margin_percentage: profitMarginPercentage,
       waves: waves.map(w => ({
