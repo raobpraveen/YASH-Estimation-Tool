@@ -776,7 +776,7 @@ const ProjectEstimator = () => {
     summaryData.push(["Version", projectVersion]);
     summaryData.push(["Customer Name", selectedCustomer?.name || ""]);
     summaryData.push(["Project Name", projectName]);
-    summaryData.push(["Project Location", COUNTRIES.find(c => c.code === projectLocation)?.name || projectLocation]);
+    summaryData.push(["Project Location(s)", projectLocations.map(code => COUNTRIES.find(c => c.code === code)?.name || code).join(", ") || "—"]);
     summaryData.push(["Technology", technologies.find(t => t.id === technologyId)?.name || ""]);
     summaryData.push(["Project Type", projectTypes.find(t => t.id === projectTypeId)?.name || ""]);
     summaryData.push(["Description", projectDescription]);
