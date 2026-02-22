@@ -569,6 +569,237 @@ async def delete_project(project_id: str):
     return {"message": "Project deleted successfully"}
 
 
+# Submit project for review
+@api_router.post("/projects/{project_id}/submit-for-review")
+async def submit_for_review(project_id: str, approver_email: str):
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    if not approver_email:
+        raise HTTPException(status_code=400, detail="Approver email is required")
+    
+    update_data = {
+        "status": "in_review",
+        "approver_email": approver_email,
+        "submitted_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    
+    # Create notification for approver
+    notification = Notification(
+        user_email=approver_email,
+        type="review_request",
+        title="New Project Review Request",
+        message=f"Project {project.get('project_number', '')} '{project.get('name', '')}' has been submitted for your review.",
+        project_id=project_id,
+        project_number=project.get("project_number", "")
+    )
+    notif_doc = notification.model_dump()
+    notif_doc['created_at'] = notif_doc['created_at'].isoformat()
+    await db.notifications.insert_one(notif_doc)
+    
+    return {"message": "Project submitted for review", "status": "in_review"}
+
+
+# Approve project
+@api_router.post("/projects/{project_id}/approve")
+async def approve_project(project_id: str, comments: str = ""):
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    update_data = {
+        "status": "approved",
+        "approval_comments": comments,
+        "approved_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    
+    # Create notification for submitter (using customer name as placeholder)
+    notification = Notification(
+        user_email=project.get("approver_email", ""),
+        type="approved",
+        title="Project Approved",
+        message=f"Project {project.get('project_number', '')} '{project.get('name', '')}' has been approved.",
+        project_id=project_id,
+        project_number=project.get("project_number", "")
+    )
+    notif_doc = notification.model_dump()
+    notif_doc['created_at'] = notif_doc['created_at'].isoformat()
+    await db.notifications.insert_one(notif_doc)
+    
+    return {"message": "Project approved", "status": "approved"}
+
+
+# Reject project
+@api_router.post("/projects/{project_id}/reject")
+async def reject_project(project_id: str, comments: str = ""):
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    update_data = {
+        "status": "rejected",
+        "approval_comments": comments,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    
+    # Create notification
+    notification = Notification(
+        user_email=project.get("approver_email", ""),
+        type="rejected",
+        title="Project Rejected",
+        message=f"Project {project.get('project_number', '')} '{project.get('name', '')}' has been rejected. Comments: {comments}",
+        project_id=project_id,
+        project_number=project.get("project_number", "")
+    )
+    notif_doc = notification.model_dump()
+    notif_doc['created_at'] = notif_doc['created_at'].isoformat()
+    await db.notifications.insert_one(notif_doc)
+    
+    return {"message": "Project rejected", "status": "rejected"}
+
+
+# Notifications endpoints
+@api_router.get("/notifications")
+async def get_notifications(user_email: str = None, unread_only: bool = False):
+    query = {}
+    if user_email:
+        query["user_email"] = user_email
+    if unread_only:
+        query["is_read"] = False
+    
+    notifications = await db.notifications.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    for notif in notifications:
+        if isinstance(notif.get('created_at'), str):
+            notif['created_at'] = datetime.fromisoformat(notif['created_at'])
+    return notifications
+
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str):
+    result = await db.notifications.update_one(
+        {"id": notification_id},
+        {"$set": {"is_read": True}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    return {"message": "Notification marked as read"}
+
+
+@api_router.put("/notifications/mark-all-read")
+async def mark_all_notifications_read(user_email: str = None):
+    query = {}
+    if user_email:
+        query["user_email"] = user_email
+    await db.notifications.update_many(query, {"$set": {"is_read": True}})
+    return {"message": "All notifications marked as read"}
+
+
+# Dashboard analytics endpoint
+@api_router.get("/dashboard/analytics")
+async def get_dashboard_analytics():
+    # Get all projects
+    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+    
+    # Calculate metrics
+    total_projects = len(projects)
+    total_revenue = 0
+    projects_by_status = {"draft": 0, "in_review": 0, "approved": 0, "rejected": 0}
+    projects_by_month = {}
+    customer_revenue = {}
+    
+    for project in projects:
+        status = project.get("status", "draft")
+        projects_by_status[status] = projects_by_status.get(status, 0) + 1
+        
+        # Calculate project value
+        project_value = 0
+        waves = project.get("waves", [])
+        profit_margin = project.get("profit_margin_percentage", 35)
+        
+        for wave in waves:
+            config = wave.get("logistics_config", {})
+            allocations = wave.get("grid_allocations", [])
+            
+            wave_base_cost = 0
+            wave_logistics = 0
+            traveling_mm = 0
+            traveling_count = 0
+            
+            for alloc in allocations:
+                mm = sum(alloc.get("phase_allocations", {}).values())
+                salary_cost = alloc.get("avg_monthly_salary", 0) * mm
+                overhead = salary_cost * (alloc.get("overhead_percentage", 0) / 100)
+                wave_base_cost += salary_cost + overhead
+                
+                if alloc.get("travel_required", False):
+                    traveling_mm += mm
+                    traveling_count += 1
+            
+            # Calculate wave logistics for traveling resources
+            if traveling_count > 0:
+                per_diem = traveling_mm * config.get("per_diem_daily", 50) * config.get("per_diem_days", 30)
+                accommodation = traveling_mm * config.get("accommodation_daily", 80) * config.get("accommodation_days", 30)
+                conveyance = traveling_mm * config.get("local_conveyance_daily", 15) * config.get("local_conveyance_days", 21)
+                flights = traveling_count * config.get("flight_cost_per_trip", 450) * config.get("num_trips", 6)
+                visa = traveling_count * config.get("visa_medical_per_trip", 400) * config.get("num_trips", 6)
+                subtotal = per_diem + accommodation + conveyance + flights + visa
+                contingency = subtotal * (config.get("contingency_percentage", 5) / 100)
+                wave_logistics = subtotal + contingency
+            
+            project_value += wave_base_cost + wave_logistics
+        
+        # Apply profit margin
+        if profit_margin < 100:
+            project_value = project_value / (1 - profit_margin / 100)
+        
+        total_revenue += project_value
+        
+        # Group by customer
+        customer_name = project.get("customer_name", "Unknown")
+        customer_revenue[customer_name] = customer_revenue.get(customer_name, 0) + project_value
+        
+        # Group by month
+        created_at = project.get("created_at")
+        if created_at:
+            if isinstance(created_at, str):
+                created_at = datetime.fromisoformat(created_at)
+            month_key = created_at.strftime("%Y-%m")
+            if month_key not in projects_by_month:
+                projects_by_month[month_key] = {"count": 0, "revenue": 0}
+            projects_by_month[month_key]["count"] += 1
+            projects_by_month[month_key]["revenue"] += project_value
+    
+    # Convert to sorted list for charts
+    monthly_data = [
+        {"month": k, "count": v["count"], "revenue": v["revenue"]}
+        for k, v in sorted(projects_by_month.items())
+    ]
+    
+    # Top 5 customers by revenue
+    top_customers = sorted(
+        [{"name": k, "revenue": v} for k, v in customer_revenue.items()],
+        key=lambda x: x["revenue"],
+        reverse=True
+    )[:5]
+    
+    return {
+        "total_projects": total_projects,
+        "total_revenue": total_revenue,
+        "projects_by_status": projects_by_status,
+        "monthly_data": monthly_data,
+        "top_customers": top_customers
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
