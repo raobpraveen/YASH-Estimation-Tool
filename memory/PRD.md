@@ -241,12 +241,15 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [x] KPI cards with Onsite/Offshore Avg $/MM
 - [x] View Summary with profit margin per wave
 - [x] Compare Versions with version notes and selling prices
+- [x] Total Cost column in grid (Salary Cost + Overhead)
+- [x] Excel upload for Skills and Proficiency Rates
+- [x] JWT-based user authentication (login/register)
+- [x] Project templates (save as template, create from template)
 
 ### P1 - Medium Priority
 - [ ] Email notifications (SendGrid/Resend integration)
-- [ ] Project templates (save as template, create from template)
 - [ ] Advanced dashboard filters (date range, customer filter)
-- [x] Export to Excel Enhancement - reflect complex grid structure with Overhead, Selling Price, and all KPIs
+- [x] Export to Excel Enhancement - reflect complex grid structure with Overhead, Total Cost, Selling Price, and all KPIs
 
 ### P2 - Low Priority
 - [ ] Export to PDF
