@@ -207,8 +207,8 @@ const ProficiencyRates = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Skill Name</TableHead>
                     <TableHead>Technology</TableHead>
+                    <TableHead>Skill Name</TableHead>
                     <TableHead>Base Location</TableHead>
                     <TableHead>Proficiency Level</TableHead>
                     <TableHead className="text-right">Avg. Monthly Salary</TableHead>
@@ -218,8 +218,8 @@ const ProficiencyRates = () => {
                 <TableBody>
                   {rates.map((rate) => (
                     <TableRow key={rate.id} data-testid={`rate-row-${rate.id}`}>
-                      <TableCell className="font-medium">{rate.skill_name}</TableCell>
                       <TableCell>{rate.technology_name}</TableCell>
+                      <TableCell className="font-medium">{rate.skill_name}</TableCell>
                       <TableCell>{rate.base_location_name}</TableCell>
                       <TableCell>{rate.proficiency_level}</TableCell>
                       <TableCell className="text-right font-mono tabular-nums">
