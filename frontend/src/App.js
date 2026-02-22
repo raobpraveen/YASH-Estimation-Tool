@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
+import Customers from "@/pages/Customers";
 import Technologies from "@/pages/Technologies";
 import ProjectTypes from "@/pages/ProjectTypes";
 import BaseLocations from "@/pages/BaseLocations";
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
+            <Route path="customers" element={<Customers />} />
             <Route path="technologies" element={<Technologies />} />
             <Route path="project-types" element={<ProjectTypes />} />
             <Route path="base-locations" element={<BaseLocations />} />

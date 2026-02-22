@@ -1,6 +1,7 @@
 import { Outlet, NavLink } from "react-router-dom";
 import { 
-  LayoutDashboard, 
+  LayoutDashboard,
+  Users,
   Cpu, 
   Briefcase as BriefcaseIcon,
   MapPin, 
@@ -13,6 +14,7 @@ import {
 const Layout = () => {
   const navItems = [
     { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/customers", icon: Users, label: "Customers" },
     { path: "/technologies", icon: Cpu, label: "Technologies" },
     { path: "/project-types", icon: BriefcaseIcon, label: "Project Types" },
     { path: "/base-locations", icon: MapPin, label: "Base Locations" },
