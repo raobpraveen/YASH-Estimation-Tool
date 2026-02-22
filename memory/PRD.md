@@ -9,43 +9,59 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - Master data management
 - Review and approval workflow
 - Dashboard analytics
+- Version management with comparison
 - Summary and export capabilities
 
 ## Core Requirements
 
 ### Skills Management
-- Maintain skills with technology and proficiency levels (Junior, Mid, Senior, Lead, Architect, Project Management, Delivery)
+- Maintain skills with technology and proficiency levels
+- **Unique records only**: Same skill name + technology combination not allowed
+- **Technology as first column** in the table
+
+### Proficiency Rates
+- **Unique key combination**: Technology + Skill + Base Location + Proficiency Level
+- **Technology as first column** in the table
 
 ### Cost Calculation
 - Calculate costs based on average monthly salary for a resource's skill and proficiency
 - Add percentage-based "Overheads" cost configurable per base location
 - Add percentage-based "Profit Margin" (default 35%) to determine final selling price
 - **Selling Price Formula**: `(Base Cost + Overheads) / (1 - (Profit Margin / 100))`
+- **Average Selling Price per MM** displayed for onsite and offshore resources
 
 ### Logistics Costs (Traveling Resources)
 - **Travel Required toggle** per skill row to indicate if resource needs travel logistics
 - Calculated at wave level for resources with `travel_required=true`
-- **Formulas (visible in tooltip on hover)**:
+- **Formulas**:
   - Per-diems, Accommodation, Conveyance: `Traveling MM × Daily Rate × Days`
   - Air Fare, Visa & Medical: `Number of Traveling Resources × Rate × Number of Trips`
 - Editable rates per wave
 
-### Review & Approval Workflow (NEW)
+### Review & Approval Workflow
 - **Status Flow**: Draft → In Review → Approved/Rejected
 - Submit for Review with approver email
 - Approver can Approve or Reject with comments
-- Approver can edit and create new version with changes
+- **Approved projects are read-only** - must clone to make changes
+- **Approver can edit and create new version** with their changes
 - In-app notifications for all approval events
 
 ### Version Management
 - Unique project numbers (PRJ-0001, PRJ-0002, etc.)
 - Version tracking (v1, v2, v3, etc.)
 - **Expandable version history** in Projects list
+- **Old versions are read-only** (display mode only)
+- **Version Notes** field to capture comments for each version
 - Clone projects with new project number
-- Create new versions with same project number
-- **Compare Versions** feature for side-by-side comparison
+- Compare Versions feature for side-by-side comparison
 
-### Dashboard Analytics (NEW)
+### Project Estimator
+- **Multiple project locations** from dropdown list
+- Summary cards with **Avg. Selling Price per MM**
+- **5 summary cards**: Total MM, Onsite MM (with avg), Offshore MM (with avg), Avg Price/MM, Selling Price
+- View Summary shows avg selling price per MM for onsite and offshore separately
+
+### Dashboard Analytics
 - Total Projects count
 - Total Revenue (sum of all project selling prices)
 - Approved/In Review counts
@@ -58,7 +74,7 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 
 ## What's Been Implemented
 
-### December 2025 - Full MVP + Complete Feature Set
+### December 2025 - Complete Feature Set
 
 #### Master Data Pages (COMPLETE)
 - [x] Dashboard with analytics (charts, metrics, notifications)
@@ -66,11 +82,11 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [x] Technologies management page
 - [x] Project Types management page
 - [x] Base Locations management page (with overhead %)
-- [x] Skills management page (linked to technologies)
-- [x] Proficiency Rates management page
+- [x] Skills management page (unique records, Technology first column)
+- [x] Proficiency Rates management page (unique key validation, Technology first column)
 
 #### Project Estimator (COMPLETE)
-- [x] Project header form (Customer, Name, Location, Technology, Type, Description)
+- [x] **Multiple project locations** with add/remove badges
 - [x] Profit Margin slider (default 35%)
 - [x] Wave management (Add/Delete waves)
 - [x] Dynamic columns based on wave duration
@@ -81,10 +97,12 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [x] Logistics configuration per wave
 - [x] **Batch Update Logistics** for wave-level settings
 - [x] Real-time cost calculations
-- [x] Logistics breakdown table (shows when traveling resources exist)
-- [x] Wave summary with Traveling resources count
-- [x] View Summary dialog
+- [x] Logistics breakdown table
+- [x] **5 Summary cards** with Avg Selling Price/MM
+- [x] **Version Notes** field for each version
+- [x] View Summary with avg price/MM for onsite/offshore
 - [x] Export to Excel
+- [x] **Responsive buttons** (visible at 100% zoom)
 
 #### Review & Approval Workflow (COMPLETE)
 - [x] Status badge display (Draft/In Review/Approved/Rejected)
@@ -92,41 +110,27 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [x] Approve/Reject buttons for reviewers
 - [x] Approval comments input
 - [x] In-app notifications system
-- [x] Notification panel in Dashboard
+- [x] **Approved projects are read-only**
 
 #### Version Management (COMPLETE)
 - [x] Unique project numbers (PRJ-0001 format)
 - [x] Version tracking (v1, v2, v3...)
 - [x] **Expandable version history** in Projects list
-- [x] Clone project (new project number)
+- [x] **Old versions are read-only** with badge
+- [x] **Version Notes** for each version
+- [x] Clone project (resets status to draft)
 - [x] New Version (same project number, increment version)
-- [x] Edit project (update without new version)
 - [x] Compare Versions page
-
-#### Dashboard (COMPLETE)
-- [x] Total Projects card
-- [x] Total Revenue card
-- [x] Approved/In Review count cards
-- [x] Projects by Status pie chart (recharts)
-- [x] Revenue Trend line chart (recharts)
-- [x] Top Customers by Revenue bar chart (recharts)
-- [x] Recent Notifications panel
-- [x] Quick Actions buttons
 
 ---
 
 ## Technical Architecture
 
 ### Backend (FastAPI)
-- `/api/customers`, `/api/technologies`, `/api/project-types`, `/api/base-locations`, `/api/skills`, `/api/proficiency-rates` - CRUD
-- `/api/projects` - CRUD with wave support
-- `/api/projects/{id}/clone` - Clone project
-- `/api/projects/{id}/versions` - Get all versions
-- `/api/projects/{id}/submit-for-review` - Submit for approval
-- `/api/projects/{id}/approve` - Approve project
-- `/api/projects/{id}/reject` - Reject project
-- `/api/notifications` - Get/manage notifications
-- `/api/dashboard/analytics` - Get dashboard data
+- Unique validation for Skills (name + technology_id)
+- Unique validation for Proficiency Rates (skill_id + base_location_id + proficiency_level)
+- Project supports project_locations array
+- Clone resets status to draft and clears approval fields
 
 ### Frontend (React)
 - Shadcn UI components
@@ -134,6 +138,7 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - recharts library for charts
 - XLSX library for Excel export
 - React Router for navigation
+- TooltipProvider for formula tooltips
 
 ### Database (MongoDB)
 - Collections: customers, technologies, project_types, base_locations, skills, proficiency_rates, projects, notifications
@@ -147,43 +152,37 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 {
   id: string,
   project_number: string,  // PRJ-0001
-  version: number,         // 1, 2, 3...
+  version: int,
+  version_notes: string,   // Notes for this version
   is_latest_version: boolean,
-  name: string,
+  project_locations: [string],  // Multiple ISO codes
   status: string,          // draft, in_review, approved, rejected
   approver_email: string,
-  approval_comments: string,
   waves: [WaveObject],
-  ...
 }
 ```
 
-### Wave Grid Allocation
+### Skill
+```javascript
+{
+  id: string,
+  name: string,
+  technology_id: string,
+  technology_name: string,
+}
+// Unique: name + technology_id
+```
+
+### ProficiencyRate
 ```javascript
 {
   id: string,
   skill_id: string,
-  avg_monthly_salary: number,
-  is_onsite: boolean,          // Work location indicator
-  travel_required: boolean,    // Controls logistics calculation
-  phase_allocations: {},
-  ...
+  base_location_id: string,
+  proficiency_level: string,
+  avg_monthly_salary: float,
 }
-```
-
-### Notification
-```javascript
-{
-  id: string,
-  user_email: string,
-  type: string,      // review_request, approved, rejected
-  title: string,
-  message: string,
-  project_id: string,
-  project_number: string,
-  is_read: boolean,
-  created_at: datetime
-}
+// Unique: skill_id + base_location_id + proficiency_level
 ```
 
 ---
@@ -191,13 +190,15 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 ## Prioritized Backlog
 
 ### P0 - High Priority (COMPLETE)
-- [x] Travel Required toggle per skill row
-- [x] Logistics calculations at wave level
-- [x] Compare Versions feature
-- [x] Expandable version history
-- [x] Review & Approval workflow
-- [x] Dashboard analytics
-- [x] Formula tooltip on Travel toggle
+- [x] Skills unique validation + Technology first column
+- [x] Proficiency Rates unique validation + Technology first column
+- [x] Multiple project locations
+- [x] Old versions read-only
+- [x] Approved projects read-only
+- [x] Version Notes field
+- [x] Save button visibility at 100% zoom
+- [x] Avg selling price per MM in View Summary
+- [x] Avg selling price per MM in summary cards
 
 ### P1 - Medium Priority
 - [ ] Email notifications (SendGrid/Resend integration)
@@ -210,18 +211,13 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [ ] Multi-currency support
 - [ ] Role-based access control
 
-### Future Enhancements
-- [ ] Integration with external systems
-- [ ] Multi-level approval workflow
-- [ ] Resource availability tracking
-- [ ] Mobile responsive improvements
-
 ---
 
 ## Test Coverage
-- Test files: `/app/backend/tests/test_new_features.py`
-- Test reports: `/app/test_reports/iteration_5.json`
-- All 12 new features tested and verified working
+- Test reports: `/app/test_reports/iteration_6.json`
+- All 13 features tested and verified working
+- Backend: 100% pass rate
+- Frontend: 100% pass rate
 
 ---
 
@@ -231,4 +227,5 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - Logistics only calculated for resources with travel_required=true
 - Email notifications planned for future (currently in-app only)
 - All projects default to "draft" status
-- Approver can edit and create new versions
+- Clone resets status to draft
+- Old versions and approved projects are display-only
