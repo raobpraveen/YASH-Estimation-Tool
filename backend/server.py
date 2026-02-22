@@ -391,7 +391,7 @@ async def create_proficiency_rate(input: ProficiencyRateCreate):
     if existing:
         raise HTTPException(
             status_code=400, 
-            detail=f"Rate already exists for this Skill, Location, and Proficiency Level combination"
+            detail="Rate already exists for this Skill, Location, and Proficiency Level combination"
         )
     
     rate_obj = ProficiencyRate(**input.model_dump())
