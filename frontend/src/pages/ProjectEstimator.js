@@ -123,7 +123,14 @@ const ProjectEstimator = () => {
       setProjectVersion(project.version || 1);
       setProjectName(project.name);
       setCustomerId(project.customer_id || "");
-      setProjectLocation(project.project_location || "");
+      // Handle both single location (legacy) and multiple locations
+      if (project.project_locations && project.project_locations.length > 0) {
+        setProjectLocations(project.project_locations);
+      } else if (project.project_location) {
+        setProjectLocations([project.project_location]);
+      } else {
+        setProjectLocations([]);
+      }
       setTechnologyId(project.technology_id || "");
       setProjectTypeId(project.project_type_id || "");
       setProjectDescription(project.description || "");
@@ -132,13 +139,21 @@ const ProjectEstimator = () => {
       setProjectStatus(project.status || "draft");
       setApproverEmail(project.approver_email || "");
       setApprovalComments(project.approval_comments || "");
+      setIsLatestVersion(project.is_latest_version !== false);
       
       if (project.waves && project.waves.length > 0) {
         setWaves(project.waves);
         setActiveWaveId(project.waves[0].id);
       }
       
-      toast.success(`Loaded ${project.project_number || "project"} v${project.version || 1}`);
+      const versionInfo = `${project.project_number || "project"} v${project.version || 1}`;
+      if (!project.is_latest_version) {
+        toast.info(`Loaded ${versionInfo} (Read-only: older version)`);
+      } else if (project.status === "approved") {
+        toast.info(`Loaded ${versionInfo} (Read-only: approved)`);
+      } else {
+        toast.success(`Loaded ${versionInfo}`);
+      }
     } catch (error) {
       toast.error("Failed to load project");
       console.error(error);
