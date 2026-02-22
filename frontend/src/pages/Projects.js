@@ -49,33 +49,43 @@ const Projects = () => {
   };
 
   const calculateProjectValue = (project) => {
-    if (!project.grid_allocations || project.grid_allocations.length === 0) {
-      return { baseCost: 0, withOverhead: 0, sellingPrice: 0 };
+    // Handle wave-based structure
+    if (!project.waves || project.waves.length === 0) {
+      return { baseCost: 0, withOverhead: 0, sellingPrice: 0, totalMM: 0, resourceCount: 0 };
     }
     
-    let baseCost = 0;
-    let costWithOverhead = 0;
+    let totalBaseCost = 0;
+    let totalCostToCompany = 0;
+    let totalMM = 0;
+    let resourceCount = 0;
+    const profitMargin = project.profit_margin_percentage || 35;
     
-    project.grid_allocations.forEach((allocation) => {
-      const totalManMonths = Object.values(allocation.phase_allocations || {}).reduce((s, v) => s + v, 0);
-      const baseSalaryCost = allocation.avg_monthly_salary * totalManMonths;
-      const logisticsCost = allocation.is_onsite
-        ? (allocation.per_diem_monthly + allocation.accommodation_monthly + allocation.local_conveyance_monthly) *
-            totalManMonths +
-          allocation.flight_cost_per_trip * allocation.num_trips +
-          allocation.visa_cost +
-          allocation.insurance_cost +
-          allocation.misc_cost
-        : 0;
-      const subtotal = baseSalaryCost + logisticsCost;
-      const withOverhead = subtotal * (1 + allocation.overhead_percentage / 100);
+    project.waves.forEach((wave) => {
+      if (!wave.grid_allocations) return;
+      resourceCount += wave.grid_allocations.length;
       
-      baseCost += subtotal;
-      costWithOverhead += withOverhead;
+      wave.grid_allocations.forEach((allocation) => {
+        const manMonths = Object.values(allocation.phase_allocations || {}).reduce((s, v) => s + v, 0);
+        totalMM += manMonths;
+        
+        const baseSalaryCost = (allocation.avg_monthly_salary || 0) * manMonths;
+        const logisticsCost = allocation.is_onsite
+          ? ((allocation.per_diem_monthly || 0) + (allocation.accommodation_monthly || 0) + (allocation.local_conveyance_monthly || 0)) * manMonths +
+            ((allocation.flight_cost_per_trip || 0) + (allocation.visa_insurance_cost || 0)) * (allocation.num_trips || 0)
+          : 0;
+        
+        const baseCost = baseSalaryCost + logisticsCost;
+        const overheadCost = baseCost * ((allocation.overhead_percentage || 0) / 100);
+        const costToCompany = baseCost + overheadCost;
+        
+        totalBaseCost += baseCost;
+        totalCostToCompany += costToCompany;
+      });
     });
 
-    const sellingPrice = costWithOverhead * (1 + project.profit_margin_percentage / 100);
-    return { baseCost, withOverhead: costWithOverhead, sellingPrice };
+    // Selling Price = Cost to Company / (1 - Profit Margin %)
+    const sellingPrice = profitMargin < 100 ? totalCostToCompany / (1 - (profitMargin / 100)) : totalCostToCompany;
+    return { baseCost: totalBaseCost, withOverhead: totalCostToCompany, sellingPrice, totalMM, resourceCount };
   };
 
   return (
