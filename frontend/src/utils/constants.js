@@ -42,3 +42,30 @@ export const PROFICIENCY_LEVELS = [
   "Project Management",
   "Delivery",
 ];
+
+export const INDUSTRY_VERTICALS = [
+  "Banking & Financial Services",
+  "Healthcare & Life Sciences",
+  "Retail & E-commerce",
+  "Manufacturing",
+  "Telecommunications",
+  "Energy & Utilities",
+  "Government & Public Sector",
+  "Education",
+  "Technology & Software",
+  "Transportation & Logistics",
+  "Media & Entertainment",
+  "Real Estate",
+  "Insurance",
+  "Hospitality & Travel",
+  "Other",
+];
+
+export const LOGISTICS_DEFAULTS = {
+  per_diem_daily: 50,    // USD per day
+  accommodation_daily: 80, // USD per day
+  local_conveyance_daily: 20, // USD per day
+  per_diem_days: 30,
+  accommodation_days: 30,
+  conveyance_days: 21,
+};
