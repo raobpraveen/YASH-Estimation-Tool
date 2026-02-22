@@ -117,7 +117,7 @@ const ProficiencyRates = () => {
                   <SelectContent>
                     {skills.map((skill) => (
                       <SelectItem key={skill.id} value={skill.id}>
-                        {skill.name} ({skill.technology_name}) - {skill.base_location_name}
+                        {skill.name} ({skill.technology_name})
                       </SelectItem>
                     ))}
                   </SelectContent>

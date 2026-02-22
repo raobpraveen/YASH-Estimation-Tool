@@ -15,14 +15,12 @@ const API = `${BACKEND_URL}/api`;
 
 const SkillsManagement = () => {
   const [skills, setSkills] = useState([]);
-  const [locations, setLocations] = useState([]);
   const [technologies, setTechnologies] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newSkill, setNewSkill] = useState({ name: "", technology_id: "", base_location_id: "" });
+  const [newSkill, setNewSkill] = useState({ name: "", technology_id: "" });
 
   useEffect(() => {
     fetchSkills();
-    fetchLocations();
     fetchTechnologies();
   }, []);
 
@@ -32,15 +30,6 @@ const SkillsManagement = () => {
       setSkills(response.data);
     } catch (error) {
       toast.error("Failed to fetch skills");
-    }
-  };
-
-  const fetchLocations = async () => {
-    try {
-      const response = await axios.get(`${API}/base-locations`);
-      setLocations(response.data);
-    } catch (error) {
-      toast.error("Failed to fetch base locations");
     }
   };
 
@@ -54,16 +43,15 @@ const SkillsManagement = () => {
   };
 
   const handleAddSkill = async () => {
-    if (!newSkill.name || !newSkill.technology_id || !newSkill.base_location_id) {
+    if (!newSkill.name || !newSkill.technology_id) {
       toast.error("Please fill all fields");
       return;
     }
 
-    const selectedLocation = locations.find(l => l.id === newSkill.base_location_id);
     const selectedTechnology = technologies.find(t => t.id === newSkill.technology_id);
     
-    if (!selectedLocation || !selectedTechnology) {
-      toast.error("Invalid selections");
+    if (!selectedTechnology) {
+      toast.error("Invalid technology selected");
       return;
     }
 
@@ -72,11 +60,9 @@ const SkillsManagement = () => {
         name: newSkill.name,
         technology_id: newSkill.technology_id,
         technology_name: selectedTechnology.name,
-        base_location_id: newSkill.base_location_id,
-        base_location_name: selectedLocation.name,
       });
       toast.success("Skill added successfully");
-      setNewSkill({ name: "", technology_id: "", base_location_id: "" });
+      setNewSkill({ name: "", technology_id: "" });
       setDialogOpen(false);
       fetchSkills();
     } catch (error) {
@@ -138,21 +124,6 @@ const SkillsManagement = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label htmlFor="base-location">Base Location</Label>
-                <Select value={newSkill.base_location_id} onValueChange={(value) => setNewSkill({ ...newSkill, base_location_id: value })}>
-                  <SelectTrigger id="base-location" data-testid="base-location-select">
-                    <SelectValue placeholder="Select base location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name} (Overhead: {location.overhead_percentage}%)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <Button onClick={handleAddSkill} className="w-full bg-[#0F172A] hover:bg-[#0F172A]/90" data-testid="submit-skill-button">
                 Add Skill
               </Button>
@@ -176,7 +147,6 @@ const SkillsManagement = () => {
                 <TableRow>
                   <TableHead>Skill Name</TableHead>
                   <TableHead>Technology</TableHead>
-                  <TableHead>Base Location</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -185,7 +155,6 @@ const SkillsManagement = () => {
                   <TableRow key={skill.id} data-testid={`skill-row-${skill.id}`}>
                     <TableCell className="font-medium">{skill.name}</TableCell>
                     <TableCell>{skill.technology_name}</TableCell>
-                    <TableCell>{skill.base_location_name}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
