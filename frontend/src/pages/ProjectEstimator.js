@@ -1798,16 +1798,18 @@ const ProjectEstimator = () => {
                                       value={allocation.avg_monthly_salary}
                                       onChange={(e) => handleSalaryChange(wave.id, allocation.id, e.target.value)}
                                       data-testid={`salary-${allocation.id}`}
+                                      disabled={isReadOnly}
                                     />
                                   </td>
                                   <td className="p-3 text-center">
                                     <button
-                                      onClick={() => handleToggleOnsite(wave.id, allocation.id)}
+                                      onClick={() => !isReadOnly && handleToggleOnsite(wave.id, allocation.id)}
+                                      disabled={isReadOnly}
                                       className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
                                         allocation.is_onsite 
                                           ? "bg-amber-500 text-white" 
                                           : "bg-gray-200 text-gray-600"
-                                      }`}
+                                      } ${isReadOnly ? "opacity-50 cursor-not-allowed" : ""}`}
                                       data-testid={`onsite-toggle-${allocation.id}`}
                                     >
                                       {allocation.is_onsite ? "ON" : "OFF"}
@@ -1817,12 +1819,13 @@ const ProjectEstimator = () => {
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <button
-                                          onClick={() => handleToggleTravelRequired(wave.id, allocation.id)}
+                                          onClick={() => !isReadOnly && handleToggleTravelRequired(wave.id, allocation.id)}
+                                          disabled={isReadOnly}
                                           className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
                                             allocation.travel_required 
                                               ? "bg-purple-500 text-white" 
                                               : "bg-gray-200 text-gray-600"
-                                          }`}
+                                          } ${isReadOnly ? "opacity-50 cursor-not-allowed" : ""}`}
                                           data-testid={`travel-toggle-${allocation.id}`}
                                         >
                                           {allocation.travel_required ? "YES" : "NO"}
