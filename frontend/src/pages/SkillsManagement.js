@@ -168,13 +168,34 @@ const SkillsManagement = () => {
           <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Skills Management</h1>
           <p className="text-base text-gray-600 mt-2">Manage your technology skills catalog</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white" data-testid="add-skill-button">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Skill
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleDownloadTemplate} data-testid="download-template-button">
+            <Download className="w-4 h-4 mr-2" />
+            Template
+          </Button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".xlsx,.xls"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <Button 
+            variant="outline" 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            data-testid="upload-excel-button"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            {uploading ? "Uploading..." : "Upload Excel"}
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white" data-testid="add-skill-button">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Skill
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-[#0F172A]">Add New Skill</DialogTitle>
