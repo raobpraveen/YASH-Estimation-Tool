@@ -142,9 +142,11 @@ const CompareVersions = () => {
   const mmDiff = getDiff(leftSummary.totalMM, rightSummary.totalMM);
   const onsiteDiff = getDiff(leftSummary.onsiteMM, rightSummary.onsiteMM);
   const offshoreDiff = getDiff(leftSummary.offshoreMM, rightSummary.offshoreMM);
+  const travelingDiff = getDiff(leftSummary.travelingMM, rightSummary.travelingMM);
   const logisticsDiff = getDiff(leftSummary.totalLogistics, rightSummary.totalLogistics);
   const priceDiff = getDiff(leftSummary.sellingPrice, rightSummary.sellingPrice);
   const resourceDiff = getDiff(leftSummary.resourceCount, rightSummary.resourceCount);
+  const travelingResourceDiff = getDiff(leftSummary.travelingResourceCount, rightSummary.travelingResourceCount);
 
   if (loading) {
     return (
