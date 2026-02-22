@@ -774,6 +774,12 @@ const ProjectEstimator = () => {
       return;
     }
 
+    // Version notes are mandatory for updates (not for new projects)
+    if (projectId && !versionNotes.trim()) {
+      toast.error("Please enter version notes describing the changes");
+      return;
+    }
+
     const payload = getProjectPayload();
 
     try {
@@ -796,6 +802,12 @@ const ProjectEstimator = () => {
   const handleSaveAsNewVersion = async () => {
     if (!projectId) {
       toast.error("No existing project to version");
+      return;
+    }
+
+    // Version notes are mandatory for new versions
+    if (!versionNotes.trim()) {
+      toast.error("Please enter version notes describing the changes");
       return;
     }
 
