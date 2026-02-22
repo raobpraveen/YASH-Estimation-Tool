@@ -1216,34 +1216,88 @@ const ProjectEstimator = () => {
               </div>
             </div>
             <div>
-              <Label htmlFor="technology">Technology</Label>
-              <Select value={technologyId} onValueChange={setTechnologyId} disabled={isReadOnly}>
-                <SelectTrigger id="technology" data-testid="technology-select">
-                  <SelectValue placeholder="Select technology" />
-                </SelectTrigger>
-                <SelectContent>
-                  {technologies.map((tech) => (
-                    <SelectItem key={tech.id} value={tech.id}>
-                      {tech.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Technology(s)</Label>
+              <div className="flex flex-wrap gap-1 min-h-[40px] p-2 border rounded-md bg-white">
+                {technologyIds.map(id => {
+                  const tech = technologies.find(t => t.id === id);
+                  return (
+                    <Badge key={id} variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700">
+                      {tech?.name || id}
+                      {!isReadOnly && (
+                        <button
+                          onClick={() => setTechnologyIds(technologyIds.filter(t => t !== id))}
+                          className="ml-1 hover:text-red-500"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  );
+                })}
+                {!isReadOnly && (
+                  <Select 
+                    value="" 
+                    onValueChange={(value) => {
+                      if (value && !technologyIds.includes(value)) {
+                        setTechnologyIds([...technologyIds, value]);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[120px] h-7 text-xs border-dashed" data-testid="technology-select">
+                      <SelectValue placeholder="+ Add tech" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {technologies.filter(t => !technologyIds.includes(t.id)).map((tech) => (
+                        <SelectItem key={tech.id} value={tech.id}>
+                          {tech.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
             <div>
-              <Label htmlFor="project-type">Project Type</Label>
-              <Select value={projectTypeId} onValueChange={setProjectTypeId} disabled={isReadOnly}>
-                <SelectTrigger id="project-type" data-testid="project-type-select">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projectTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id}>
-                      {type.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Project Type(s)</Label>
+              <div className="flex flex-wrap gap-1 min-h-[40px] p-2 border rounded-md bg-white">
+                {projectTypeIds.map(id => {
+                  const type = projectTypes.find(t => t.id === id);
+                  return (
+                    <Badge key={id} variant="secondary" className="flex items-center gap-1 bg-teal-100 text-teal-700">
+                      {type?.name || id}
+                      {!isReadOnly && (
+                        <button
+                          onClick={() => setProjectTypeIds(projectTypeIds.filter(t => t !== id))}
+                          className="ml-1 hover:text-red-500"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  );
+                })}
+                {!isReadOnly && (
+                  <Select 
+                    value="" 
+                    onValueChange={(value) => {
+                      if (value && !projectTypeIds.includes(value)) {
+                        setProjectTypeIds([...projectTypeIds, value]);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[120px] h-7 text-xs border-dashed" data-testid="project-type-select">
+                      <SelectValue placeholder="+ Add type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projectTypes.filter(t => !projectTypeIds.includes(t.id)).map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
             <div>
               <div className="flex justify-between mb-2">
