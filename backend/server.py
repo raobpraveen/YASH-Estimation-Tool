@@ -748,6 +748,103 @@ async def delete_project(project_id: str):
     return {"message": "Project deleted successfully"}
 
 
+# Template endpoints
+@api_router.get("/templates")
+async def get_templates():
+    """Get all project templates"""
+    templates = await db.projects.find(
+        {"is_template": True},
+        {"_id": 0}
+    ).sort("template_name", 1).to_list(None)
+    return templates
+
+@api_router.post("/projects/{project_id}/save-as-template")
+async def save_as_template(project_id: str, template_name: str):
+    """Mark a project as a template"""
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    if not template_name:
+        raise HTTPException(status_code=400, detail="Template name is required")
+    
+    # Check if template name already exists
+    existing = await db.projects.find_one({"is_template": True, "template_name": template_name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Template with this name already exists")
+    
+    await db.projects.update_one(
+        {"id": project_id},
+        {"$set": {"is_template": True, "template_name": template_name}}
+    )
+    
+    return {"message": f"Project saved as template: {template_name}"}
+
+@api_router.post("/projects/{project_id}/remove-template")
+async def remove_template(project_id: str):
+    """Remove template flag from a project"""
+    result = await db.projects.update_one(
+        {"id": project_id},
+        {"$set": {"is_template": False, "template_name": ""}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Template removed"}
+
+@api_router.post("/projects/create-from-template/{template_id}")
+async def create_from_template(template_id: str):
+    """Create a new project from a template"""
+    template = await db.projects.find_one({"id": template_id, "is_template": True}, {"_id": 0})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    # Get next project number
+    last_project = await db.projects.find_one(
+        {"project_number": {"$regex": "^PRJ-"}},
+        sort=[("project_number", -1)]
+    )
+    if last_project and last_project.get("project_number"):
+        last_num = int(last_project["project_number"].split("-")[1])
+        new_project_number = f"PRJ-{str(last_num + 1).zfill(4)}"
+    else:
+        new_project_number = "PRJ-0001"
+    
+    # Create new project from template
+    new_project_data = {**template}
+    new_project_data["id"] = str(uuid.uuid4())
+    new_project_data["project_number"] = new_project_number
+    new_project_data["version"] = 1
+    new_project_data["version_notes"] = f"Created from template: {template.get('template_name', 'Unknown')}"
+    new_project_data["name"] = f"{template.get('name', 'Project')} (from template)"
+    new_project_data["is_template"] = False
+    new_project_data["template_name"] = ""
+    new_project_data["is_latest_version"] = True
+    new_project_data["parent_project_id"] = ""
+    new_project_data["status"] = "draft"
+    new_project_data["approver_email"] = ""
+    new_project_data["approval_comments"] = ""
+    new_project_data["submitted_at"] = None
+    new_project_data["approved_at"] = None
+    new_project_data["customer_id"] = ""
+    new_project_data["customer_name"] = ""
+    new_project_data["created_at"] = datetime.now(timezone.utc)
+    new_project_data["updated_at"] = datetime.now(timezone.utc)
+    
+    # Generate new IDs for waves and allocations
+    for wave in new_project_data.get("waves", []):
+        wave["id"] = str(uuid.uuid4())
+        for alloc in wave.get("grid_allocations", []):
+            alloc["id"] = str(uuid.uuid4())
+    
+    project_obj = Project(**new_project_data)
+    doc = project_obj.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat() if isinstance(doc["created_at"], datetime) else doc["created_at"]
+    doc["updated_at"] = doc["updated_at"].isoformat() if isinstance(doc["updated_at"], datetime) else doc["updated_at"]
+    
+    await db.projects.insert_one(doc)
+    return project_obj
+
+
 # Submit project for review
 @api_router.post("/projects/{project_id}/submit-for-review")
 async def submit_for_review(project_id: str, approver_email: str):
