@@ -1975,6 +1975,7 @@ const ProjectEstimator = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </TooltipProvider>
   );
 };
 
