@@ -2387,13 +2387,22 @@ const ProjectEstimator = () => {
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded">
                     <p className="text-sm text-gray-600 mb-2">Total Logistics</p>
-                    <p className="text-2xl font-bold font-mono">${overall.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                    <p className="text-2xl font-bold font-mono text-[#8B5CF6]">${overall.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                  </div>
+                  <div className="text-center p-4 bg-amber-100 rounded">
+                    <p className="text-sm text-gray-600 mb-2">Onsite Selling Price</p>
+                    <p className="text-2xl font-bold font-mono text-[#F59E0B]">${overall.onsiteSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                    <p className="text-xs text-gray-500">incl. logistics</p>
+                  </div>
+                  <div className="text-center p-4 bg-blue-100 rounded">
+                    <p className="text-sm text-gray-600 mb-2">Offshore Selling Price</p>
+                    <p className="text-2xl font-bold font-mono text-[#0EA5E9]">${overall.offshoreSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                   </div>
                   <div className="text-center p-4 bg-gray-100 rounded">
                     <p className="text-sm text-gray-600 mb-2">Cost to Company</p>
                     <p className="text-2xl font-bold font-mono">${overall.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                   </div>
-                  <div className="text-center p-4 bg-green-100 rounded col-span-2">
+                  <div className="text-center p-4 bg-green-100 rounded">
                     <p className="text-sm text-gray-600 mb-2">Profit ({profitMarginPercentage}%)</p>
                     <p className="text-2xl font-bold font-mono text-[#10B981]">
                       ${(overall.sellingPrice - overall.totalCostToCompany).toLocaleString(undefined, { maximumFractionDigits: 0 })}
