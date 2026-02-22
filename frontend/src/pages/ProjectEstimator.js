@@ -902,10 +902,11 @@ const ProjectEstimator = () => {
                 <Button 
                   onClick={() => setSubmitForReviewDialog(true)} 
                   variant="outline" 
+                  size="sm"
                   className="border-purple-600 text-purple-600"
                   data-testid="submit-review-button"
                 >
-                  <Send className="w-4 h-4 mr-2" />
+                  <Send className="w-4 h-4 mr-1" />
                   Submit for Review
                 </Button>
               )}
@@ -914,34 +915,36 @@ const ProjectEstimator = () => {
                   <Button 
                     onClick={() => { setApprovalAction("approve"); setApprovalActionDialog(true); }}
                     className="bg-green-600 hover:bg-green-700 text-white"
+                    size="sm"
                     data-testid="approve-button"
                   >
-                    <CheckCircle className="w-4 h-4 mr-2" />
+                    <CheckCircle className="w-4 h-4 mr-1" />
                     Approve
                   </Button>
                   <Button 
                     onClick={() => { setApprovalAction("reject"); setApprovalActionDialog(true); }}
                     variant="outline"
+                    size="sm"
                     className="border-red-600 text-red-600"
                     data-testid="reject-button"
                   >
-                    <XCircle className="w-4 h-4 mr-2" />
+                    <XCircle className="w-4 h-4 mr-1" />
                     Reject
                   </Button>
                 </>
               )}
             </>
           )}
-          <Button onClick={() => setSummaryDialogOpen(true)} variant="outline" className="border-[#0EA5E9] text-[#0EA5E9]" data-testid="view-summary-button">
+          <Button onClick={() => setSummaryDialogOpen(true)} variant="outline" size="sm" className="border-[#0EA5E9] text-[#0EA5E9]" data-testid="view-summary-button">
             View Summary
           </Button>
-          <Button onClick={handleExportToExcel} variant="outline" className="border-[#10B981] text-[#10B981]" data-testid="export-excel-button">
-            <FileDown className="w-4 h-4 mr-2" />
+          <Button onClick={handleExportToExcel} variant="outline" size="sm" className="border-[#10B981] text-[#10B981]" data-testid="export-excel-button">
+            <FileDown className="w-4 h-4 mr-1" />
             Export Excel
           </Button>
           {!isReadOnly && (
-          <Button onClick={handleSaveProject} className="bg-[#10B981] hover:bg-[#10B981]/90 text-white" data-testid="save-project-button">
-            <Save className="w-4 h-4 mr-2" />
+          <Button onClick={handleSaveProject} size="sm" className="bg-[#10B981] hover:bg-[#10B981]/90 text-white" data-testid="save-project-button">
+            <Save className="w-4 h-4 mr-1" />
             Save
           </Button>
           )}
