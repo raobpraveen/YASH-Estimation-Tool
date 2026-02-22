@@ -2050,34 +2050,52 @@ const ProjectEstimator = () => {
                 <CardTitle className="text-2xl font-bold text-[#0F172A]">Overall Project Summary</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-4 bg-gray-50 rounded">
                     <p className="text-sm text-gray-600 mb-2">Total Man-Months</p>
-                    <p className="text-4xl font-bold font-mono">{overall.totalMM.toFixed(1)}</p>
+                    <p className="text-3xl font-bold font-mono">{overall.totalMM.toFixed(1)}</p>
                   </div>
                   <div className="text-center p-4 bg-amber-50 rounded">
                     <p className="text-sm text-gray-600 mb-2">Total Onsite MM</p>
-                    <p className="text-4xl font-bold font-mono text-[#F59E0B]">{overall.onsiteMM.toFixed(1)}</p>
+                    <p className="text-3xl font-bold font-mono text-[#F59E0B]">{overall.onsiteMM.toFixed(1)}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Avg: ${overall.onsiteMM > 0 
+                        ? ((overall.onsiteSalaryCost / overall.onsiteMM) * (1 + profitMarginPercentage/100)).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
+                        : 0}/MM
+                    </p>
                   </div>
                   <div className="text-center p-4 bg-blue-50 rounded">
                     <p className="text-sm text-gray-600 mb-2">Total Offshore MM</p>
-                    <p className="text-4xl font-bold font-mono text-[#0EA5E9]">{overall.offshoreMM.toFixed(1)}</p>
+                    <p className="text-3xl font-bold font-mono text-[#0EA5E9]">{overall.offshoreMM.toFixed(1)}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Avg: ${overall.offshoreMM > 0 
+                        ? ((overall.offshoreSalaryCost / overall.offshoreMM) * (1 + profitMarginPercentage/100)).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
+                        : 0}/MM
+                    </p>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded">
+                    <p className="text-sm text-gray-600 mb-2">Avg. Selling Price/MM</p>
+                    <p className="text-3xl font-bold font-mono text-[#8B5CF6]">
+                      ${overall.totalMM > 0 
+                        ? (overall.sellingPrice / overall.totalMM).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
+                        : 0}
+                    </p>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded">
                     <p className="text-sm text-gray-600 mb-2">Total Logistics</p>
-                    <p className="text-3xl font-bold font-mono">${overall.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                    <p className="text-2xl font-bold font-mono">${overall.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                   </div>
                   <div className="text-center p-4 bg-gray-100 rounded">
                     <p className="text-sm text-gray-600 mb-2">Cost to Company</p>
-                    <p className="text-3xl font-bold font-mono">${overall.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                    <p className="text-2xl font-bold font-mono">${overall.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                   </div>
-                  <div className="text-center p-4 bg-green-100 rounded">
+                  <div className="text-center p-4 bg-green-100 rounded col-span-2">
                     <p className="text-sm text-gray-600 mb-2">Profit ({profitMarginPercentage}%)</p>
-                    <p className="text-3xl font-bold font-mono text-[#10B981]">
+                    <p className="text-2xl font-bold font-mono text-[#10B981]">
                       ${(overall.sellingPrice - overall.totalCostToCompany).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                   </div>
-                  <div className="col-span-2 md:col-span-3 text-center p-6 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg border-2 border-[#10B981]">
+                  <div className="col-span-2 md:col-span-4 text-center p-6 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg border-2 border-[#10B981]">
                     <p className="text-lg text-gray-700 mb-3 font-semibold">GRAND TOTAL (Selling Price)</p>
                     <p className="text-5xl font-extrabold font-mono text-[#10B981]">
                       ${overall.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
