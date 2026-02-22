@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Plane, Save, FileDown, X, Settings, Edit2, Copy, History } from "lucide-react";
+import { Plus, Trash2, Plane, Save, FileDown, X, Settings, Copy, History, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { COUNTRIES, LOGISTICS_DEFAULTS } from "@/utils/constants";
@@ -53,9 +53,8 @@ const ProjectEstimator = () => {
   const [addResourceDialogOpen, setAddResourceDialogOpen] = useState(false);
   const [summaryDialogOpen, setSummaryDialogOpen] = useState(false);
   const [editLogisticsDialogOpen, setEditLogisticsDialogOpen] = useState(false);
-  const [editResourceLogisticsOpen, setEditResourceLogisticsOpen] = useState(false);
+  const [batchLogisticsDialogOpen, setBatchLogisticsDialogOpen] = useState(false);
   const [editingWaveId, setEditingWaveId] = useState("");
-  const [editingAllocationId, setEditingAllocationId] = useState("");
   const [saveAsNewVersionDialog, setSaveAsNewVersionDialog] = useState(false);
   
   const [newWave, setNewWave] = useState({ name: "", duration_months: "" });
@@ -65,6 +64,7 @@ const ProjectEstimator = () => {
     custom_salary: "",
   });
   
+  // Wave-level logistics (applied to all onsite resources based on formula)
   const [waveLogistics, setWaveLogistics] = useState({
     per_diem_daily: LOGISTICS_DEFAULTS.per_diem_daily,
     per_diem_days: 30,
@@ -72,21 +72,10 @@ const ProjectEstimator = () => {
     accommodation_days: 30,
     local_conveyance_daily: LOGISTICS_DEFAULTS.local_conveyance_daily,
     local_conveyance_days: 21,
-    flight_cost_per_trip: 0,
-    visa_insurance_per_trip: 0,
-    num_trips: 0,
-  });
-  
-  const [resourceLogistics, setResourceLogistics] = useState({
-    per_diem_daily: 50,
-    per_diem_days: 30,
-    accommodation_daily: 80,
-    accommodation_days: 30,
-    local_conveyance_daily: 20,
-    local_conveyance_days: 21,
-    flight_cost_per_trip: 0,
-    visa_insurance_per_trip: 0,
-    num_trips: 0,
+    flight_cost_per_trip: 450,
+    visa_medical_per_trip: 400,
+    num_trips: 6,
+    contingency_percentage: 5,
   });
 
   useEffect(() => {
@@ -191,7 +180,7 @@ const ProjectEstimator = () => {
       name: newWave.name,
       duration_months: parseFloat(newWave.duration_months),
       phase_names: phaseNames,
-      logistics_defaults: { ...waveLogistics },
+      logistics_config: { ...waveLogistics },
       grid_allocations: [],
     };
 
@@ -222,7 +211,18 @@ const ProjectEstimator = () => {
   const handleOpenLogisticsEditor = (waveId) => {
     const wave = waves.find(w => w.id === waveId);
     if (wave) {
-      setWaveLogistics(wave.logistics_defaults);
+      setWaveLogistics(wave.logistics_config || {
+        per_diem_daily: 50,
+        per_diem_days: 30,
+        accommodation_daily: 80,
+        accommodation_days: 30,
+        local_conveyance_daily: 15,
+        local_conveyance_days: 21,
+        flight_cost_per_trip: 450,
+        visa_medical_per_trip: 400,
+        num_trips: 6,
+        contingency_percentage: 5,
+      });
       setEditingWaveId(waveId);
       setEditLogisticsDialogOpen(true);
     }
@@ -231,51 +231,41 @@ const ProjectEstimator = () => {
   const handleSaveWaveLogistics = () => {
     setWaves(waves.map(w => 
       w.id === editingWaveId 
-        ? { ...w, logistics_defaults: { ...waveLogistics } }
+        ? { ...w, logistics_config: { ...waveLogistics } }
         : w
     ));
-    toast.success("Wave logistics defaults updated");
+    toast.success("Wave logistics updated");
     setEditLogisticsDialogOpen(false);
   };
 
-  const handleOpenResourceLogistics = (waveId, allocationId) => {
+  const handleOpenBatchLogistics = (waveId) => {
     const wave = waves.find(w => w.id === waveId);
     if (wave) {
-      const alloc = wave.grid_allocations.find(a => a.id === allocationId);
-      if (alloc) {
-        setResourceLogistics({
-          per_diem_daily: alloc.per_diem_daily || 50,
-          per_diem_days: alloc.per_diem_days || 30,
-          accommodation_daily: alloc.accommodation_daily || 80,
-          accommodation_days: alloc.accommodation_days || 30,
-          local_conveyance_daily: alloc.local_conveyance_daily || 20,
-          local_conveyance_days: alloc.local_conveyance_days || 21,
-          flight_cost_per_trip: alloc.flight_cost_per_trip || 0,
-          visa_insurance_per_trip: alloc.visa_insurance_per_trip || 0,
-          num_trips: alloc.num_trips || 0,
-        });
-        setEditingWaveId(waveId);
-        setEditingAllocationId(allocationId);
-        setEditResourceLogisticsOpen(true);
-      }
+      setWaveLogistics(wave.logistics_config || {
+        per_diem_daily: 50,
+        per_diem_days: 30,
+        accommodation_daily: 80,
+        accommodation_days: 30,
+        local_conveyance_daily: 15,
+        local_conveyance_days: 21,
+        flight_cost_per_trip: 450,
+        visa_medical_per_trip: 400,
+        num_trips: 6,
+        contingency_percentage: 5,
+      });
+      setEditingWaveId(waveId);
+      setBatchLogisticsDialogOpen(true);
     }
   };
 
-  const handleSaveResourceLogistics = () => {
+  const handleBatchUpdateLogistics = () => {
     setWaves(waves.map(w => 
       w.id === editingWaveId 
-        ? {
-            ...w,
-            grid_allocations: w.grid_allocations.map(a =>
-              a.id === editingAllocationId
-                ? { ...a, ...resourceLogistics }
-                : a
-            )
-          }
+        ? { ...w, logistics_config: { ...waveLogistics } }
         : w
     ));
-    toast.success("Resource logistics updated");
-    setEditResourceLogisticsOpen(false);
+    toast.success("Logistics updated for all onsite resources in this wave");
+    setBatchLogisticsDialogOpen(false);
   };
 
   const handleAddAllocation = () => {
@@ -298,7 +288,6 @@ const ProjectEstimator = () => {
       return;
     }
 
-    const activeWave = waves.find(w => w.id === activeWaveId);
     const customSalary = newAllocation.custom_salary ? parseFloat(newAllocation.custom_salary) : selectedRate.avg_monthly_salary;
     
     const allocation = {
@@ -313,15 +302,6 @@ const ProjectEstimator = () => {
       overhead_percentage: location.overhead_percentage,
       is_onsite: newAllocation.is_onsite,
       phase_allocations: {},
-      per_diem_daily: newAllocation.is_onsite ? activeWave.logistics_defaults.per_diem_daily : 0,
-      per_diem_days: newAllocation.is_onsite ? activeWave.logistics_defaults.per_diem_days : 0,
-      accommodation_daily: newAllocation.is_onsite ? activeWave.logistics_defaults.accommodation_daily : 0,
-      accommodation_days: newAllocation.is_onsite ? activeWave.logistics_defaults.accommodation_days : 0,
-      local_conveyance_daily: newAllocation.is_onsite ? activeWave.logistics_defaults.local_conveyance_daily : 0,
-      local_conveyance_days: newAllocation.is_onsite ? activeWave.logistics_defaults.local_conveyance_days : 0,
-      flight_cost_per_trip: newAllocation.is_onsite ? activeWave.logistics_defaults.flight_cost_per_trip : 0,
-      visa_insurance_per_trip: newAllocation.is_onsite ? activeWave.logistics_defaults.visa_insurance_per_trip : 0,
-      num_trips: newAllocation.is_onsite ? activeWave.logistics_defaults.num_trips : 0,
     };
 
     setWaves(waves.map(w => 
@@ -353,24 +333,7 @@ const ProjectEstimator = () => {
         ? {
             ...w,
             grid_allocations: w.grid_allocations.map(a =>
-              a.id === allocationId
-                ? { 
-                    ...a, 
-                    is_onsite: !a.is_onsite,
-                    // Reset logistics if switching to offshore
-                    ...(!a.is_onsite ? {} : {
-                      per_diem_daily: 0,
-                      per_diem_days: 0,
-                      accommodation_daily: 0,
-                      accommodation_days: 0,
-                      local_conveyance_daily: 0,
-                      local_conveyance_days: 0,
-                      flight_cost_per_trip: 0,
-                      visa_insurance_per_trip: 0,
-                      num_trips: 0,
-                    })
-                  }
-                : a
+              a.id === allocationId ? { ...a, is_onsite: !a.is_onsite } : a
             )
           }
         : w
@@ -407,66 +370,110 @@ const ProjectEstimator = () => {
     ));
   };
 
-  const calculateAllocationCost = (allocation, wave) => {
+  // Calculate resource base cost (salary only)
+  const calculateResourceBaseCost = (allocation) => {
     const totalManMonths = Object.values(allocation.phase_allocations || {}).reduce((sum, val) => sum + val, 0);
     const baseSalaryCost = allocation.avg_monthly_salary * totalManMonths;
+    return { totalManMonths, baseSalaryCost };
+  };
+
+  // Calculate wave-level logistics based on the formula from the image
+  // Per-diem/Accommodation/Conveyance: Total Onsite MM × Rate × Days
+  // Flights/Visa: Num Onsite Resources × Rate × Trips
+  const calculateWaveLogistics = (wave) => {
+    const config = wave.logistics_config || {
+      per_diem_daily: 50,
+      per_diem_days: 30,
+      accommodation_daily: 80,
+      accommodation_days: 30,
+      local_conveyance_daily: 15,
+      local_conveyance_days: 21,
+      flight_cost_per_trip: 450,
+      visa_medical_per_trip: 400,
+      num_trips: 6,
+      contingency_percentage: 5,
+    };
+
+    // Calculate total onsite MM and count of onsite resources
+    let totalOnsiteMM = 0;
+    let onsiteResourceCount = 0;
     
-    // Calculate logistics cost
-    // Per-diem, accommodation, conveyance: daily rate * days * MM
-    // Flight and Visa: per trip * num_trips (for ALL onsite resources, so we count per resource)
-    const perDiemCost = allocation.is_onsite ? (allocation.per_diem_daily || 0) * (allocation.per_diem_days || 0) * totalManMonths : 0;
-    const accommodationCost = allocation.is_onsite ? (allocation.accommodation_daily || 0) * (allocation.accommodation_days || 0) * totalManMonths : 0;
-    const conveyanceCost = allocation.is_onsite ? (allocation.local_conveyance_daily || 0) * (allocation.local_conveyance_days || 0) * totalManMonths : 0;
+    wave.grid_allocations.forEach(allocation => {
+      if (allocation.is_onsite) {
+        const mm = Object.values(allocation.phase_allocations || {}).reduce((sum, val) => sum + val, 0);
+        totalOnsiteMM += mm;
+        onsiteResourceCount++;
+      }
+    });
+
+    // Calculate logistics costs using formula from image
+    const perDiemCost = totalOnsiteMM * config.per_diem_daily * config.per_diem_days;
+    const accommodationCost = totalOnsiteMM * config.accommodation_daily * config.accommodation_days;
+    const conveyanceCost = totalOnsiteMM * config.local_conveyance_daily * config.local_conveyance_days;
+    const flightCost = onsiteResourceCount * config.flight_cost_per_trip * config.num_trips;
+    const visaMedicalCost = onsiteResourceCount * config.visa_medical_per_trip * config.num_trips;
     
-    // Flights and Visa: num_trips * per_trip_cost (this is per resource)
-    const flightCost = allocation.is_onsite ? (allocation.flight_cost_per_trip || 0) * (allocation.num_trips || 0) : 0;
-    const visaInsuranceCost = allocation.is_onsite ? (allocation.visa_insurance_per_trip || 0) * (allocation.num_trips || 0) : 0;
-    
-    const logisticsCost = perDiemCost + accommodationCost + conveyanceCost + flightCost + visaInsuranceCost;
-    
-    const baseCost = baseSalaryCost + logisticsCost;
-    const overheadCost = baseCost * (allocation.overhead_percentage / 100);
-    const costToCompany = baseCost + overheadCost;
-    const sellingPrice = costToCompany / (1 - (profitMarginPercentage / 100));
-    
-    return { 
-      totalManMonths, 
-      baseSalaryCost, 
-      logisticsCost, 
-      baseCost,
-      overheadCost,
-      costToCompany,
-      sellingPrice 
+    const subtotal = perDiemCost + accommodationCost + conveyanceCost + flightCost + visaMedicalCost;
+    const contingencyCost = subtotal * (config.contingency_percentage / 100);
+    const totalLogistics = subtotal + contingencyCost;
+
+    return {
+      totalOnsiteMM,
+      onsiteResourceCount,
+      perDiemCost,
+      accommodationCost,
+      conveyanceCost,
+      flightCost,
+      visaMedicalCost,
+      contingencyCost,
+      totalLogistics,
+      config,
     };
   };
 
+  // Calculate wave summary with new logistics formula
   const calculateWaveSummary = (wave) => {
     let totalMM = 0;
     let onsiteMM = 0;
     let onsiteSalaryCost = 0;
     let offshoreMM = 0;
     let offshoreSalaryCost = 0;
-    let totalLogisticsCost = 0;
-    let totalCostToCompany = 0;
-    let totalSellingPrice = 0;
-    let onsiteResourceCount = 0;
+    let totalBaseSalaryCost = 0;
 
     wave.grid_allocations.forEach(allocation => {
-      const { totalManMonths, baseSalaryCost, logisticsCost, costToCompany, sellingPrice } = calculateAllocationCost(allocation, wave);
+      const { totalManMonths, baseSalaryCost } = calculateResourceBaseCost(allocation);
       totalMM += totalManMonths;
-      totalCostToCompany += costToCompany;
-      totalSellingPrice += sellingPrice;
+      totalBaseSalaryCost += baseSalaryCost;
 
       if (allocation.is_onsite) {
         onsiteMM += totalManMonths;
         onsiteSalaryCost += baseSalaryCost;
-        totalLogisticsCost += logisticsCost;
-        onsiteResourceCount++;
       } else {
         offshoreMM += totalManMonths;
         offshoreSalaryCost += baseSalaryCost;
       }
     });
+
+    // Get wave-level logistics
+    const logistics = calculateWaveLogistics(wave);
+    
+    // Calculate costs
+    const baseCost = totalBaseSalaryCost + logistics.totalLogistics;
+    
+    // Calculate average overhead (weighted by MM)
+    let totalOverheadCost = 0;
+    wave.grid_allocations.forEach(allocation => {
+      const { totalManMonths, baseSalaryCost } = calculateResourceBaseCost(allocation);
+      totalOverheadCost += baseSalaryCost * (allocation.overhead_percentage / 100);
+    });
+    // Add overhead on logistics too
+    const avgOverhead = wave.grid_allocations.length > 0 
+      ? wave.grid_allocations.reduce((sum, a) => sum + a.overhead_percentage, 0) / wave.grid_allocations.length 
+      : 0;
+    totalOverheadCost += logistics.totalLogistics * (avgOverhead / 100);
+    
+    const costToCompany = baseCost + totalOverheadCost;
+    const sellingPrice = costToCompany / (1 - (profitMarginPercentage / 100));
 
     return {
       totalMM,
@@ -474,10 +481,11 @@ const ProjectEstimator = () => {
       onsiteSalaryCost,
       offshoreMM,
       offshoreSalaryCost,
-      totalLogisticsCost,
-      totalCostToCompany,
-      sellingPrice: totalSellingPrice,
-      onsiteResourceCount,
+      totalLogisticsCost: logistics.totalLogistics,
+      totalCostToCompany: costToCompany,
+      sellingPrice,
+      onsiteResourceCount: logistics.onsiteResourceCount,
+      logistics,
     };
   };
 
@@ -538,7 +546,7 @@ const ProjectEstimator = () => {
         name: w.name,
         duration_months: w.duration_months,
         phase_names: w.phase_names,
-        logistics_defaults: w.logistics_defaults,
+        logistics_config: w.logistics_config,
         grid_allocations: w.grid_allocations,
       })),
       version_notes: versionNotes,
@@ -560,11 +568,9 @@ const ProjectEstimator = () => {
 
     try {
       if (projectId) {
-        // Update existing project
         await axios.put(`${API}/projects/${projectId}`, payload);
         toast.success(`Project ${projectNumber} v${projectVersion} updated`);
       } else {
-        // Create new project
         const response = await axios.post(`${API}/projects`, payload);
         setProjectId(response.data.id);
         setProjectNumber(response.data.project_number);
@@ -657,13 +663,23 @@ const ProjectEstimator = () => {
 
     waves.forEach(wave => {
       const summary = calculateWaveSummary(wave);
+      const logistics = summary.logistics;
+      
       summaryData.push([`WAVE: ${wave.name}`, `Duration: ${wave.duration_months} months`]);
       summaryData.push(["Total Man-Months", summary.totalMM.toFixed(2)]);
       summaryData.push(["Onsite Man-Months", summary.onsiteMM.toFixed(2)]);
-      summaryData.push(["Onsite Salary Cost", `$${summary.onsiteSalaryCost.toFixed(2)}`]);
+      summaryData.push(["Onsite Resources", summary.onsiteResourceCount]);
       summaryData.push(["Offshore Man-Months", summary.offshoreMM.toFixed(2)]);
-      summaryData.push(["Offshore Salary Cost", `$${summary.offshoreSalaryCost.toFixed(2)}`]);
-      summaryData.push(["Logistics Costs", `$${summary.totalLogisticsCost.toFixed(2)}`]);
+      summaryData.push([]);
+      summaryData.push(["LOGISTICS BREAKDOWN"]);
+      summaryData.push(["Per-diem", `${summary.onsiteMM.toFixed(2)} MM × $${logistics.config.per_diem_daily} × ${logistics.config.per_diem_days} days`, `$${logistics.perDiemCost.toFixed(2)}`]);
+      summaryData.push(["Accommodation", `${summary.onsiteMM.toFixed(2)} MM × $${logistics.config.accommodation_daily} × ${logistics.config.accommodation_days} days`, `$${logistics.accommodationCost.toFixed(2)}`]);
+      summaryData.push(["Conveyance", `${summary.onsiteMM.toFixed(2)} MM × $${logistics.config.local_conveyance_daily} × ${logistics.config.local_conveyance_days} days`, `$${logistics.conveyanceCost.toFixed(2)}`]);
+      summaryData.push(["Air Fare", `${summary.onsiteResourceCount} resources × $${logistics.config.flight_cost_per_trip} × ${logistics.config.num_trips} trips`, `$${logistics.flightCost.toFixed(2)}`]);
+      summaryData.push(["Visa & Medical", `${summary.onsiteResourceCount} resources × $${logistics.config.visa_medical_per_trip} × ${logistics.config.num_trips} trips`, `$${logistics.visaMedicalCost.toFixed(2)}`]);
+      summaryData.push(["Contingency", `${logistics.config.contingency_percentage}%`, `$${logistics.contingencyCost.toFixed(2)}`]);
+      summaryData.push(["Total Logistics", "", `$${logistics.totalLogistics.toFixed(2)}`]);
+      summaryData.push([]);
       summaryData.push(["Cost to Company", `$${summary.totalCostToCompany.toFixed(2)}`]);
       summaryData.push(["Wave Selling Price", `$${summary.sellingPrice.toFixed(2)}`]);
       summaryData.push([]);
@@ -680,7 +696,7 @@ const ProjectEstimator = () => {
     summaryData.push(["GRAND TOTAL (Selling Price)", `$${overall.sellingPrice.toFixed(2)}`]);
 
     const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-    summaryWs['!cols'] = [{ wch: 25 }, { wch: 20 }];
+    summaryWs['!cols'] = [{ wch: 25 }, { wch: 50 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
 
     // Detail sheets for each wave
@@ -689,11 +705,11 @@ const ProjectEstimator = () => {
       waveData.push([`${wave.name} - ${wave.duration_months} months`]);
       waveData.push([]);
       
-      const header = ["Skill", "Level", "Location", "$/Month", "Onsite", ...wave.phase_names, "Total MM", "Base Cost", "OH Cost", "Selling Price"];
+      const header = ["Skill", "Level", "Location", "$/Month", "Onsite", ...wave.phase_names, "Total MM", "Salary Cost"];
       waveData.push(header);
 
       wave.grid_allocations.forEach(alloc => {
-        const { totalManMonths, baseCost, overheadCost, sellingPrice } = calculateAllocationCost(alloc, wave);
+        const { totalManMonths, baseSalaryCost } = calculateResourceBaseCost(alloc);
         const row = [
           alloc.skill_name,
           alloc.proficiency_level,
@@ -702,19 +718,12 @@ const ProjectEstimator = () => {
           alloc.is_onsite ? "ON" : "OFF",
           ...wave.phase_names.map((_, i) => alloc.phase_allocations[i] || 0),
           totalManMonths.toFixed(2),
-          baseCost.toFixed(2),
-          overheadCost.toFixed(2),
-          sellingPrice.toFixed(2),
+          baseSalaryCost.toFixed(2),
         ];
         waveData.push(row);
       });
 
       const waveWs = XLSX.utils.aoa_to_sheet(waveData);
-      waveWs['!cols'] = [
-        { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 8 }, 
-        ...wave.phase_names.map(() => ({ wch: 10 })), 
-        { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 14 }
-      ];
       XLSX.utils.book_append_sheet(wb, waveWs, wave.name.substring(0, 30));
     });
 
@@ -934,110 +943,98 @@ const ProjectEstimator = () => {
                   Add Wave
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold text-[#0F172A]">Add New Wave</DialogTitle>
-                  <DialogDescription>Configure wave details and default logistics rates</DialogDescription>
+                  <DialogDescription>Configure wave details and logistics rates</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
-                  <div>
-                    <Label htmlFor="wave-name">Wave Name</Label>
-                    <Input
-                      id="wave-name"
-                      placeholder="e.g., Wave 1, Phase 1"
-                      value={newWave.name}
-                      onChange={(e) => setNewWave({ ...newWave, name: e.target.value })}
-                      data-testid="wave-name-input"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="wave-duration">Duration (Months)</Label>
-                    <Input
-                      id="wave-duration"
-                      type="number"
-                      step="1"
-                      placeholder="e.g., 6"
-                      value={newWave.duration_months}
-                      onChange={(e) => setNewWave({ ...newWave, duration_months: e.target.value })}
-                      data-testid="wave-duration-input"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="wave-name">Wave Name</Label>
+                      <Input
+                        id="wave-name"
+                        placeholder="e.g., Wave 1"
+                        value={newWave.name}
+                        onChange={(e) => setNewWave({ ...newWave, name: e.target.value })}
+                        data-testid="wave-name-input"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="wave-duration">Duration (Months)</Label>
+                      <Input
+                        id="wave-duration"
+                        type="number"
+                        placeholder="e.g., 6"
+                        value={newWave.duration_months}
+                        onChange={(e) => setNewWave({ ...newWave, duration_months: e.target.value })}
+                        data-testid="wave-duration-input"
+                      />
+                    </div>
                   </div>
                   
                   <div className="border-t pt-4">
-                    <Label className="text-base font-semibold">Default Logistics Rates (for onsite resources)</Label>
-                    <div className="grid grid-cols-2 gap-3 mt-3">
+                    <Label className="text-base font-semibold">Logistics Configuration</Label>
+                    <p className="text-xs text-gray-500 mb-3">Per-diem/Accommodation/Conveyance: Total Onsite MM × Rate × Days | Flights/Visa: Onsite Resources × Rate × Trips</p>
+                    
+                    <div className="grid grid-cols-3 gap-3">
                       <div>
                         <Label className="text-xs">Per-Diem ($/day)</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.per_diem_daily}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })}
-                        />
+                        <Input type="number" value={waveLogistics.per_diem_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })} />
                       </div>
                       <div>
-                        <Label className="text-xs">Per-Diem Days/Month</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.per_diem_days}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_days: parseInt(e.target.value) || 0 })}
-                        />
+                        <Label className="text-xs">Days/Month</Label>
+                        <Input type="number" value={waveLogistics.per_diem_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_days: parseInt(e.target.value) || 0 })} />
                       </div>
+                      <div className="flex items-end">
+                        <p className="text-xs text-gray-500 pb-2">= MM × ${waveLogistics.per_diem_daily} × {waveLogistics.per_diem_days}</p>
+                      </div>
+                      
                       <div>
                         <Label className="text-xs">Accommodation ($/day)</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.accommodation_daily}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })}
-                        />
+                        <Input type="number" value={waveLogistics.accommodation_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })} />
                       </div>
                       <div>
-                        <Label className="text-xs">Accommodation Days/Month</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.accommodation_days}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_days: parseInt(e.target.value) || 0 })}
-                        />
+                        <Label className="text-xs">Days/Month</Label>
+                        <Input type="number" value={waveLogistics.accommodation_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_days: parseInt(e.target.value) || 0 })} />
                       </div>
+                      <div className="flex items-end">
+                        <p className="text-xs text-gray-500 pb-2">= MM × ${waveLogistics.accommodation_daily} × {waveLogistics.accommodation_days}</p>
+                      </div>
+                      
                       <div>
                         <Label className="text-xs">Conveyance ($/day)</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.local_conveyance_daily}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })}
-                        />
+                        <Input type="number" value={waveLogistics.local_conveyance_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })} />
                       </div>
                       <div>
-                        <Label className="text-xs">Conveyance Days/Month</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.local_conveyance_days}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })}
-                        />
+                        <Label className="text-xs">Days/Month</Label>
+                        <Input type="number" value={waveLogistics.local_conveyance_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })} />
+                      </div>
+                      <div className="flex items-end">
+                        <p className="text-xs text-gray-500 pb-2">= MM × ${waveLogistics.local_conveyance_daily} × {waveLogistics.local_conveyance_days}</p>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-xs">Air Fare ($/trip)</Label>
+                        <Input type="number" value={waveLogistics.flight_cost_per_trip} onChange={(e) => setWaveLogistics({ ...waveLogistics, flight_cost_per_trip: parseFloat(e.target.value) || 0 })} />
                       </div>
                       <div>
-                        <Label className="text-xs">Flight ($/trip)</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.flight_cost_per_trip}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, flight_cost_per_trip: parseFloat(e.target.value) || 0 })}
-                        />
+                        <Label className="text-xs">Number of Trips</Label>
+                        <Input type="number" value={waveLogistics.num_trips} onChange={(e) => setWaveLogistics({ ...waveLogistics, num_trips: parseInt(e.target.value) || 0 })} />
+                      </div>
+                      <div className="flex items-end">
+                        <p className="text-xs text-gray-500 pb-2">= Resources × ${waveLogistics.flight_cost_per_trip} × {waveLogistics.num_trips}</p>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-xs">Visa & Medical ($/trip)</Label>
+                        <Input type="number" value={waveLogistics.visa_medical_per_trip} onChange={(e) => setWaveLogistics({ ...waveLogistics, visa_medical_per_trip: parseFloat(e.target.value) || 0 })} />
                       </div>
                       <div>
-                        <Label className="text-xs">Visa+Insurance ($/trip)</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.visa_insurance_per_trip}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, visa_insurance_per_trip: parseFloat(e.target.value) || 0 })}
-                        />
+                        <Label className="text-xs">Contingency %</Label>
+                        <Input type="number" value={waveLogistics.contingency_percentage} onChange={(e) => setWaveLogistics({ ...waveLogistics, contingency_percentage: parseFloat(e.target.value) || 0 })} />
                       </div>
-                      <div className="col-span-2">
-                        <Label className="text-xs">Default Number of Trips</Label>
-                        <Input
-                          type="number"
-                          value={waveLogistics.num_trips}
-                          onChange={(e) => setWaveLogistics({ ...waveLogistics, num_trips: parseInt(e.target.value) || 0 })}
-                        />
-                      </div>
+                      <div></div>
                     </div>
                   </div>
                   
@@ -1063,7 +1060,9 @@ const ProjectEstimator = () => {
                   </TabsTrigger>
                 ))}
               </TabsList>
-              {waves.map((wave) => (
+              {waves.map((wave) => {
+                const waveSummary = calculateWaveSummary(wave);
+                return (
                 <TabsContent key={wave.id} value={wave.id}>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -1071,6 +1070,7 @@ const ProjectEstimator = () => {
                         <h3 className="text-lg font-semibold text-[#0F172A]">{wave.name}</h3>
                         <span className="text-sm text-gray-600">Duration: {wave.duration_months} months</span>
                         <span className="text-sm text-gray-600">Resources: {wave.grid_allocations.length}</span>
+                        <span className="text-sm text-[#F59E0B]">Onsite: {waveSummary.onsiteResourceCount}</span>
                       </div>
                       <div className="flex gap-2">
                         <Button 
@@ -1080,7 +1080,17 @@ const ProjectEstimator = () => {
                           data-testid={`edit-logistics-${wave.id}`}
                         >
                           <Settings className="w-4 h-4 mr-2" />
-                          Wave Logistics
+                          Logistics Config
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="border-[#F59E0B] text-[#F59E0B]"
+                          onClick={() => handleOpenBatchLogistics(wave.id)}
+                          data-testid={`batch-logistics-${wave.id}`}
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Batch Update
                         </Button>
                         <Dialog open={addResourceDialogOpen && activeWaveId === wave.id} onOpenChange={setAddResourceDialogOpen}>
                           <DialogTrigger asChild>
@@ -1092,7 +1102,7 @@ const ProjectEstimator = () => {
                           <DialogContent className="max-w-md">
                             <DialogHeader>
                               <DialogTitle className="text-2xl font-bold text-[#0F172A]">Add Resource to {wave.name}</DialogTitle>
-                              <DialogDescription>Select skill and optionally override salary for this estimation</DialogDescription>
+                              <DialogDescription>Select skill and optionally override salary</DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 mt-4">
                               <div>
@@ -1119,7 +1129,7 @@ const ProjectEstimator = () => {
                               </div>
                               
                               <div>
-                                <Label htmlFor="custom-salary">Monthly Salary (override for this estimation)</Label>
+                                <Label htmlFor="custom-salary">Monthly Salary (override)</Label>
                                 <Input
                                   id="custom-salary"
                                   type="number"
@@ -1128,7 +1138,6 @@ const ProjectEstimator = () => {
                                   onChange={(e) => setNewAllocation({ ...newAllocation, custom_salary: e.target.value })}
                                   data-testid="custom-salary-input"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Leave as-is to use master rate</p>
                               </div>
                               
                               <div className="flex items-center gap-2">
@@ -1144,16 +1153,10 @@ const ProjectEstimator = () => {
                               </div>
 
                               {newAllocation.is_onsite && (
-                                <div className="bg-amber-50 p-3 rounded text-sm border border-amber-200">
-                                  <p className="font-semibold text-[#0F172A] mb-2">Wave default logistics will be applied:</p>
-                                  <ul className="space-y-1 text-gray-700 text-xs">
-                                    <li>Per-diem: ${wave.logistics_defaults.per_diem_daily}/day x {wave.logistics_defaults.per_diem_days} days</li>
-                                    <li>Accommodation: ${wave.logistics_defaults.accommodation_daily}/day x {wave.logistics_defaults.accommodation_days} days</li>
-                                    <li>Conveyance: ${wave.logistics_defaults.local_conveyance_daily}/day x {wave.logistics_defaults.local_conveyance_days} days</li>
-                                    <li>Flights: ${wave.logistics_defaults.flight_cost_per_trip}/trip x {wave.logistics_defaults.num_trips} trips</li>
-                                    <li>Visa+Ins: ${wave.logistics_defaults.visa_insurance_per_trip}/trip x {wave.logistics_defaults.num_trips} trips</li>
-                                  </ul>
-                                  <p className="text-xs text-gray-600 mt-2">You can edit per-resource after adding</p>
+                                <div className="bg-amber-50 p-3 rounded text-xs border border-amber-200">
+                                  <p className="font-semibold mb-1">Logistics will be calculated at wave level:</p>
+                                  <p>Per-diem, Accommodation, Conveyance: Total Onsite MM × Rate × Days</p>
+                                  <p>Flights, Visa/Medical: Onsite Resources × Rate × Trips</p>
                                 </div>
                               )}
                               
@@ -1201,15 +1204,13 @@ const ProjectEstimator = () => {
                                 </th>
                               ))}
                               <th className="text-right p-3 font-semibold text-sm">Total MM</th>
-                              <th className="text-right p-3 font-semibold text-sm">Base Cost</th>
-                              <th className="text-right p-3 font-semibold text-sm">OH Cost</th>
-                              <th className="text-right p-3 font-semibold text-sm">Selling Price</th>
+                              <th className="text-right p-3 font-semibold text-sm">Salary Cost</th>
                               <th className="text-center p-3 font-semibold text-sm">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
                             {wave.grid_allocations.map((allocation) => {
-                              const { totalManMonths, baseCost, overheadCost, sellingPrice } = calculateAllocationCost(allocation, wave);
+                              const { totalManMonths, baseSalaryCost } = calculateResourceBaseCost(allocation);
                               return (
                                 <tr
                                   key={allocation.id}
@@ -1258,37 +1259,18 @@ const ProjectEstimator = () => {
                                     {totalManMonths.toFixed(1)}
                                   </td>
                                   <td className="p-3 text-right font-mono tabular-nums text-sm text-gray-600">
-                                    ${baseCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                  </td>
-                                  <td className="p-3 text-right font-mono tabular-nums text-sm text-gray-600">
-                                    ${overheadCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                  </td>
-                                  <td className="p-3 text-right font-mono tabular-nums font-bold text-sm text-[#10B981]">
-                                    ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    ${baseSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                   </td>
                                   <td className="p-3 text-center">
-                                    <div className="flex gap-1 justify-center">
-                                      {allocation.is_onsite && (
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleOpenResourceLogistics(wave.id, allocation.id)}
-                                          className="text-[#0EA5E9] hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
-                                          data-testid={`edit-resource-logistics-${allocation.id}`}
-                                        >
-                                          <Edit2 className="w-4 h-4" />
-                                        </Button>
-                                      )}
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleDeleteAllocation(wave.id, allocation.id)}
-                                        className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
-                                        data-testid={`delete-allocation-${allocation.id}`}
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDeleteAllocation(wave.id, allocation.id)}
+                                      className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                                      data-testid={`delete-allocation-${allocation.id}`}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
                                   </td>
                                 </tr>
                               );
@@ -1296,6 +1278,84 @@ const ProjectEstimator = () => {
                           </tbody>
                         </table>
                       </div>
+                    )}
+
+                    {/* Logistics Breakdown */}
+                    {wave.grid_allocations.length > 0 && waveSummary.onsiteResourceCount > 0 && (
+                      <Card className="bg-amber-50/50 border border-amber-200">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                            <Plane className="w-4 h-4 text-[#F59E0B]" />
+                            Logistics Cost Breakdown
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="text-left py-2">Description</th>
+                                  <th className="text-right py-2">Total Man</th>
+                                  <th className="text-right py-2">Rate (USD)</th>
+                                  <th className="text-right py-2">Qty</th>
+                                  <th className="text-right py-2 font-bold">Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="py-1">Per-diems</td>
+                                  <td className="text-right font-mono">{waveSummary.onsiteMM.toFixed(2)}</td>
+                                  <td className="text-right font-mono">${waveSummary.logistics.config.per_diem_daily}</td>
+                                  <td className="text-right font-mono">{waveSummary.logistics.config.per_diem_days}</td>
+                                  <td className="text-right font-mono font-semibold">${waveSummary.logistics.perDiemCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                </tr>
+                                <tr>
+                                  <td className="py-1">Accommodation</td>
+                                  <td className="text-right font-mono">{waveSummary.onsiteMM.toFixed(2)}</td>
+                                  <td className="text-right font-mono">${waveSummary.logistics.config.accommodation_daily}</td>
+                                  <td className="text-right font-mono">{waveSummary.logistics.config.accommodation_days}</td>
+                                  <td className="text-right font-mono font-semibold">${waveSummary.logistics.accommodationCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                </tr>
+                                <tr>
+                                  <td className="py-1">Local Conveyance</td>
+                                  <td className="text-right font-mono">{waveSummary.onsiteMM.toFixed(2)}</td>
+                                  <td className="text-right font-mono">${waveSummary.logistics.config.local_conveyance_daily}</td>
+                                  <td className="text-right font-mono">{waveSummary.logistics.config.local_conveyance_days}</td>
+                                  <td className="text-right font-mono font-semibold">${waveSummary.logistics.conveyanceCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                </tr>
+                                <tr>
+                                  <td className="py-1">Travel - Air Fare</td>
+                                  <td className="text-right font-mono">{waveSummary.onsiteResourceCount}</td>
+                                  <td className="text-right font-mono">${waveSummary.logistics.config.flight_cost_per_trip}</td>
+                                  <td className="text-right font-mono">{waveSummary.logistics.config.num_trips}</td>
+                                  <td className="text-right font-mono font-semibold">${waveSummary.logistics.flightCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                </tr>
+                                <tr>
+                                  <td className="py-1">Visa & Medical</td>
+                                  <td className="text-right font-mono">{waveSummary.onsiteResourceCount}</td>
+                                  <td className="text-right font-mono">${waveSummary.logistics.config.visa_medical_per_trip}</td>
+                                  <td className="text-right font-mono">{waveSummary.logistics.config.num_trips}</td>
+                                  <td className="text-right font-mono font-semibold">${waveSummary.logistics.visaMedicalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                </tr>
+                                <tr>
+                                  <td className="py-1">Other Contingency</td>
+                                  <td className="text-right font-mono">1</td>
+                                  <td className="text-right font-mono">{waveSummary.logistics.config.contingency_percentage}%</td>
+                                  <td className="text-right font-mono">1</td>
+                                  <td className="text-right font-mono font-semibold">${waveSummary.logistics.contingencyCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                </tr>
+                                <tr className="border-t-2 font-bold">
+                                  <td className="py-2">Total</td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td className="text-right font-mono text-[#F59E0B]">${waveSummary.logistics.totalLogistics.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
                     )}
 
                     {/* Wave Summary */}
@@ -1306,46 +1366,39 @@ const ProjectEstimator = () => {
                         </CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            {(() => {
-                              const summary = calculateWaveSummary(wave);
-                              return (
-                                <>
-                                  <div>
-                                    <p className="text-gray-600">Total Man-Months</p>
-                                    <p className="font-mono font-semibold text-lg">{summary.totalMM.toFixed(1)}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-gray-600">Onsite MM</p>
-                                    <p className="font-mono font-semibold text-lg text-[#F59E0B]">{summary.onsiteMM.toFixed(1)}</p>
-                                    <p className="text-xs text-gray-500">${summary.onsiteSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-gray-600">Offshore MM</p>
-                                    <p className="font-mono font-semibold text-lg text-[#0EA5E9]">{summary.offshoreMM.toFixed(1)}</p>
-                                    <p className="text-xs text-gray-500">${summary.offshoreSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-gray-600">Logistics</p>
-                                    <p className="font-mono font-semibold text-lg">${summary.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                                  </div>
-                                  <div className="col-span-2">
-                                    <p className="text-gray-600">Cost to Company</p>
-                                    <p className="font-mono font-semibold text-xl">${summary.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                                  </div>
-                                  <div className="col-span-2">
-                                    <p className="text-gray-600">Wave Selling Price</p>
-                                    <p className="font-mono font-semibold text-xl text-[#10B981]">${summary.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                                  </div>
-                                </>
-                              );
-                            })()}
+                            <div>
+                              <p className="text-gray-600">Total Man-Months</p>
+                              <p className="font-mono font-semibold text-lg">{waveSummary.totalMM.toFixed(1)}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600">Onsite MM ({waveSummary.onsiteResourceCount} resources)</p>
+                              <p className="font-mono font-semibold text-lg text-[#F59E0B]">{waveSummary.onsiteMM.toFixed(1)}</p>
+                              <p className="text-xs text-gray-500">${waveSummary.onsiteSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600">Offshore MM</p>
+                              <p className="font-mono font-semibold text-lg text-[#0EA5E9]">{waveSummary.offshoreMM.toFixed(1)}</p>
+                              <p className="text-xs text-gray-500">${waveSummary.offshoreSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600">Total Logistics</p>
+                              <p className="font-mono font-semibold text-lg">${waveSummary.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-gray-600">Cost to Company</p>
+                              <p className="font-mono font-semibold text-xl">${waveSummary.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-gray-600">Wave Selling Price</p>
+                              <p className="font-mono font-semibold text-xl text-[#10B981]">${waveSummary.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
                     )}
                   </div>
                 </TabsContent>
-              ))}
+              )})}
             </Tabs>
           )}
         </CardContent>
@@ -1355,180 +1408,133 @@ const ProjectEstimator = () => {
       <Dialog open={editLogisticsDialogOpen} onOpenChange={setEditLogisticsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-[#0F172A]">
-              Wave Logistics Defaults
-            </DialogTitle>
-            <DialogDescription>These defaults apply to new onsite resources in this wave</DialogDescription>
+            <DialogTitle className="text-2xl font-bold text-[#0F172A]">Wave Logistics Configuration</DialogTitle>
+            <DialogDescription>Configure logistics rates for this wave. Costs calculated based on total onsite MM and resource count.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Per-Diem ($/day)</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.per_diem_daily}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.per_diem_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Per-Diem Days/Month</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.per_diem_days}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_days: parseInt(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.per_diem_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_days: parseInt(e.target.value) || 0 })} />
               </div>
+              <div className="flex items-end">
+                <p className="text-xs text-gray-500 pb-2">Onsite MM × ${waveLogistics.per_diem_daily} × {waveLogistics.per_diem_days}</p>
+              </div>
+              
               <div>
                 <Label>Accommodation ($/day)</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.accommodation_daily}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.accommodation_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Accommodation Days/Month</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.accommodation_days}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_days: parseInt(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.accommodation_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_days: parseInt(e.target.value) || 0 })} />
               </div>
+              <div className="flex items-end">
+                <p className="text-xs text-gray-500 pb-2">Onsite MM × ${waveLogistics.accommodation_daily} × {waveLogistics.accommodation_days}</p>
+              </div>
+              
               <div>
-                <Label>Local Conveyance ($/day)</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.local_conveyance_daily}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })}
-                />
+                <Label>Conveyance ($/day)</Label>
+                <Input type="number" value={waveLogistics.local_conveyance_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Conveyance Days/Month</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.local_conveyance_days}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.local_conveyance_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })} />
+              </div>
+              <div className="flex items-end">
+                <p className="text-xs text-gray-500 pb-2">Onsite MM × ${waveLogistics.local_conveyance_daily} × {waveLogistics.local_conveyance_days}</p>
+              </div>
+              
+              <div>
+                <Label>Air Fare ($/trip)</Label>
+                <Input type="number" value={waveLogistics.flight_cost_per_trip} onChange={(e) => setWaveLogistics({ ...waveLogistics, flight_cost_per_trip: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
-                <Label>Flight Cost ($/trip)</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.flight_cost_per_trip}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, flight_cost_per_trip: parseFloat(e.target.value) || 0 })}
-                />
+                <Label>Number of Trips</Label>
+                <Input type="number" value={waveLogistics.num_trips} onChange={(e) => setWaveLogistics({ ...waveLogistics, num_trips: parseInt(e.target.value) || 0 })} />
+              </div>
+              <div className="flex items-end">
+                <p className="text-xs text-gray-500 pb-2">Resources × ${waveLogistics.flight_cost_per_trip} × {waveLogistics.num_trips}</p>
+              </div>
+              
+              <div>
+                <Label>Visa & Medical ($/trip)</Label>
+                <Input type="number" value={waveLogistics.visa_medical_per_trip} onChange={(e) => setWaveLogistics({ ...waveLogistics, visa_medical_per_trip: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
-                <Label>Visa + Insurance ($/trip)</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.visa_insurance_per_trip}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, visa_insurance_per_trip: parseFloat(e.target.value) || 0 })}
-                />
+                <Label>Contingency %</Label>
+                <Input type="number" value={waveLogistics.contingency_percentage} onChange={(e) => setWaveLogistics({ ...waveLogistics, contingency_percentage: parseFloat(e.target.value) || 0 })} />
               </div>
-              <div className="col-span-2">
-                <Label>Default Number of Trips</Label>
-                <Input
-                  type="number"
-                  value={waveLogistics.num_trips}
-                  onChange={(e) => setWaveLogistics({ ...waveLogistics, num_trips: parseInt(e.target.value) || 0 })}
-                />
-              </div>
+              <div></div>
             </div>
             <Button onClick={handleSaveWaveLogistics} className="w-full bg-[#0F172A] hover:bg-[#0F172A]/90">
-              Save Logistics Defaults
+              Save Configuration
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Resource Logistics Editor Dialog */}
-      <Dialog open={editResourceLogisticsOpen} onOpenChange={setEditResourceLogisticsOpen}>
+      {/* Batch Update Logistics Dialog */}
+      <Dialog open={batchLogisticsDialogOpen} onOpenChange={setBatchLogisticsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-[#0F172A]">
-              Edit Resource Logistics
-            </DialogTitle>
-            <DialogDescription>Customize logistics costs for this specific resource</DialogDescription>
+            <DialogTitle className="text-2xl font-bold text-[#0F172A]">Batch Update Logistics</DialogTitle>
+            <DialogDescription>Update logistics configuration for all onsite resources in this wave</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
+            <div className="bg-amber-50 p-3 rounded border border-amber-200 text-sm">
+              <p className="font-semibold">This will update the wave logistics config.</p>
+              <p className="text-gray-600">Logistics are calculated at wave level based on total onsite MM and resource count.</p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Per-Diem ($/day)</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.per_diem_daily}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.per_diem_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_daily: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Per-Diem Days/Month</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.per_diem_days}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, per_diem_days: parseInt(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.per_diem_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, per_diem_days: parseInt(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Accommodation ($/day)</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.accommodation_daily}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.accommodation_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_daily: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Accommodation Days/Month</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.accommodation_days}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, accommodation_days: parseInt(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.accommodation_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, accommodation_days: parseInt(e.target.value) || 0 })} />
               </div>
               <div>
-                <Label>Local Conveyance ($/day)</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.local_conveyance_daily}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })}
-                />
+                <Label>Conveyance ($/day)</Label>
+                <Input type="number" value={waveLogistics.local_conveyance_daily} onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_daily: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Conveyance Days/Month</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.local_conveyance_days}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })}
-                />
+                <Input type="number" value={waveLogistics.local_conveyance_days} onChange={(e) => setWaveLogistics({ ...waveLogistics, local_conveyance_days: parseInt(e.target.value) || 0 })} />
               </div>
               <div>
-                <Label>Flight Cost ($/trip)</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.flight_cost_per_trip}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, flight_cost_per_trip: parseFloat(e.target.value) || 0 })}
-                />
+                <Label>Air Fare ($/trip)</Label>
+                <Input type="number" value={waveLogistics.flight_cost_per_trip} onChange={(e) => setWaveLogistics({ ...waveLogistics, flight_cost_per_trip: parseFloat(e.target.value) || 0 })} />
               </div>
               <div>
-                <Label>Visa + Insurance ($/trip)</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.visa_insurance_per_trip}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, visa_insurance_per_trip: parseFloat(e.target.value) || 0 })}
-                />
-              </div>
-              <div className="col-span-2">
                 <Label>Number of Trips</Label>
-                <Input
-                  type="number"
-                  value={resourceLogistics.num_trips}
-                  onChange={(e) => setResourceLogistics({ ...resourceLogistics, num_trips: parseInt(e.target.value) || 0 })}
-                />
-                <p className="text-xs text-gray-500 mt-1">Flights + Visa/Insurance calculated as: trips x cost per trip</p>
+                <Input type="number" value={waveLogistics.num_trips} onChange={(e) => setWaveLogistics({ ...waveLogistics, num_trips: parseInt(e.target.value) || 0 })} />
+              </div>
+              <div>
+                <Label>Visa & Medical ($/trip)</Label>
+                <Input type="number" value={waveLogistics.visa_medical_per_trip} onChange={(e) => setWaveLogistics({ ...waveLogistics, visa_medical_per_trip: parseFloat(e.target.value) || 0 })} />
+              </div>
+              <div>
+                <Label>Contingency %</Label>
+                <Input type="number" value={waveLogistics.contingency_percentage} onChange={(e) => setWaveLogistics({ ...waveLogistics, contingency_percentage: parseFloat(e.target.value) || 0 })} />
               </div>
             </div>
-            <Button onClick={handleSaveResourceLogistics} className="w-full bg-[#0F172A] hover:bg-[#0F172A]/90">
-              Save Resource Logistics
+            <Button onClick={handleBatchUpdateLogistics} className="w-full bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-white">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Apply to Wave
             </Button>
           </div>
         </DialogContent>
@@ -1607,12 +1613,6 @@ const ProjectEstimator = () => {
                   <p className="text-gray-600">Profit Margin</p>
                   <p className="font-semibold">{profitMarginPercentage}%</p>
                 </div>
-                {projectDescription && (
-                  <div className="col-span-2">
-                    <p className="text-gray-600">Description</p>
-                    <p className="font-semibold">{projectDescription}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
@@ -1635,12 +1635,10 @@ const ProjectEstimator = () => {
                       <div className="text-center p-3 bg-amber-50 rounded">
                         <p className="text-sm text-gray-600">Onsite MM</p>
                         <p className="text-2xl font-bold font-mono text-[#F59E0B]">{summary.onsiteMM.toFixed(1)}</p>
-                        <p className="text-xs text-gray-600 mt-1">${summary.onsiteSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                       </div>
                       <div className="text-center p-3 bg-blue-50 rounded">
                         <p className="text-sm text-gray-600">Offshore MM</p>
                         <p className="text-2xl font-bold font-mono text-[#0EA5E9]">{summary.offshoreMM.toFixed(1)}</p>
-                        <p className="text-xs text-gray-600 mt-1">${summary.offshoreSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                       </div>
                       <div className="text-center p-3 bg-purple-50 rounded">
                         <p className="text-sm text-gray-600">Logistics</p>
@@ -1674,12 +1672,10 @@ const ProjectEstimator = () => {
                   <div className="text-center p-4 bg-amber-50 rounded">
                     <p className="text-sm text-gray-600 mb-2">Total Onsite MM</p>
                     <p className="text-4xl font-bold font-mono text-[#F59E0B]">{overall.onsiteMM.toFixed(1)}</p>
-                    <p className="text-sm text-gray-600 mt-2">${overall.onsiteSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                   </div>
                   <div className="text-center p-4 bg-blue-50 rounded">
                     <p className="text-sm text-gray-600 mb-2">Total Offshore MM</p>
                     <p className="text-4xl font-bold font-mono text-[#0EA5E9]">{overall.offshoreMM.toFixed(1)}</p>
-                    <p className="text-sm text-gray-600 mt-2">${overall.offshoreSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded">
                     <p className="text-sm text-gray-600 mb-2">Total Logistics</p>
@@ -1700,7 +1696,6 @@ const ProjectEstimator = () => {
                     <p className="text-5xl font-extrabold font-mono text-[#10B981]">
                       ${overall.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
-                    <p className="text-sm text-gray-600 mt-2">Formula: Cost to Company / (1 - {profitMarginPercentage}%) = ${overall.totalCostToCompany.toFixed(0)} / {(1 - profitMarginPercentage/100).toFixed(2)}</p>
                   </div>
                 </div>
               </CardContent>
