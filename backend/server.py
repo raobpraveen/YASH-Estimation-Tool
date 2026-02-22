@@ -66,16 +66,12 @@ class Skill(BaseModel):
     name: str
     technology_id: str
     technology_name: str
-    base_location_id: str
-    base_location_name: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class SkillCreate(BaseModel):
     name: str
     technology_id: str
     technology_name: str
-    base_location_id: str
-    base_location_name: str
 
 
 # Models for Proficiency Rates
