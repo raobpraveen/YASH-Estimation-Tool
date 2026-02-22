@@ -165,6 +165,33 @@ const Projects = () => {
                 <DialogTitle className="text-2xl font-bold text-[#0F172A]">{selectedProject.name}</DialogTitle>
               </DialogHeader>
               <div className="space-y-6 mt-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <h3 className="text-sm text-gray-600">Customer</h3>
+                    <p className="font-semibold">{selectedProject.customer_name || "—"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-600">Location</h3>
+                    <p className="font-semibold">{selectedProject.project_location_name || "—"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-600">Technology</h3>
+                    <p className="font-semibold">{selectedProject.technology_name || "—"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-600">Project Type</h3>
+                    <p className="font-semibold">{selectedProject.project_type_name || "—"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-600">Profit Margin</h3>
+                    <p className="font-mono text-lg font-semibold">{selectedProject.profit_margin_percentage}%</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-600">Waves</h3>
+                    <p className="font-semibold">{selectedProject.waves?.length || 0}</p>
+                  </div>
+                </div>
+
                 {selectedProject.description && (
                   <div>
                     <h3 className="font-semibold text-[#0F172A] mb-1">Description</h3>
@@ -172,77 +199,86 @@ const Projects = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Wave Details */}
+                {selectedProject.waves && selectedProject.waves.length > 0 && (
                   <div>
-                    <h3 className="font-semibold text-[#0F172A] mb-1">Profit Margin Percentage</h3>
-                    <p className="font-mono text-lg">{selectedProject.profit_margin_percentage}%</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#0F172A] mb-1">Project Phases</h3>
-                    <p className="text-sm">{selectedProject.phases?.join(", ") || "N/A"}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-[#0F172A] mb-3">Resource Allocations</h3>
-                  {selectedProject.grid_allocations && selectedProject.grid_allocations.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse border border-[#E2E8F0]">
-                        <thead>
-                          <tr className="bg-[#F1F5F9]">
-                            <th className="border border-[#E2E8F0] p-2 text-left text-sm">Skill</th>
-                            <th className="border border-[#E2E8F0] p-2 text-left text-sm">Level</th>
-                            <th className="border border-[#E2E8F0] p-2 text-left text-sm">Location</th>
-                            <th className="border border-[#E2E8F0] p-2 text-center text-sm">Onsite</th>
-                            <th className="border border-[#E2E8F0] p-2 text-right text-sm">Total MM</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedProject.grid_allocations.map((allocation, idx) => {
-                            const totalMM = Object.values(allocation.phase_allocations || {}).reduce((s, v) => s + v, 0);
-                            return (
-                              <tr key={idx} className={allocation.is_onsite ? "bg-blue-50/30" : ""}>
-                                <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.skill_name}</td>
-                                <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.proficiency_level}</td>
-                                <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.base_location_name}</td>
-                                <td className="border border-[#E2E8F0] p-2 text-center">
-                                  {allocation.is_onsite && <Plane className="w-4 h-4 inline text-[#0EA5E9]" />}
-                                </td>
-                                <td className="border border-[#E2E8F0] p-2 text-right font-mono">{totalMM.toFixed(1)}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                    <h3 className="font-semibold text-[#0F172A] mb-3">Waves & Resources</h3>
+                    <div className="space-y-4">
+                      {selectedProject.waves.map((wave, waveIdx) => (
+                        <Card key={waveIdx} className="border border-[#E2E8F0]">
+                          <CardHeader className="py-3 bg-[#F8FAFC]">
+                            <CardTitle className="text-base font-bold">
+                              {wave.name} ({wave.duration_months} months)
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-3">
+                            {wave.grid_allocations && wave.grid_allocations.length > 0 ? (
+                              <div className="overflow-x-auto">
+                                <table className="w-full border-collapse border border-[#E2E8F0]">
+                                  <thead>
+                                    <tr className="bg-[#F1F5F9]">
+                                      <th className="border border-[#E2E8F0] p-2 text-left text-sm">Skill</th>
+                                      <th className="border border-[#E2E8F0] p-2 text-left text-sm">Level</th>
+                                      <th className="border border-[#E2E8F0] p-2 text-left text-sm">Location</th>
+                                      <th className="border border-[#E2E8F0] p-2 text-center text-sm">Onsite</th>
+                                      <th className="border border-[#E2E8F0] p-2 text-right text-sm">Total MM</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {wave.grid_allocations.map((allocation, idx) => {
+                                      const totalMM = Object.values(allocation.phase_allocations || {}).reduce((s, v) => s + v, 0);
+                                      return (
+                                        <tr key={idx} className={allocation.is_onsite ? "bg-amber-50/30" : ""}>
+                                          <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.skill_name}</td>
+                                          <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.proficiency_level}</td>
+                                          <td className="border border-[#E2E8F0] p-2 text-sm">{allocation.base_location_name}</td>
+                                          <td className="border border-[#E2E8F0] p-2 text-center">
+                                            {allocation.is_onsite && <Plane className="w-4 h-4 inline text-[#F59E0B]" />}
+                                          </td>
+                                          <td className="border border-[#E2E8F0] p-2 text-right font-mono">{totalMM.toFixed(1)}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : (
+                              <p className="text-gray-500 text-sm">No resources in this wave</p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
-                  ) : (
-                    <p className="text-gray-500 text-sm">No resources allocated</p>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="border-t pt-4">
                   <h3 className="font-semibold text-[#0F172A] mb-3">Cost Summary</h3>
                   <div className="space-y-2">
                     {(() => {
-                      const { baseCost, withOverhead, sellingPrice } = calculateProjectValue(selectedProject);
+                      const { baseCost, withOverhead, sellingPrice, totalMM } = calculateProjectValue(selectedProject);
                       return (
                         <>
                           <div className="flex justify-between">
+                            <span>Total Man-Months:</span>
+                            <span className="font-mono font-semibold">{totalMM.toFixed(1)}</span>
+                          </div>
+                          <div className="flex justify-between">
                             <span>Base Cost:</span>
                             <span className="font-mono font-semibold">
-                              ${baseCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${baseCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Cost + Overhead ({selectedProject.overhead_percentage}%):</span>
+                            <span>Cost to Company (with Overheads):</span>
                             <span className="font-mono font-semibold">
-                              ${withOverhead.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${withOverhead.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
                           </div>
-                          <div className="flex justify-between text-lg font-bold">
-                            <span>Selling Price:</span>
+                          <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                            <span>Selling Price ({selectedProject.profit_margin_percentage}% margin):</span>
                             <span className="font-mono text-[#10B981]">
-                              ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
                           </div>
                         </>
