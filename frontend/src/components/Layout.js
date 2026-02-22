@@ -8,12 +8,15 @@ import {
   Layers, 
   Briefcase, 
   Calculator, 
-  FolderKanban 
+  FolderKanban,
+  LogOut,
+  User
 } from "lucide-react";
+import { Button } from "./ui/button";
 
-const Layout = () => {
+const Layout = ({ user, onLogout }) => {
   const navItems = [
-    { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/customers", icon: Users, label: "Customers" },
     { path: "/technologies", icon: Cpu, label: "Technologies" },
     { path: "/project-types", icon: BriefcaseIcon, label: "Project Types" },
@@ -37,7 +40,6 @@ const Layout = () => {
               <li key={item.path}>
                 <NavLink
                   to={item.path}
-                  end={item.path === "/"}
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors duration-200 ${
                       isActive
@@ -54,6 +56,29 @@ const Layout = () => {
             ))}
           </ul>
         </nav>
+        {user && (
+          <div className="p-4 border-t border-white/10">
+            <div className="flex items-center gap-3 mb-3 px-2">
+              <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                <User className="w-4 h-4 text-cyan-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                <p className="text-xs text-white/50 truncate">{user.email}</p>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onLogout}
+              className="w-full text-white/70 hover:text-white hover:bg-white/10"
+              data-testid="logout-button"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        )}
         <div className="p-4 border-t border-white/10">
           <p className="text-xs text-white/40">© 2026 Project Estimator</p>
         </div>
