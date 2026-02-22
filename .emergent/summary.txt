@@ -2,91 +2,145 @@
 Build an IT/Software Project estimator tool.
 
 **PRODUCT REQUIREMENTS:**
-- **Skills Management**: Maintain skills with technology and proficiency levels.
-- **Cost Calculation**:
-    - Calculate costs based on the average monthly salary for a resource's skill and proficiency. This salary should be editable per estimation.
-    - Add a percentage-based Overheads cost, configurable per base location.
-    - Add a percentage-based Profit Margin (defaulting to 35%).
-    - **Selling Price Formula**: .
-- **Logistics Costs (Onsite Resources)**:
-    - An on/off indicator within the grid to mark resources as Onsite.
-    - Calculate logistics costs at the wave level. All rates (per-diems, accommodation, etc.) should be editable.
-    - Batch update logistics to apply settings to all onsite resources in a wave at once.
-    - **Calculation Formulas (based on user image)**:
-        - Per-diems, Accommodation, Conveyance: 
-        - Air Fare, Visa & Medical: 
-- **Estimator Header Data**:
-    - Customer Name, Project Location, Technology, Project Type.
-- **Estimator Structure**:
-    - Wave-based estimation with its own duration in months.
-    - The grid should have dynamic columns for each month, with editable phase names.
-- **Master Data Management**:
-    - Manage Customers, Technologies, Base Locations, and Project Types.
-- **Versioning**:
-    - Each project estimation should have a unique project number and version management.
-    - Ability to compare different versions of an estimation.
-- **Summary Screen**:
-    - A summary screen per project showing wave-wise breakdowns.
-- **Other Features**:
-    - Currency is always USD.
+- **Core Estimator Grid:**
+    - Wave-based estimation with dynamic monthly phases.
+    - Resources defined by Skill, Proficiency Level, and Location.
+    - Excel-like data entry: Skill, Level, and Location should be editable dropdowns in the grid. Changing any of these should automatically fetch the correct salary from the proficiency rate masters.
+    - Editable average monthly salary per resource for overrides.
+    - Onsite and Travel Required toggles per resource.
+- **Cost Calculation:**
+    - Base Cost: Calculated from resource salaries.
+    - Overheads: A configurable percentage based on the project's base location.
+    - Profit Margin: A configurable percentage (defaults to 35%).
+    - Selling Price: .
+    - Logistics Costs: Calculated at the wave level for resources marked Travel Required, based on editable rates for per-diems, accommodation, airfare, etc.
+- **Project & Version Management:**
+    - Header data: Customer, multi-select for Project Location(s), Technology, and Project Type.
+    - Versioning: Each estimation has a unique project number and version. Cloning creates new versions.
+    - Version Comments: A mandatory text field to capture changes for each version.
+    - Read-Only States:
+        - Older versions of a project must be in display-only mode.
+        - Projects with Approved or In Review status must be entirely read-only, including the grid.
+- **Workflow & Analytics:**
+    - Approval Workflow: A simple status system (Draft, In Review, Approved, Rejected) with in-app notifications and the ability for approvers to edit and create new versions.
+    - Dashboard: Analytics showing project counts by status, costs vs. selling price, etc.
+    - Comparison: A screen to compare two versions of a project side-by-side, including version comments and cost breakdowns.
+- **Master Data Management:** CRUD for Customers, Technologies, Project Types, Base Locations, Skills, and Proficiency Rates. Uniqueness must be enforced.
+- **UI/UX:**
+    - A summary screen showing wave-wise breakdowns and KPIs (e.g., avg. selling price per man-month for onsite/offshore).
     - Export to Excel functionality.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (FastAPI backend, React frontend) for IT project estimation. The app includes:
--   **Master Data Management**: CRUD for Technologies, Project Types, Base Locations, and Customers.
--   **Core Data Management**: CRUD for Skills and Proficiency Rates.
--   **Project Estimation**: A feature-rich estimator page supporting wave-based planning, dynamic monthly phases, editable salaries, and an on/off toggle for onsite resources.
--   **Project Lifecycle**: Functionality to save, edit, clone (creating new versions), and delete estimations.
--   **Project Listing & Summary**: A main projects page lists all estimations with version tracking, and a dedicated summary page provides a high-level overview of a selected project.
--   **Backend Support**: The FastAPI backend supports all frontend features, including version management logic with a , , and  flag.
+A full-stack application with a FastAPI backend and React frontend. It includes:
+-   **Master Data Management**: Full CRUD for all master data entities (Skills, Technologies, etc.) with backend uniqueness validation.
+-   **Project Lifecycle**: Users can create, edit, clone (version), and delete projects. The UI supports an expandable version history on the main projects list.
+-   **Approval Workflow**: An in-app approval system with statuses (Draft, In Review, Approved, Rejected) and corresponding UI controls is implemented.
+-   **Dashboard**: A new dashboard page uses  to display project analytics.
+-   **Estimator Page**: The main estimation page supports wave-based planning, cost calculations, and toggles for Onsite and Travel Required. It includes a read-only mode for old/approved versions. Recent changes were made to support multi-select for project locations.
+-   **Backend**: The FastAPI backend supports versioning, the approval workflow, notifications, and has been updated to store multiple locations, technologies, and project types.
 
 **Last working item**:
--   Last item agent was working: Implementing a Compare Versions feature and a new logistics cost calculation model based on a user-provided image. The agent's last action was creating the skeleton file for the version comparison page ().
+-   Last item agent was working: Implementing a large batch of 9 user-requested features. The agent was focused on updating the  component to support **inline grid editing** (Excel-like dropdowns for Skill, Level, Location) and **multi-select for Technology and Project Type**. The last action was updating the backend Pydantic model in  to support these multi-select fields.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? **frontend testing agent**. The upcoming changes involve complex new UI (version comparison, batch logistics update) and critical calculation logic that requires comprehensive testing.
+-   Which testing method agent to use? **both**. The changes are extensive, touching the frontend UI (), frontend logic (new salary lookups), and the backend data model ().
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
-There are no outstanding bugs. All work is focused on new feature implementation.
+-   **Issue 1**: (P0) Implement Inline Grid Editing in Estimator
+-   **Issue 2**: (P0) Update KPIs and View Summary Screen
+-   **Issue 3**: (P1) Complete Read-Only Logic for In Review Status
+-   **Issue 4**: (P1) Implement Multi-Select for Technology & Project Type
+-   **Issue 5**: (P2) Make Version Comments Mandatory
+-   **Issue 6**: (P2) Update Comparison Screen with New Requirements
+
+**Issues Detail**:
+-   **Issue 1**:
+    -   Description: The user wants an Excel-like data entry experience in the estimator grid. The 'Skill', 'Level', and 'Location' columns for each resource should be dropdowns. When a value is changed, the salary cost should automatically update by looking up the new combination from the  master data.
+    -   Attempted fixes: The agent created a function  in  to handle the logic and started modifying the JSX to replace text fields with  dropdowns. This implementation is incomplete and untested.
+    -   Next debug checklist:
+        1.  Verify the  dropdowns are correctly rendered for Skill, Level, and Location in the grid in .
+        2.  Ensure the  function is correctly wired to the  event of these dropdowns.
+        3.  Test the API call within  to fetch the new salary and ensure the frontend state () is updated correctly, triggering a re-render of the costs.
+    -   Why fix this issue and what will be achieved with the fix?: This is a critical usability improvement requested by the user to make data entry faster and less error-prone.
+    -   Status: **IN PROGRESS**
+    -   Should Test frontend/backend/both after fix?: Both.
+-   **Issue 2**:
+    -   Description:
+        1.  The KPI cards above the waves in  should show separate Onsite Avg. Selling Price/MM and Offshore Avg. Selling Price/MM.
+        2.  The View Summary modal needs the same two KPIs (Onsite/Offshore Avg.) and also the  value displayed for each wave.
+    -   Attempted fixes: The agent started updating the KPI cards in . The changes to the View Summary modal have not been implemented.
+    -   Next debug checklist:
+        1.  Review the  function in  to ensure it correctly calculates separate onsite/offshore averages.
+        2.  Update the JSX for the KPI cards to display these two new values.
+        3.  Modify the View Summary modal to include the new KPIs and the profit margin per wave.
+    -   Why fix this issue and what will be achieved with the fix?: Provides more granular and useful financial metrics to the user.
+    -   Status: **IN PROGRESS**
+    -   Should Test frontend/backend/both after fix?: Frontend.
+-   **Issue 3**:
+    -   Description: Projects with status In Review should be entirely read-only, similar to Approved projects. This includes the main form fields and the estimator grid.
+    -   Attempted fixes: The agent updated the  check in  to include .
+    -   Next debug checklist:
+        1.  Verify that all interactive elements (inputs, buttons, toggles, grid dropdowns) in  are disabled when a project with In Review status is loaded.
+    -   Why fix this issue and what will be achieved with the fix?: Prevents users from making changes to an estimation that is pending approval, ensuring data integrity during the review process.
+    -   Status: **IN PROGRESS**
+    -   Should Test frontend/backend/both after fix?: Frontend.
+-   **Issue 4**:
+    -   Description: The 'Technology' and 'Project Type' fields in the  header should be multi-select dropdowns.
+    -   Attempted fixes: The agent updated the backend model in , updated state management in  to use  and , and started replacing the UI components.
+    -   Next debug checklist:
+        1.  Finalize and verify the multi-select UI component implementation in .
+        2.  Test saving and loading a project with multiple technologies and project types to ensure data persistence.
+    -   Why fix this issue and what will be achieved with the fix?: Allows for more accurate project classification.
+    -   Status: **IN PROGRESS**
+    -   Should Test frontend/backend/both after fix?: Both.
+-   **Issue 5**:
+    -   Description: The Version Comments field must not be empty when saving a project.
+    -   Attempted fixes: The agent added a validation check in the  function in .
+    -   Next debug checklist:
+        1.  Test saving a project with an empty Version Comments field and confirm that an error/toast message is shown and the save is prevented.
+        2.  Test saving with a non-empty comment to ensure it works.
+    -   Why fix this issue and what will be achieved with the fix?: Enforces good practice of documenting changes between versions.
+    -   Status: **IN PROGRESS**
+    -   Should Test frontend/backend/both after fix?: Frontend.
+-   **Issue 6**:
+    -   Description: The Compare Versions screen needs to be updated to:
+        1.  Display the Version Comments for each of the two versions being compared.
+        2.  Show Total Selling Price for Onsite Man-Months and Total Selling Price for Offshore Man-Months.
+    -   Attempted fixes: None. The agent has not worked on  yet.
+    -   Next debug checklist:
+        1.  Update the backend endpoint (if necessary) to include  in the project data.
+        2.  Modify the  component to fetch and display the comments and the new onsite/offshore cost breakdowns.
+    -   Why fix this issue and what will be achieved with the fix?: Enhances the utility of the comparison feature, making it easier to see why versions differ.
+    -   Status: **NOT STARTED**
+    -   Should Test frontend/backend/both after fix?: Both.
 
 **In progress Task List**:
--   **Task 1**: Implement New Logistics Calculations & Batch Update (P0)
-    -   Where to resume: Update the  file.
-    -   What will be achieved with this?:
-        1.  The logistics cost calculation logic will be updated to perform calculations at the **wave level**, matching the formulas provided by the user.
-        2.  A Batch update logistics feature will be added to allow users to apply logistics settings (like rates and days) to all onsite resources within a wave simultaneously.
-    -   Status: **NOT STARTED**
-    -   Should Test frontend/backend/both after fix?: Both. The frontend contains the new logic and UI, and the backend needs to correctly store the updated wave-level logistics data.
-    -   Blocked on something: No.
-
--   **Task 2**: Complete and Integrate Compare Versions Feature (P1)
-    -   Where to resume: The file  exists but is empty. It needs to be fully implemented.
-    -   What will be achieved with this?: Users will be able to select two versions of the same project and see a side-by-side comparison of their details and costs. This requires fetching data for both versions and rendering it in a comparative view. The feature also needs to be linked from the  page.
-    -   Status: **IN PROGRESS**
-    -   Should Test frontend/backend/both after fix?: Both. Frontend for the comparison UI, and backend for a new API endpoint to fetch data for two specific project versions.
-    -   Blocked on something: No.
+The current work is tracked in the All Pending/In progress Issue list.
 
 **Upcoming and Future Tasks**
 -   **Future Tasks:**
-    -   **Export to Excel Enhancement**: Update the Export to Excel functionality to reflect the new complex grid structure, including waves, phases, versions, and all detailed cost components.
+    -   **Export to Excel Enhancement (P1)**: Update the Export to Excel functionality to reflect the complex grid structure, waves, phases, versions, and all detailed cost components.
+    -   **Email Notifications (P2)**: Implement email notifications for the approval workflow (currently deferred in favor of in-app notifications).
 
 **Completed work in this session**
--   **Project Versioning**: Implemented a complete versioning system.
-    -   Added  and  tracking in the backend ().
-    -   Added Clone functionality to create new versions and Edit to create revisions.
-    -   Updated the  list to display version badges and group projects by .
--   **New Features & UI Enhancements**:
-    -   Created a  page to display a high-level overview.
-    -   Added an Onsite on/off switch directly in the estimator grid.
-    -   Allowed the average monthly salary for a skill to be edited within an estimation.
-    -   Made all logistics cost rates (per-diems, accommodation, etc.) editable per wave.
--   **Bug Fixes**:
-    -   Resolved an issue on the  page where projects with a selling price of /bin/bash were displayed incorrectly.
-    -   Fixed a bug preventing legacy projects (created before versioning) from appearing in the project list.
-    -   The testing agent identified and fixed a  bug during project saving.
+-   **Approval Workflow & Notifications**:
+    -   Implemented a full project status lifecycle (Draft, In Review, Approved, Rejected) in  and .
+    -   Added new API endpoints (, , ).
+    -   Created an in-app notification system with a dedicated API endpoint ().
+-   **Dashboard & Analytics**:
+    -   Created a new  page.
+    -   Integrated  to display analytics charts (e.g., Project Status Distribution, Cost vs Selling Price).
+-   **Project List Enhancements**:
+    -   Rewrote  to feature an expandable version history for each project, showing older versions nested under the latest.
+    -   Added a Status column to the projects list.
+-   **Major Bug Fixes & User Requests**:
+    -   **Uniqueness Validation**: Implemented backend validation to prevent duplicate entries for Skills and Proficiency Rates.
+    -   **Multi-Location Support**: Updated the project model and estimator UI to support multiple project locations.
+    -   **Read-Only Mode**: Implemented a read-only mode for older project versions and approved projects.
+    -   **UI/UX Fixes**: Resolved an issue where buttons overflowed at 100% zoom; added various summary KPIs and tooltips.
 
 **Earlier issues found/mentioned but not fixed**
 None.
@@ -104,78 +158,81 @@ None.
 -   **Frontend**: React.js
 -   **Database**: MongoDB
 -   **UI**: Shadcn UI components, Tailwind CSS
--   **Data Handling**:  library for Excel export.
+-   **Charting**: Recharts
 
 **key DB schema**
 -   : 
 -   : 
 -   : 
--   : 
--   : 
--   : 
--   : 
 
 **changes in tech stack**
-None.
+-   Added  for dashboard analytics.
 
 **All files of reference**
--   **/app/backend/server.py**: Contains all API endpoints, including new logic for versioning, editing, and cloning projects.
--   **/app/frontend/src/pages/ProjectEstimator.js**: The core estimator component. Needs updates for new logistics calculations and batch updates.
--   **/app/frontend/src/pages/Projects.js**: The main project listing page, updated to support versioning and new actions (Summary, Edit, Clone).
--   **/app/frontend/src/pages/ProjectSummary.js**: A new page to show a high-level summary of a project.
--   **/app/frontend/src/pages/CompareVersions.js**: A new, placeholder file for the version comparison feature.
--   **/app/frontend/src/App.js**: The main React router, updated with routes for editing and summarizing projects.
+-   **/app/backend/server.py**: Contains all API endpoints and Pydantic models. Recently updated to support multi-select fields and uniqueness validation.
+-   **/app/frontend/src/pages/ProjectEstimator.js**: The most critical and complex component. It is **currently in a half-implemented state** and is the main focus of the pending issues.
+-   **/app/frontend/src/pages/Projects.js**: The project listing page with expandable version history.
+-   **/app/frontend/src/pages/Dashboard.js**: The new analytics dashboard.
+-   **/app/frontend/src/pages/CompareVersions.js**: The version comparison page, which needs to be updated.
+-   **/app/frontend/src/pages/Skills.js**: UI updated to handle backend validation errors.
+-   **/app/frontend/src/pages/ProficiencyRates.js**: UI updated to handle backend validation errors.
 
 **Areas that need refactoring**:
--   The  file is very large. It should be broken down into smaller components (, , etc.) after the current feature set is stable.
+-   The  file has grown extremely large and complex. It urgently needs to be broken down into smaller, manageable components (e.g., , , , ) to improve maintainability. This should be a priority after stabilizing the current feature set.
 
 **key api endpoints**
 -    (GET, POST)
 -    (GET, PUT)
 -    (POST)
+-    (POST)
+-    (POST)
+-    (POST)
 -    (GET)
--   , , etc. (GET, POST)
+-    (POST) - (A new endpoint will likely be needed for inline grid editing).
 
 **Critical Info for New Agent**
--   You are mid-implementation. The immediate tasks are to build out the **new logistics calculation logic** and the **version comparison** feature.
--   The logistics formulas provided by the user (from the image) are critical. They are calculated at the **wave level**, which is a change from the previous per-resource model. Refer to the  for the exact formulas.
--   The  page exists but is an empty shell. It needs to be built and integrated. You will likely need a new backend endpoint to fetch two project versions for comparison.
--   The  file is the main focus for the logistics and batch update changes.
+-   The application is in a **fragile, partially implemented state**. The previous agent attempted a large number of simultaneous changes in , which is the source of all current pending issues.
+-   Your first priority is to stabilize the application by systematically completing and testing the pending features listed in the All Pending/In progress Issue list. **Do not attempt to implement them all at once.**
+-   Tackle the issues one by one, testing incrementally after each small change. Start with  (Multi-Select) and  (Read-Only Logic) to stabilize the form, then move to  (Inline Grid Editing), which is the most complex.
+-   The  function and the associated UI for the inline editable grid in  are incomplete. You will need to finish this implementation and likely create a new backend endpoint to fetch salaries on the fly.
 
 **documents and test reports created in this job**
 -   /app/memory/PRD.md
--   /app/test_reports/iteration_2.json
--   /app/test_reports/iteration_3.json
+-   /app/test_reports/iteration_5.json
+-   /app/test_reports/iteration_6.json
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user**: Asks to complete next action items (version management, editable salary, onsite toggle) and adds new requirements for logistics cost calculation and editable rates.
-2.  **agent**: Plans to implement all the new features, starting with backend changes for versioning.
-3.  **user**: (No message, agent proceeds with implementation).
-4.  **agent**: Implements backend and frontend changes for versioning, summary page, edit/clone functionality.
-5.  **user**: (No message, agent proceeds with testing).
-6.  **agent**: Runs the testing agent, which finds and fixes a bug related to .
-7.  **user**: 
-8.  **user**: Also 
-9.  **user**: (Provides an image, now removed) 
-10. **agent**: Analyzes the image, derives the new wave-level logistics formulas, and plans to implement the compare feature and logistics updates. The last action was creating the  file.
+1.  **user**: (After a major update) Provides a list of 9 required fixes/improvements.
+2.  **agent**: Acknowledges the request and begins implementation.
+3.  **agent**: (Internal thought) Plans to implement all changes, starting with .
+4.  **agent**: (Action) Updates  check in .
+5.  **agent**: (Action) Updates state and functions in  for multi-select and inline editing.
+6.  **agent**: (Action) Adds validation for version notes.
+7.  **agent**: (Action) Starts updating UI components for multi-select and inline grid dropdowns.
+8.  **agent**: (Action) Updates the backend  model in  to support multi-select fields.
+9.  **The conversation ends here, mid-implementation.** The user has not seen the results of this work.
 
 **Project Health Check:**
--   **Broken**: The version comparison feature is incomplete. The logistics calculations in  do not match the latest user requirements and must be updated.
+-   **Broken**: The core  component is in a non-functional, half-implemented state due to the large number of simultaneous changes. Key features like inline grid editing, multi-select, and new KPI displays are incomplete.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
--   **xlsx**: Used for Excel export functionality.
+-   **xlsx**: Used for Excel export.
+-   **recharts**: Used for dashboard charts.
 
 **Testing status**
--   Testing agent used after significant changes: YES. The agent ran comprehensive tests twice in the last session.
+-   Testing agent used after significant changes: YES, but not after the most recent batch of changes.
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: None.
--   Known regressions: None, but the logistics feature is pending a required update.
+-   Known regressions: The main estimator page is likely non-functional.
 
 **Credentials to test flow:**
 No authentication is implemented.
 
 **What agent forgot to execute**
--   After creating the  file, the agent did not add the corresponding route to  or link to it from the UI.
--   The core implementation for the new wave-level logistics calculations in  has not been started.
--   The Batch update logistics feature has not been started.</analysis>
+The agent was in the middle of a large implementation task when the job ended. The following were started but not finished or not started at all from the user's last request:
+-   **Incomplete**: Inline grid editing for Skill, Level, and Location.
+-   **Incomplete**: Multi-select UI for Technology and Project Type.
+-   **Incomplete**: Updating KPI cards and the View Summary screen.
+-   **Not Started**: Updating the  screen with version comments and new cost breakdowns.
+-   **Untested**: All the recent changes.</analysis>
