@@ -117,14 +117,14 @@ const Projects = () => {
               </TableHeader>
               <TableBody>
                 {projects.map((project) => {
-                  const { sellingPrice } = calculateProjectValue(project);
+                  const { sellingPrice, totalMM, resourceCount } = calculateProjectValue(project);
                   return (
                     <TableRow key={project.id} data-testid={`project-row-${project.id}`}>
                       <TableCell className="font-medium">{project.name}</TableCell>
                       <TableCell className="max-w-xs truncate">{project.description || "—"}</TableCell>
-                      <TableCell className="text-right">{project.grid_allocations?.length || 0}</TableCell>
+                      <TableCell className="text-right">{resourceCount}</TableCell>
                       <TableCell className="text-right font-mono tabular-nums font-semibold text-[#10B981]">
-                        ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
