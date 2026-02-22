@@ -1862,6 +1862,7 @@ const ProjectEstimator = () => {
                                         value={allocation.phase_allocations[phaseIndex] || ""}
                                         onChange={(e) => handlePhaseAllocationChange(wave.id, allocation.id, phaseIndex, e.target.value)}
                                         data-testid={`phase-${phaseIndex}-${allocation.id}`}
+                                        disabled={isReadOnly}
                                       />
                                     </td>
                                   ))}
@@ -1872,6 +1873,7 @@ const ProjectEstimator = () => {
                                     ${baseSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                   </td>
                                   <td className="p-3 text-center">
+                                    {!isReadOnly && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -1881,6 +1883,7 @@ const ProjectEstimator = () => {
                                     >
                                       <Trash2 className="w-4 h-4" />
                                     </Button>
+                                    )}
                                   </td>
                                 </tr>
                               );
