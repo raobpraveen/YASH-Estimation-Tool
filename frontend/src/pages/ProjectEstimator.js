@@ -1336,14 +1336,26 @@ const ProjectEstimator = () => {
             )}
           </CardContent>
         </Card>
-        <Card className="border border-[#E2E8F0] shadow-sm">
+        <Card className="border border-[#F59E0B] shadow-sm bg-amber-50/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Avg. Selling Price/MM</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">Onsite Avg. $/MM</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-extrabold font-mono text-[#8B5CF6]" data-testid="avg-selling-price">
-              ${overall.totalMM > 0 
-                ? (overall.sellingPrice / overall.totalMM).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
+            <p className="text-2xl font-extrabold font-mono text-[#F59E0B]" data-testid="onsite-avg-price">
+              ${overall.onsiteMM > 0 
+                ? ((overall.onsiteSalaryCost / overall.onsiteMM) * (1 + profitMarginPercentage/100)).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
+                : 0}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border border-[#0EA5E9] shadow-sm bg-blue-50/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Offshore Avg. $/MM</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-extrabold font-mono text-[#0EA5E9]" data-testid="offshore-avg-price">
+              ${overall.offshoreMM > 0 
+                ? ((overall.offshoreSalaryCost / overall.offshoreMM) * (1 + profitMarginPercentage/100)).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
                 : 0}
             </p>
           </CardContent>
