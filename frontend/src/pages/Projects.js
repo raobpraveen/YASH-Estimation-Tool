@@ -269,7 +269,15 @@ const Projects = () => {
           </div>
         </TableCell>
         <TableCell className={`font-medium max-w-xs truncate ${isSubVersion ? "text-gray-600" : ""}`}>
-          {project.name}
+          <div className="flex items-center gap-2">
+            {project.name}
+            {project.is_template && (
+              <Badge className="bg-emerald-100 text-emerald-700 text-xs">
+                <Bookmark className="w-3 h-3 mr-1" />
+                Template
+              </Badge>
+            )}
+          </div>
         </TableCell>
         <TableCell>{project.customer_name || "—"}</TableCell>
         <TableCell className="text-center">
