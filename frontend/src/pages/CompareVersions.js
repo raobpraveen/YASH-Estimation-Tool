@@ -318,6 +318,14 @@ const CompareVersions = () => {
                 </td>
               </tr>
               <tr className="border-b bg-purple-50/30">
+                <td className="py-3 px-4 font-medium text-purple-600">Traveling Resources</td>
+                <td className="py-3 px-4 text-right font-mono">{leftSummary.travelingResourceCount} ({leftSummary.travelingMM.toFixed(1)} MM)</td>
+                <td className="py-3 px-4 text-right font-mono">{rightSummary.travelingResourceCount} ({rightSummary.travelingMM.toFixed(1)} MM)</td>
+                <td className="py-3 px-4 text-right">
+                  <DiffBadge diff={travelingResourceDiff} suffix=" res" />
+                </td>
+              </tr>
+              <tr className="border-b bg-purple-50/30">
                 <td className="py-3 px-4 font-medium">Total Logistics</td>
                 <td className="py-3 px-4 text-right font-mono">${leftSummary.totalLogistics.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                 <td className="py-3 px-4 text-right font-mono">${rightSummary.totalLogistics.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
