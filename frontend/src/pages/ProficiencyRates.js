@@ -313,7 +313,8 @@ const ProficiencyRates = () => {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <Card className="border border-[#E2E8F0] shadow-sm">
