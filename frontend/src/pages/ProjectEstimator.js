@@ -1016,6 +1016,10 @@ const ProjectEstimator = () => {
       summaryData.push(["Total Logistics", "", `$${logistics.totalLogistics.toFixed(2)}`]);
       summaryData.push([]);
       summaryData.push(["Cost to Company", `$${summary.totalCostToCompany.toFixed(2)}`]);
+      summaryData.push(["Resources Price", `$${summary.totalRowsSellingPrice.toFixed(2)}`]);
+      summaryData.push(["Onsite Selling Price", `$${summary.onsiteSellingPrice.toFixed(2)}`]);
+      summaryData.push(["Offshore Selling Price", `$${summary.offshoreSellingPrice.toFixed(2)}`]);
+      summaryData.push(["Profit", `$${((summary.onsiteSellingPrice + summary.offshoreSellingPrice) - summary.totalCostToCompany).toFixed(2)}`]);
       summaryData.push(["Wave Selling Price", `$${summary.sellingPrice.toFixed(2)}`]);
       summaryData.push(["Nego Buffer %", `${summary.negoBufferPercentage}%`]);
       summaryData.push(["Nego Buffer Amount", `$${summary.negoBufferAmount.toFixed(2)}`]);
