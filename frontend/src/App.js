@@ -15,6 +15,7 @@ import ProjectSummary from "@/pages/ProjectSummary";
 import CompareVersions from "@/pages/CompareVersions";
 import Login from "@/pages/Login";
 import UserManagement from "@/pages/UserManagement";
+import Settings from "@/pages/Settings";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
               <Route path="projects/:projectId/summary" element={<ProjectSummary />} />
               <Route path="projects/:projectId/compare" element={<CompareVersions />} />
               <Route path="users" element={<UserManagement />} />
+              <Route path="settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
           )}
