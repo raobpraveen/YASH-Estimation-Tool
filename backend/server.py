@@ -126,6 +126,20 @@ async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(secur
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
     return payload
 
+async def require_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """Require admin role for access"""
+    if not credentials:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    payload = verify_jwt_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+    
+    # Check if user is admin
+    user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0})
+    if not user or user.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return payload
+
 
 # Auth Endpoints
 @api_router.post("/auth/register", response_model=AuthResponse)
