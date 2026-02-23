@@ -690,10 +690,14 @@ const ProjectEstimator = () => {
       });
     });
 
-    // Calculate onsite and offshore selling prices
+    // Calculate onsite and offshore selling prices (WITHOUT nego buffer for avg $/MM)
     // Onsite includes logistics, offshore doesn't
     const onsiteSellingPrice = (onsiteSalaryCost + onsiteOverheadCost + totalLogisticsCost) / (1 - profitMarginPercentage / 100);
     const offshoreSellingPrice = (offshoreSalaryCost + offshoreOverheadCost) / (1 - profitMarginPercentage / 100);
+    
+    // Calculate avg $/MM WITHOUT nego buffer
+    const onsiteAvgPerMM = onsiteMM > 0 ? onsiteSellingPrice / onsiteMM : 0;
+    const offshoreAvgPerMM = offshoreMM > 0 ? offshoreSellingPrice / offshoreMM : 0;
 
     return {
       totalMM,
@@ -708,6 +712,8 @@ const ProjectEstimator = () => {
       finalPrice: totalFinalPrice,
       onsiteSellingPrice,
       offshoreSellingPrice,
+      onsiteAvgPerMM,
+      offshoreAvgPerMM,
     };
   };
 
