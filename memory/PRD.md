@@ -304,50 +304,52 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 ---
 
 ## Test Coverage
-- Test reports: `/app/test_reports/iteration_9.json`
-- All iteration 9 features tested and verified working:
-  - Admin Login, Dashboard KPIs/Charts/Filters
-  - User Management (CRUD, RBAC)
-  - Proficiency Rates inline editing
-- Backend: 93% pass rate (14/15 tests)
-- Frontend: 100% pass rate (All 11 features verified via Playwright)
+- Test reports: `/app/test_reports/iteration_10.json`
+- All iteration 10 features tested and verified working:
+  - Login/Sidebar dual logos (YASH Tech + EstiPro)
+  - Dashboard filters (date range + customer)
+  - Projects filter panel (5 filters)
+  - Created column with audit fields
+  - Access control (owner/admin edit, others view-only)
+- Backend: 100% pass rate (11/11 tests)
+- Frontend: 100% pass rate (14/14 features verified via Playwright)
 
 ---
 
-## February 23, 2026 - Iteration 9 Features
+## February 23, 2026 - Iteration 10 Features
 
-### Role-Based Access Control (COMPLETE)
-- [x] User model with `role` field (admin, approver, user)
-- [x] User Management page only visible to admins
-- [x] Backend APIs protected with admin role checks
-- [x] Conditional navigation in sidebar based on role
+### New Branding (COMPLETE)
+- [x] New YASH Technologies logo + YASH EstiPro logo side-by-side
+- [x] Login page shows both logos horizontally
+- [x] Sidebar shows both logos
+- [x] "Project Cost Estimator" subtitle (removed "Project Management")
 
-### User Management (COMPLETE)
-- [x] List all users with Name, Email, Role badges, Status
-- [x] Create new user (Full Name, Email, Password, Role)
-- [x] Edit user (change name, email, role, active status)
-- [x] Delete user (with confirmation)
-- [x] Reset password functionality
-- [x] API endpoints: GET/POST/PUT/DELETE `/api/users`
+### Dashboard Filters Fix (COMPLETE)
+- [x] Date From filter works (ISO string comparison)
+- [x] Date To filter works
+- [x] Customer dropdown filter works
+- [x] Filters update KPIs and charts
 
-### Dashboard Filters (COMPLETE)
-- [x] Toggle Filters button in dashboard header
-- [x] Date From / Date To date pickers
-- [x] Customer dropdown with "All Customers" option
-- [x] Apply and Clear buttons
-- [x] Fixed Select component empty value issue
+### Projects List Filters (COMPLETE)
+- [x] Toggle Filters button
+- [x] Customer Name search input
+- [x] Project Name/Description search input
+- [x] Created By dropdown (populated from users)
+- [x] Date From/To date pickers
+- [x] Clear Filters button
 
-### Inline Editing for Proficiency Rates (COMPLETE)
-- [x] Edit button (pencil icon) per row
-- [x] Click edit shows inline input field for salary
-- [x] Save (checkmark) and Cancel (X) buttons
-- [x] PUT /api/proficiency-rates/{id} endpoint
-- [x] Real-time data refresh after save
+### Audit Fields (COMPLETE)
+- [x] `created_by_id` - User ID who created the project
+- [x] `created_by_name` - User name who created the project
+- [x] `created_by_email` - User email who created the project
+- [x] "Created" column in Projects table showing user + date
+- [x] Clone and create-from-template sets current user as owner
 
-### Branding (COMPLETE)
-- [x] YASH Technologies logo on login page
-- [x] YASH Technologies logo in sidebar
-- [x] Footer with "© 2026 YASH Technologies"
+### Access Control (COMPLETE)
+- [x] Non-owner users see "View" button (eye icon)
+- [x] Admin users can edit any project
+- [x] Project creator can edit their own projects
+- [x] Delete button only visible to owner/admin
 
 ---
 
