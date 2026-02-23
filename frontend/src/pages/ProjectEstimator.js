@@ -638,6 +638,8 @@ const ProjectEstimator = () => {
     let offshoreMM = 0;
     let onsiteSellingPrice = 0;
     let offshoreSellingPrice = 0;
+    let onsiteSalaryCost = 0;
+    let offshoreSalaryCost = 0;
     let totalRowsSellingPrice = 0;
     let totalBaseSalaryCost = 0;
     let totalOverheadCost = 0;
@@ -654,9 +656,11 @@ const ProjectEstimator = () => {
       if (allocation.is_onsite) {
         onsiteMM += totalManMonths;
         onsiteSellingPrice += sellingPrice;
+        onsiteSalaryCost += baseSalaryCost;
       } else {
         offshoreMM += totalManMonths;
         offshoreSellingPrice += sellingPrice;
+        offshoreSalaryCost += baseSalaryCost;
       }
     });
 
@@ -681,6 +685,8 @@ const ProjectEstimator = () => {
       totalMM,
       onsiteMM,
       offshoreMM,
+      onsiteSalaryCost,
+      offshoreSalaryCost,
       onsiteSellingPrice,
       offshoreSellingPrice,
       totalRowsSellingPrice,
@@ -703,6 +709,8 @@ const ProjectEstimator = () => {
     let totalMM = 0;
     let onsiteMM = 0;
     let offshoreMM = 0;
+    let onsiteSalaryCost = 0;
+    let offshoreSalaryCost = 0;
     let totalLogisticsCost = 0;
     let totalCostToCompany = 0;
     let totalSellingPrice = 0;
@@ -717,6 +725,8 @@ const ProjectEstimator = () => {
       totalMM += summary.totalMM;
       onsiteMM += summary.onsiteMM;
       offshoreMM += summary.offshoreMM;
+      onsiteSalaryCost += summary.onsiteSalaryCost;
+      offshoreSalaryCost += summary.offshoreSalaryCost;
       totalLogisticsCost += summary.totalLogisticsCost;
       totalCostToCompany += summary.totalCostToCompany;
       totalSellingPrice += summary.sellingPrice;  // Sum of all waves selling prices
@@ -740,6 +750,8 @@ const ProjectEstimator = () => {
       totalMM,
       onsiteMM,
       offshoreMM,
+      onsiteSalaryCost,
+      offshoreSalaryCost,
       totalLogisticsCost,
       totalCostToCompany,
       sellingPrice: totalSellingPrice,
