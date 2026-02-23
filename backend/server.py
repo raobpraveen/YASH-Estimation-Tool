@@ -813,7 +813,8 @@ async def generate_project_number():
     return "PRJ-0001"
 
 @api_router.post("/projects", response_model=Project)
-async def create_project(input: ProjectCreate):
+@api_router.post("/projects", response_model=Project)
+async def create_project(input: ProjectCreate, user: dict = Depends(require_auth)):
     project_number = await generate_project_number()
     project_data = input.model_dump()
     project_data["project_number"] = project_number
@@ -822,6 +823,12 @@ async def create_project(input: ProjectCreate):
     # Ensure waves is a list (can be None from input)
     if project_data.get("waves") is None:
         project_data["waves"] = []
+    # Add audit fields
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user:
+        project_data["created_by_id"] = current_user.get("id", "")
+        project_data["created_by_name"] = current_user.get("name", "")
+        project_data["created_by_email"] = current_user.get("email", "")
     project_obj = Project(**project_data)
     doc = project_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
