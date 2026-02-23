@@ -74,14 +74,14 @@ const Login = ({ onLogin }) => {
         <CardHeader className="text-center pb-2">
           <div className="flex items-center justify-center gap-4 mb-4">
             <img 
-              src="/yash-tech-new.png" 
+              src="/yash-logo-new.png" 
               alt="YASH Technologies" 
-              className="h-14"
+              className="h-12"
             />
             <img 
-              src="/yash-estipro-new.png" 
+              src="/estipro-logo-new.png" 
               alt="YASH EstiPro" 
-              className="h-14"
+              className="h-12"
             />
           </div>
           <CardTitle className="text-2xl font-bold text-slate-900">YASH EstiPro</CardTitle>
