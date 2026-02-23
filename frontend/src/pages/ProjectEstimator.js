@@ -115,10 +115,10 @@ const ProjectEstimator = () => {
   }, []);
 
   useEffect(() => {
-    if (editProjectId) {
-      loadProject(editProjectId);
+    if (projectIdToLoad) {
+      loadProject(projectIdToLoad);
     }
-  }, [editProjectId]);
+  }, [projectIdToLoad]);
 
   const fetchSkills = async () => {
     try {
