@@ -431,6 +431,15 @@ const ProjectEstimator = () => {
       phase_allocations: {},
     };
 
+    // If default_mm is provided, apply it to all months
+    const activeWave = waves.find(w => w.id === activeWaveId);
+    if (newAllocation.default_mm && activeWave) {
+      const numMonths = activeWave.phase_names.length;
+      for (let i = 0; i < numMonths; i++) {
+        allocation.phase_allocations[i] = parseFloat(newAllocation.default_mm) || 0;
+      }
+    }
+
     setWaves(waves.map(w => 
       w.id === activeWaveId 
         ? { ...w, grid_allocations: [...w.grid_allocations, allocation] }
@@ -442,6 +451,7 @@ const ProjectEstimator = () => {
       is_onsite: false,
       travel_required: false,
       custom_salary: "",
+      default_mm: "",
     });
     setAddResourceDialogOpen(false);
     toast.success("Resource added to wave");
