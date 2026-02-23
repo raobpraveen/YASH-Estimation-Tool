@@ -859,6 +859,23 @@ async def get_projects(latest_only: bool = True):
             project['updated_at'] = datetime.fromisoformat(project['updated_at'])
     return projects
 
+
+@api_router.get("/projects/archived")
+async def get_archived_projects():
+    """Get all archived projects"""
+    projects = await db.projects.find(
+        {"is_archived": True, "is_latest_version": True},
+        {"_id": 0}
+    ).sort("archived_at", -1).to_list(500)
+    
+    for p in projects:
+        if isinstance(p.get('created_at'), str):
+            p['created_at'] = datetime.fromisoformat(p['created_at'])
+        if isinstance(p.get('updated_at'), str):
+            p['updated_at'] = datetime.fromisoformat(p['updated_at'])
+    return projects
+
+
 @api_router.get("/projects/{project_id}", response_model=Project)
 async def get_project(project_id: str):
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
