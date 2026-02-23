@@ -1603,7 +1603,7 @@ const ProjectEstimator = () => {
             <p className="text-2xl font-extrabold font-mono text-[#F59E0B]" data-testid="onsite-selling-price">
               ${overall.onsiteSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
-            <p className="text-xs text-gray-500 mt-1">incl. logistics</p>
+            <p className="text-xs text-gray-500 mt-1">sum of ON rows</p>
           </CardContent>
         </Card>
         <Card className="border border-[#0EA5E9] shadow-sm bg-blue-50/30">
@@ -1626,6 +1626,7 @@ const ProjectEstimator = () => {
             <p className="text-2xl font-extrabold font-mono text-[#0EA5E9]" data-testid="offshore-selling-price">
               ${overall.offshoreSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
+            <p className="text-xs text-gray-500 mt-1">sum of OFF rows</p>
           </CardContent>
         </Card>
       </div>
