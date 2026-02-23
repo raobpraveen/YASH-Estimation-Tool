@@ -1541,6 +1541,17 @@ const ProjectEstimator = () => {
             )}
           </CardContent>
         </Card>
+        <Card className="border border-slate-400 shadow-sm bg-slate-50/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Resources Price</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-extrabold font-mono text-slate-600" data-testid="total-resources-price">
+              ${overall.totalRowsSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">sum of all rows</p>
+          </CardContent>
+        </Card>
         <Card className="border border-[#8B5CF6] shadow-sm bg-purple-50/30">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Total Logistics</CardTitle>
