@@ -609,6 +609,73 @@ class Notification(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+# Audit Log Model
+class AuditLog(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    user_id: str
+    user_name: str
+    user_email: str
+    action: str  # created, updated, deleted, cloned, archived, unarchived, status_change, version_created
+    entity_type: str  # project, wave, resource
+    entity_id: str
+    entity_name: str
+    project_id: Optional[str] = None
+    project_number: Optional[str] = None
+    project_name: Optional[str] = None
+    changes: Optional[List[Dict]] = None  # [{field: "", old_value: "", new_value: ""}]
+    metadata: Optional[Dict] = None  # Additional context
+
+
+# Helper function to create audit log
+async def create_audit_log(
+    user: dict,
+    action: str,
+    entity_type: str,
+    entity_id: str,
+    entity_name: str,
+    project_id: str = None,
+    project_number: str = None,
+    project_name: str = None,
+    changes: List[Dict] = None,
+    metadata: Dict = None
+):
+    audit_log = AuditLog(
+        user_id=user.get("id", ""),
+        user_name=user.get("name", ""),
+        user_email=user.get("email", ""),
+        action=action,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        entity_name=entity_name,
+        project_id=project_id,
+        project_number=project_number,
+        project_name=project_name,
+        changes=changes,
+        metadata=metadata
+    )
+    doc = audit_log.model_dump()
+    doc['timestamp'] = doc['timestamp'].isoformat()
+    await db.audit_logs.insert_one(doc)
+    return audit_log
+
+
+# Helper to detect field changes between old and new data
+def detect_changes(old_data: dict, new_data: dict, fields_to_track: List[str]) -> List[Dict]:
+    changes = []
+    for field in fields_to_track:
+        old_val = old_data.get(field)
+        new_val = new_data.get(field)
+        if old_val != new_val:
+            changes.append({
+                "field": field,
+                "old_value": str(old_val) if old_val is not None else None,
+                "new_value": str(new_val) if new_val is not None else None
+            })
+    return changes
+
+
 # Customers Routes
 @api_router.post("/customers", response_model=Customer)
 async def create_customer(input: CustomerCreate):
