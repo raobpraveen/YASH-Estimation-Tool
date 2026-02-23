@@ -149,7 +149,8 @@ async def login(data: UserLogin):
             id=user_doc["id"],
             email=user_doc["email"],
             name=user_doc["name"],
-            role=user_doc.get("role", "user")
+            role=user_doc.get("role", "user"),
+            is_active=user_doc.get("is_active", True)
         )
     )
 
@@ -162,8 +163,134 @@ async def get_me(user: dict = Depends(require_auth)):
         id=user_doc["id"],
         email=user_doc["email"],
         name=user_doc["name"],
-        role=user_doc.get("role", "user")
+        role=user_doc.get("role", "user"),
+        is_active=user_doc.get("is_active", True)
     )
+
+
+# User Management Endpoints (Admin only)
+@api_router.get("/users", response_model=List[UserResponse])
+async def get_all_users(user: dict = Depends(require_auth)):
+    """Get all users - Admin only"""
+    current_user = await db.users.find_one({"id": user["user_id"]})
+    if not current_user or current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(None)
+    return [UserResponse(
+        id=u["id"],
+        email=u["email"],
+        name=u["name"],
+        role=u.get("role", "user"),
+        is_active=u.get("is_active", True)
+    ) for u in users]
+
+@api_router.post("/users", response_model=UserResponse)
+async def create_user(data: UserCreate, user: dict = Depends(require_auth)):
+    """Create a new user - Admin only"""
+    current_user = await db.users.find_one({"id": user["user_id"]})
+    if not current_user or current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check if email already exists
+    existing = await db.users.find_one({"email": data.email.lower()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    if data.role not in ["user", "approver", "admin"]:
+        raise HTTPException(status_code=400, detail="Invalid role. Must be: user, approver, or admin")
+    
+    new_user = User(
+        email=data.email.lower(),
+        password_hash=hash_password(data.password),
+        name=data.name,
+        role=data.role
+    )
+    await db.users.insert_one(new_user.model_dump())
+    
+    return UserResponse(
+        id=new_user.id,
+        email=new_user.email,
+        name=new_user.name,
+        role=new_user.role,
+        is_active=new_user.is_active
+    )
+
+@api_router.put("/users/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str, data: UserUpdate, user: dict = Depends(require_auth)):
+    """Update a user - Admin only"""
+    current_user = await db.users.find_one({"id": user["user_id"]})
+    if not current_user or current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    target_user = await db.users.find_one({"id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    update_data = {}
+    if data.name is not None:
+        update_data["name"] = data.name
+    if data.email is not None:
+        # Check if email already taken by another user
+        existing = await db.users.find_one({"email": data.email.lower(), "id": {"$ne": user_id}})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        update_data["email"] = data.email.lower()
+    if data.role is not None:
+        if data.role not in ["user", "approver", "admin"]:
+            raise HTTPException(status_code=400, detail="Invalid role")
+        update_data["role"] = data.role
+    if data.is_active is not None:
+        update_data["is_active"] = data.is_active
+    
+    if update_data:
+        await db.users.update_one({"id": user_id}, {"$set": update_data})
+    
+    updated_user = await db.users.find_one({"id": user_id})
+    return UserResponse(
+        id=updated_user["id"],
+        email=updated_user["email"],
+        name=updated_user["name"],
+        role=updated_user.get("role", "user"),
+        is_active=updated_user.get("is_active", True)
+    )
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str, user: dict = Depends(require_auth)):
+    """Delete a user - Admin only"""
+    current_user = await db.users.find_one({"id": user["user_id"]})
+    if not current_user or current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    if user_id == user["user_id"]:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "User deleted successfully"}
+
+@api_router.post("/users/{user_id}/reset-password")
+async def reset_password(user_id: str, new_password: str, user: dict = Depends(require_auth)):
+    """Reset a user's password - Admin only"""
+    current_user = await db.users.find_one({"id": user["user_id"]})
+    if not current_user or current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    target_user = await db.users.find_one({"id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"password_hash": hash_password(new_password)}}
+    )
+    
+    return {"message": "Password reset successfully"}
 
 
 # Models for Customers
