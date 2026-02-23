@@ -248,14 +248,15 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 
 ### P1 - Medium Priority
 - [ ] Email notifications (SendGrid/Resend integration)
-- [ ] Advanced dashboard filters (date range, customer filter)
+- [x] Advanced dashboard filters (date range, customer filter) - COMPLETE
 - [x] Export to Excel Enhancement - reflect complex grid structure with Overhead, Total Cost, Selling Price, and all KPIs
+- [x] Inline editing for Proficiency Rates - COMPLETE
 
 ### P2 - Low Priority
 - [ ] Export to PDF
-- [ ] User authentication
+- [x] User authentication - COMPLETE (JWT-based)
 - [ ] Multi-currency support
-- [ ] Role-based access control
+- [x] Role-based access control - COMPLETE (Admin, Approver, User roles)
 
 ### Refactoring Tasks
 - [x] Break down `ProjectEstimator.js` into smaller components:
