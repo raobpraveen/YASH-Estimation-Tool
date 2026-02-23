@@ -855,17 +855,123 @@ const Projects = () => {
                       const otherVersions = versions.filter(v => v.id !== project.id);
                       
                       return (
-                        <>
+                        <React.Fragment key={project.id}>
                           {renderProjectRow(project)}
-                          {isExpanded && otherVersions.map((version) => renderProjectRow(version, true))}
-                        </>
+                          {isExpanded && otherVersions.map((version) => (
+                            <React.Fragment key={version.id}>
+                              {renderProjectRow(version, true)}
+                            </React.Fragment>
+                          ))}
+                        </React.Fragment>
                       );
                     })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="archived">
+          <Card className="border border-[#E2E8F0] shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-[#0F172A]">
+                Archived Projects ({archivedProjects.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {archivedProjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <Archive className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No archived projects</p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Archive projects from the Active tab to move them here
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Project #</TableHead>
+                      <TableHead>Project Name</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-center">Resources</TableHead>
+                      <TableHead className="text-right">Man-Months</TableHead>
+                      <TableHead className="text-right">Selling Price</TableHead>
+                      <TableHead>Archived</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {archivedProjects.map((project) => renderArchivedProjectRow(project))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Save as Template Dialog */}
+      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save as Template</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Template Name</Label>
+              <Input
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder="Enter template name"
+                data-testid="template-name-input"
+              />
+            </div>
+            <p className="text-sm text-gray-500">
+              This will save the project structure (waves, resources, logistics config) as a reusable template.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveAsTemplate} data-testid="confirm-save-template">Save Template</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create from Template Dialog */}
+      <Dialog open={createFromTemplateDialogOpen} onOpenChange={setCreateFromTemplateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create from Template</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Select Template</Label>
+              <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                <SelectTrigger data-testid="template-select">
+                  <SelectValue placeholder="Choose a template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map(template => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.template_name} ({template.waves?.length || 0} waves)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-gray-500">
+              A new project will be created with the template's waves, resources, and configuration.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCreateFromTemplateDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleCreateFromTemplate} data-testid="confirm-create-from-template">Create Project</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
