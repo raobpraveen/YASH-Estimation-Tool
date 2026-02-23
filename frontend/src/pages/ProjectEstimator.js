@@ -2279,7 +2279,7 @@ const ProjectEstimator = () => {
                           <CardTitle className="text-lg font-bold text-[#0F172A]">{wave.name} Summary</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 text-sm">
+                          <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-4 text-sm">
                             <div>
                               <p className="text-gray-600">Total Man-Months</p>
                               <p className="font-mono font-semibold text-lg">{waveSummary.totalMM.toFixed(1)}</p>
@@ -2289,10 +2289,26 @@ const ProjectEstimator = () => {
                               <p className="font-mono font-semibold text-lg text-[#F59E0B]">{waveSummary.onsiteMM.toFixed(1)}</p>
                               <p className="text-xs text-gray-500">${waveSummary.onsiteSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                             </div>
+                            <div className="bg-amber-50 p-2 rounded border border-amber-200">
+                              <p className="text-gray-600">Onsite Avg. $/MM</p>
+                              <p className="font-mono font-semibold text-lg text-[#F59E0B]">
+                                ${waveSummary.onsiteMM > 0 
+                                  ? (waveSummary.onsiteSellingPrice / waveSummary.onsiteMM).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
+                                  : 0}
+                              </p>
+                            </div>
                             <div>
                               <p className="text-gray-600">Offshore MM</p>
                               <p className="font-mono font-semibold text-lg text-[#0EA5E9]">{waveSummary.offshoreMM.toFixed(1)}</p>
                               <p className="text-xs text-gray-500">${waveSummary.offshoreSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            </div>
+                            <div className="bg-sky-50 p-2 rounded border border-sky-200">
+                              <p className="text-gray-600">Offshore Avg. $/MM</p>
+                              <p className="font-mono font-semibold text-lg text-[#0EA5E9]">
+                                ${waveSummary.offshoreMM > 0 
+                                  ? (waveSummary.offshoreSellingPrice / waveSummary.offshoreMM).toLocaleString(undefined, { maximumFractionDigits: 0 }) 
+                                  : 0}
+                              </p>
                             </div>
                             <div className="bg-slate-50 p-2 rounded border border-slate-200">
                               <p className="text-gray-600">Resources Price</p>
