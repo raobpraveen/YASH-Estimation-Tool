@@ -1,0 +1,100 @@
+{
+  "summary": "Iteration 12 testing completed - All calculation formulas and logistics persistence verified successfully.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "Logistics Config Persistence - Values persist after save and page reload",
+    "Row Selling Price Calculation - Each row = (Salary + Overhead) / (1 - 35%) = Total Cost / 0.65",
+    "Wave Selling Price = Sum of all rows selling prices + logistics selling price markup",
+    "Total Selling Price = Sum of all waves selling prices",
+    "Onsite Selling Price = Sum of selling prices where is_onsite = true + logistics",
+    "Offshore Selling Price = Sum of selling prices where is_onsite = false",
+    "Onsite Avg $/MM = Onsite Selling Price / Onsite MM",
+    "Offshore Avg $/MM = Offshore Selling Price / Offshore MM",
+    "is_onsite indicator correctly separates ON (true) vs OFF (false) resources",
+    "logistics_config field exists in ProjectWave model and persists in DB"
+  ],
+  
+  "test_report_links": [
+    "/app/backend/tests/test_iteration12_calculations.py",
+    "/app/test_reports/pytest/pytest_iteration12.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "Calculation formulas verified correct: Row SP = (Salary + Overhead) / (1 - margin%)",
+    "Wave SP = Sum(Row SP) + (Logistics / (1 - margin%))",
+    "Onsite/Offshore separation correctly uses is_onsite boolean flag",
+    "Logistics calculations only apply to resources with travel_required=true",
+    "logistics_config field properly saved and loaded from backend"
+  ],
+  
+  "updated_files": [
+    "/app/backend/tests/test_iteration12_calculations.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "100% (all UI values match backend calculations)"
+  },
+  
+  "test_credentials": {
+    "email": "admin@emergent.com",
+    "password": "password"
+  },
+  
+  "seed_data_creation": "Used existing PRJ-0004 v2 project with 5 resources (3 onsite, 2 offshore)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "All iteration 12 calculation fixes verified. Key formulas: 1) Row Selling Price = (Salary × MM + Overhead) / (1 - margin); 2) Wave SP = Sum(Row SP) + Logistics SP; 3) Total SP = Sum(Wave SP); 4) is_onsite indicator determines ON/OFF display; 5) logistics_config persists in waves array. PRJ-0004 v2 has verified data with exact calculations matching expected values.",
+  
+  "calculation_verification": {
+    "test_project": "PRJ-0004 v2 (ID: 37482dc9-7743-4197-9e02-15dd76a04b3d)",
+    "profit_margin": "35%",
+    "divisor": "0.65",
+    "row_calculations": {
+      "Delivery Manager": {"total_cost": 13000, "selling_price": 20000, "is_onsite": true},
+      "Finance": {"total_cost": 22750, "selling_price": 35000, "is_onsite": true},
+      "MM": {"total_cost": 39000, "selling_price": 60000, "is_onsite": true},
+      "Technical": {"total_cost": 25480, "selling_price": 39200, "is_onsite": false},
+      "BASIS": {"total_cost": 13000, "selling_price": 20000, "is_onsite": false}
+    },
+    "summary": {
+      "total_rows_selling": 174200,
+      "logistics_cost": 33784,
+      "logistics_selling": 51975,
+      "wave_selling": 226175,
+      "onsite_selling": 166975,
+      "offshore_selling": 59200,
+      "onsite_mm": 11.0,
+      "offshore_mm": 9.5,
+      "onsite_avg_per_mm": 15180,
+      "offshore_avg_per_mm": 6232
+    }
+  },
+  
+  "ui_verification": {
+    "total_mm": "20.5 - MATCHES",
+    "onsite_mm": "11.0 - MATCHES",
+    "offshore_mm": "9.5 - MATCHES",
+    "total_logistics": "$33,784 - MATCHES",
+    "total_selling_price": "$226,175 - MATCHES",
+    "onsite_selling_price": "$166,975 - MATCHES (incl. logistics)",
+    "offshore_selling_price": "$59,200 - MATCHES",
+    "onsite_avg_per_mm": "$15,180 - MATCHES",
+    "offshore_avg_per_mm": "$6,232 - MATCHES"
+  }
+}
