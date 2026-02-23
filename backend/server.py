@@ -308,6 +308,64 @@ async def reset_password(user_id: str, new_password: str, user: dict = Depends(r
     return {"message": "Password reset successfully"}
 
 
+# User Settings Endpoints
+@api_router.get("/user/settings")
+async def get_user_settings(user: dict = Depends(require_auth)):
+    """Get current user's settings"""
+    settings = await db.user_settings.find_one({"user_id": user["user_id"]}, {"_id": 0})
+    if not settings:
+        # Return default settings
+        return {
+            "theme": "light",
+            "customThemeImage": "",
+            "dateFormat": "MM/DD/YYYY",
+            "numberFormat": "en-US",
+            "currency": "USD",
+            "compactNumbers": True,
+            "showGridLines": True,
+            "defaultProfitMargin": 35,
+            "defaultContingency": 5
+        }
+    # Convert snake_case to camelCase for frontend
+    return {
+        "theme": settings.get("theme", "light"),
+        "customThemeImage": settings.get("custom_theme_image", ""),
+        "dateFormat": settings.get("date_format", "MM/DD/YYYY"),
+        "numberFormat": settings.get("number_format", "en-US"),
+        "currency": settings.get("currency", "USD"),
+        "compactNumbers": settings.get("compact_numbers", True),
+        "showGridLines": settings.get("show_grid_lines", True),
+        "defaultProfitMargin": settings.get("default_profit_margin", 35),
+        "defaultContingency": settings.get("default_contingency", 5)
+    }
+
+
+@api_router.put("/user/settings")
+async def update_user_settings(settings: dict, user: dict = Depends(require_auth)):
+    """Update current user's settings"""
+    # Convert camelCase to snake_case for storage
+    settings_to_save = {
+        "user_id": user["user_id"],
+        "theme": settings.get("theme", "light"),
+        "custom_theme_image": settings.get("customThemeImage", ""),
+        "date_format": settings.get("dateFormat", "MM/DD/YYYY"),
+        "number_format": settings.get("numberFormat", "en-US"),
+        "currency": settings.get("currency", "USD"),
+        "compact_numbers": settings.get("compactNumbers", True),
+        "show_grid_lines": settings.get("showGridLines", True),
+        "default_profit_margin": settings.get("defaultProfitMargin", 35),
+        "default_contingency": settings.get("defaultContingency", 5)
+    }
+    
+    await db.user_settings.update_one(
+        {"user_id": user["user_id"]},
+        {"$set": settings_to_save},
+        upsert=True
+    )
+    
+    return {"message": "Settings updated successfully"}
+
+
 # Models for Customers
 class Customer(BaseModel):
     model_config = ConfigDict(extra="ignore")
