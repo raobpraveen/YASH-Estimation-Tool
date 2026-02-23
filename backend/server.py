@@ -1357,7 +1357,7 @@ async def create_from_template(template_id: str, user: dict = Depends(require_au
 
 # Submit project for review
 @api_router.post("/projects/{project_id}/submit-for-review")
-async def submit_for_review(project_id: str, approver_email: str):
+async def submit_for_review(project_id: str, approver_email: str, user: dict = Depends(get_current_user)):
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -1365,6 +1365,7 @@ async def submit_for_review(project_id: str, approver_email: str):
     if not approver_email:
         raise HTTPException(status_code=400, detail="Approver email is required")
     
+    old_status = project.get("status", "draft")
     update_data = {
         "status": "in_review",
         "approver_email": approver_email,
@@ -1373,6 +1374,22 @@ async def submit_for_review(project_id: str, approver_email: str):
     }
     
     await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    
+    # Create audit log for status change
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="status_change",
+            entity_type="project",
+            entity_id=project_id,
+            entity_name=project.get("name", ""),
+            project_id=project_id,
+            project_number=project.get("project_number", ""),
+            project_name=project.get("name", ""),
+            changes=[{"field": "status", "old_value": old_status, "new_value": "in_review"}],
+            metadata={"approver_email": approver_email}
+        )
     
     # Create notification for approver
     notification = Notification(
@@ -1392,11 +1409,12 @@ async def submit_for_review(project_id: str, approver_email: str):
 
 # Approve project
 @api_router.post("/projects/{project_id}/approve")
-async def approve_project(project_id: str, comments: str = ""):
+async def approve_project(project_id: str, comments: str = "", user: dict = Depends(get_current_user)):
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     
+    old_status = project.get("status", "in_review")
     update_data = {
         "status": "approved",
         "approval_comments": comments,
@@ -1405,6 +1423,22 @@ async def approve_project(project_id: str, comments: str = ""):
     }
     
     await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    
+    # Create audit log for approval
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="status_change",
+            entity_type="project",
+            entity_id=project_id,
+            entity_name=project.get("name", ""),
+            project_id=project_id,
+            project_number=project.get("project_number", ""),
+            project_name=project.get("name", ""),
+            changes=[{"field": "status", "old_value": old_status, "new_value": "approved"}],
+            metadata={"comments": comments}
+        )
     
     # Create notification for submitter (using customer name as placeholder)
     notification = Notification(
