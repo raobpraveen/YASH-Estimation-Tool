@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Upload, Download, Edit2, Check, X } from "lucide-react";
+import { Plus, Trash2, Upload, Download, Edit2, Check, X, Filter, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PROFICIENCY_LEVELS } from "@/utils/constants";
 
@@ -17,10 +17,13 @@ const API = `${BACKEND_URL}/api`;
 
 const ProficiencyRates = () => {
   const [rates, setRates] = useState([]);
+  const [filteredRates, setFilteredRates] = useState([]);
   const [skills, setSkills] = useState([]);
   const [locations, setLocations] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({ skill: "", location: "", proficiency: "" });
   const fileInputRef = useRef(null);
   const [newRate, setNewRate] = useState({
     skill_id: "",
@@ -36,6 +39,28 @@ const ProficiencyRates = () => {
     fetchLocations();
     fetchRates();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [rates, filters]);
+
+  const applyFilters = () => {
+    let result = [...rates];
+    if (filters.skill) {
+      result = result.filter(r => r.skill_id === filters.skill);
+    }
+    if (filters.location) {
+      result = result.filter(r => r.base_location_id === filters.location);
+    }
+    if (filters.proficiency) {
+      result = result.filter(r => r.proficiency_level === filters.proficiency);
+    }
+    setFilteredRates(result);
+  };
+
+  const clearFilters = () => {
+    setFilters({ skill: "", location: "", proficiency: "" });
+  };
 
   const fetchSkills = async () => {
     try {
