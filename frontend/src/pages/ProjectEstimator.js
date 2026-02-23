@@ -682,6 +682,9 @@ const ProjectEstimator = () => {
     // Total Cost (for reference) = Salary + Overhead + Logistics
     const totalCost = totalBaseSalaryCost + totalOverheadCost + logistics.totalLogistics;
     
+    // Cost to Company = Salary + Overhead only (excludes logistics)
+    const costToCompany = totalBaseSalaryCost + totalOverheadCost;
+    
     // Calculate nego buffer (on wave selling price)
     const negoBufferPercentage = wave.nego_buffer_percentage || 0;
     const negoBufferAmount = waveSellingPrice * (negoBufferPercentage / 100);
@@ -698,7 +701,7 @@ const ProjectEstimator = () => {
       totalRowsSellingPrice,  // Resources Price = sum of all rows selling price
       totalLogisticsCost: logistics.totalLogistics,
       totalCost,
-      totalCostToCompany: totalCost,
+      totalCostToCompany: costToCompany,  // Salary + Overhead only (excludes logistics)
       sellingPrice: waveSellingPrice,  // Resources Price + Logistics
       negoBufferPercentage,
       negoBufferAmount,
@@ -726,6 +729,8 @@ const ProjectEstimator = () => {
     let onsiteSellingPrice = 0;
     let offshoreSellingPrice = 0;
 
+    let totalCostToCompany = 0;
+
     // Sum up all wave summaries
     waves.forEach(wave => {
       const summary = calculateWaveSummary(wave);
@@ -736,6 +741,7 @@ const ProjectEstimator = () => {
       offshoreSalaryCost += summary.offshoreSalaryCost;
       totalLogisticsCost += summary.totalLogisticsCost;
       totalCost += summary.totalCost;
+      totalCostToCompany += summary.totalCostToCompany;  // Sum of (Salary + Overhead) per wave
       totalRowsSellingPrice += summary.totalRowsSellingPrice;
       totalSellingPrice += summary.sellingPrice;
       totalNegoBuffer += summary.negoBufferAmount;
@@ -756,7 +762,7 @@ const ProjectEstimator = () => {
       offshoreSalaryCost,
       totalLogisticsCost,
       totalCost,
-      totalCostToCompany: totalCost,
+      totalCostToCompany,  // Salary + Overhead only (excludes logistics)
       totalRowsSellingPrice,  // Total Resources Price
       sellingPrice: totalSellingPrice,  // Total Selling Price (Resources + Logistics)
       negoBuffer: totalNegoBuffer,
