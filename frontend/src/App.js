@@ -16,6 +16,7 @@ import CompareVersions from "@/pages/CompareVersions";
 import Login from "@/pages/Login";
 import UserManagement from "@/pages/UserManagement";
 import Settings from "@/pages/Settings";
+import AuditLogs from "@/pages/AuditLogs";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
