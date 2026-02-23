@@ -1100,7 +1100,7 @@ async def unarchive_project(project_id: str, user: dict = Depends(get_current_us
 
 
 @api_router.post("/projects/{project_id}/new-version", response_model=Project)
-async def create_new_version(project_id: str, input: ProjectUpdate):
+async def create_new_version(project_id: str, input: ProjectUpdate, user: dict = Depends(get_current_user)):
     """Create a new version of an existing project"""
     existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not existing:
