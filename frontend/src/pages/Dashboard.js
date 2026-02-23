@@ -154,7 +154,62 @@ const Dashboard = () => {
         >
           Create New Estimate
         </Button>
+        </div>
       </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <Card className="border border-cyan-200 bg-cyan-50/30">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div>
+                <Label>Date From</Label>
+                <Input
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                  data-testid="filter-date-from"
+                />
+              </div>
+              <div>
+                <Label>Date To</Label>
+                <Input
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                  data-testid="filter-date-to"
+                />
+              </div>
+              <div>
+                <Label>Customer</Label>
+                <Select 
+                  value={filters.customerId} 
+                  onValueChange={(v) => setFilters({ ...filters, customerId: v })}
+                >
+                  <SelectTrigger data-testid="filter-customer">
+                    <SelectValue placeholder="All Customers" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Customers</SelectItem>
+                    {customers.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={applyFilters} className="bg-[#0EA5E9]" data-testid="apply-filters">
+                  Apply
+                </Button>
+                <Button variant="outline" onClick={clearFilters} data-testid="clear-filters">
+                  <X className="w-4 h-4 mr-1" />
+                  Clear
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -171,8 +226,6 @@ const Dashboard = () => {
             </p>
           </CardContent>
         </Card>
-
-        <Card className="border border-[#E2E8F0] shadow-sm" data-testid="total-revenue-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-[#10B981]" />
