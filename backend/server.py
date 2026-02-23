@@ -967,22 +967,6 @@ async def unarchive_project(project_id: str):
     return {"message": "Project unarchived successfully"}
 
 
-@api_router.get("/projects/archived")
-async def get_archived_projects():
-    """Get all archived projects"""
-    projects = await db.projects.find(
-        {"is_archived": True, "is_latest_version": True},
-        {"_id": 0}
-    ).sort("archived_at", -1).to_list(500)
-    
-    for p in projects:
-        if isinstance(p.get('created_at'), str):
-            p['created_at'] = datetime.fromisoformat(p['created_at'])
-        if isinstance(p.get('updated_at'), str):
-            p['updated_at'] = datetime.fromisoformat(p['updated_at'])
-    return projects
-
-
 @api_router.post("/projects/{project_id}/new-version", response_model=Project)
 async def create_new_version(project_id: str, input: ProjectUpdate):
     """Create a new version of an existing project"""
