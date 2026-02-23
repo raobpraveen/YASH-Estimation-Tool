@@ -176,7 +176,7 @@ async def get_all_users(user: dict = Depends(require_auth)):
     if not current_user or current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(None)
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
     return [UserResponse(
         id=u["id"],
         email=u["email"],
@@ -912,7 +912,7 @@ async def get_templates():
     templates = await db.projects.find(
         {"is_template": True},
         {"_id": 0}
-    ).sort("template_name", 1).to_list(None)
+    ).sort("template_name", 1).to_list(100)
     return templates
 
 @api_router.post("/projects/{project_id}/save-as-template")
