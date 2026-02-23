@@ -1004,7 +1004,26 @@ async def update_project(project_id: str, input: ProjectUpdate):
     update_data = input.model_dump(exclude_unset=True)
     update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
     
+    # Detect changes for audit log
+    fields_to_track = ["name", "description", "status", "profit_margin_percentage", "customer_id", "customer_name", "version_notes"]
+    changes = detect_changes(existing, update_data, fields_to_track)
+    
     await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    
+    # Create audit log for update
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user and changes:
+        await create_audit_log(
+            user=current_user,
+            action="updated",
+            entity_type="project",
+            entity_id=project_id,
+            entity_name=existing.get("name", ""),
+            project_id=project_id,
+            project_number=existing.get("project_number", ""),
+            project_name=existing.get("name", ""),
+            changes=changes
+        )
     
     updated = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if isinstance(updated.get('created_at'), str):
@@ -1015,7 +1034,7 @@ async def update_project(project_id: str, input: ProjectUpdate):
 
 
 @api_router.post("/projects/{project_id}/archive")
-async def archive_project(project_id: str):
+async def archive_project(project_id: str, user: dict = Depends(get_current_user)):
     """Archive a project"""
     existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not existing:
@@ -1029,11 +1048,26 @@ async def archive_project(project_id: str):
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
     )
+    
+    # Create audit log
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="archived",
+            entity_type="project",
+            entity_id=project_id,
+            entity_name=existing.get("name", ""),
+            project_id=project_id,
+            project_number=existing.get("project_number", ""),
+            project_name=existing.get("name", "")
+        )
+    
     return {"message": "Project archived successfully"}
 
 
 @api_router.post("/projects/{project_id}/unarchive")
-async def unarchive_project(project_id: str):
+async def unarchive_project(project_id: str, user: dict = Depends(get_current_user)):
     """Unarchive a project"""
     existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not existing:
@@ -1047,6 +1081,21 @@ async def unarchive_project(project_id: str):
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
     )
+    
+    # Create audit log
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="unarchived",
+            entity_type="project",
+            entity_id=project_id,
+            entity_name=existing.get("name", ""),
+            project_id=project_id,
+            project_number=existing.get("project_number", ""),
+            project_name=existing.get("name", "")
+        )
+    
     return {"message": "Project unarchived successfully"}
 
 
