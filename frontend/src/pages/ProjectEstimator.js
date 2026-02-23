@@ -944,6 +944,9 @@ const ProjectEstimator = () => {
       summaryData.push([]);
       summaryData.push(["Cost to Company", `$${summary.totalCostToCompany.toFixed(2)}`]);
       summaryData.push(["Wave Selling Price", `$${summary.sellingPrice.toFixed(2)}`]);
+      summaryData.push(["Nego Buffer %", `${summary.negoBufferPercentage}%`]);
+      summaryData.push(["Nego Buffer Amount", `$${summary.negoBufferAmount.toFixed(2)}`]);
+      summaryData.push(["Wave Final Price (incl. buffer)", `$${summary.finalPrice.toFixed(2)}`]);
       summaryData.push([]);
     });
 
