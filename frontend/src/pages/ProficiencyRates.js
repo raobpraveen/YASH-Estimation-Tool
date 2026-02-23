@@ -211,6 +211,33 @@ const ProficiencyRates = () => {
     }
   };
 
+  const startEditRate = (rate) => {
+    setEditingRate(rate.id);
+    setEditSalary(rate.avg_monthly_salary.toString());
+  };
+
+  const cancelEditRate = () => {
+    setEditingRate(null);
+    setEditSalary("");
+  };
+
+  const saveEditRate = async (rateId) => {
+    const salary = parseFloat(editSalary);
+    if (isNaN(salary) || salary <= 0) {
+      toast.error("Please enter a valid salary");
+      return;
+    }
+    try {
+      await axios.put(`${API}/proficiency-rates/${rateId}?avg_monthly_salary=${salary}`);
+      toast.success("Rate updated successfully");
+      setEditingRate(null);
+      setEditSalary("");
+      fetchRates();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to update rate");
+    }
+  };
+
   return (
     <div data-testid="proficiency-rates">
       <div className="flex items-center justify-between mb-8">
