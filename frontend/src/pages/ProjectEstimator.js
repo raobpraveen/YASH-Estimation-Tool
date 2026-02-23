@@ -2460,9 +2460,17 @@ const ProjectEstimator = () => {
                         <p className="text-sm text-gray-600">Cost to Company</p>
                         <p className="text-3xl font-bold font-mono">${summary.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                       </div>
-                      <div className="col-span-2 text-center p-4 bg-green-50 rounded">
+                      <div className="text-center p-4 bg-green-50 rounded">
                         <p className="text-sm text-gray-600">Wave Selling Price</p>
                         <p className="text-3xl font-bold font-mono text-[#10B981]">${summary.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                      </div>
+                      <div className="text-center p-4 bg-blue-50 rounded border border-blue-200">
+                        <p className="text-sm text-gray-600">Nego Buffer ({summary.negoBufferPercentage}%)</p>
+                        <p className="text-2xl font-bold font-mono text-blue-600">${summary.negoBufferAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                      </div>
+                      <div className="col-span-2 text-center p-4 bg-emerald-100 rounded border border-emerald-400">
+                        <p className="text-sm text-emerald-700 font-semibold">Final Price (incl. buffer)</p>
+                        <p className="text-3xl font-bold font-mono text-emerald-700">${summary.finalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                       </div>
                     </div>
                   </CardContent>
