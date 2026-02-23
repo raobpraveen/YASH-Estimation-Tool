@@ -439,6 +439,7 @@ class ProjectWave(BaseModel):
     duration_months: float
     phase_names: List[str] = []  # User-defined phase names per month/column
     logistics_defaults: Dict[str, float] = {}  # Default logistics for wave
+    nego_buffer_percentage: float = 0  # Negotiation buffer percentage
     grid_allocations: List[WaveGridAllocation] = []
 
 
