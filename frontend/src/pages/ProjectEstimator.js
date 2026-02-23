@@ -1559,6 +1559,7 @@ const ProjectEstimator = () => {
             <p className="text-2xl font-extrabold font-mono text-[#10B981]" data-testid="selling-price">
               ${overall.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
+            <p className="text-xs text-gray-500 mt-1">resources + logistics</p>
           </CardContent>
         </Card>
         <Card className="border border-blue-500 shadow-sm bg-blue-50/50">
@@ -1579,7 +1580,7 @@ const ProjectEstimator = () => {
             <p className="text-2xl font-extrabold font-mono text-emerald-700" data-testid="final-price">
               ${overall.finalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
-            <p className="text-xs text-emerald-600 mt-1">incl. nego buffer</p>
+            <p className="text-xs text-emerald-600 mt-1">selling price + nego buffer</p>
           </CardContent>
         </Card>
       </div>
