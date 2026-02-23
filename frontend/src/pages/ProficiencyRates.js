@@ -28,6 +28,8 @@ const ProficiencyRates = () => {
     proficiency_level: "",
     avg_monthly_salary: "",
   });
+  const [editingRate, setEditingRate] = useState(null);
+  const [editSalary, setEditSalary] = useState("");
 
   useEffect(() => {
     fetchSkills();
