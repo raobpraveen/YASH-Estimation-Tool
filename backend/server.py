@@ -1540,6 +1540,106 @@ async def mark_all_notifications_read(user_email: str = None):
     return {"message": "All notifications marked as read"}
 
 
+# Audit Log endpoints
+@api_router.get("/audit-logs")
+async def get_audit_logs(
+    project_id: Optional[str] = None,
+    entity_type: Optional[str] = None,
+    action: Optional[str] = None,
+    user_email: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    limit: int = 100,
+    user: dict = Depends(get_current_user)
+):
+    """Get audit logs with optional filters - admin only for all logs"""
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    
+    query = {}
+    
+    if project_id:
+        query["project_id"] = project_id
+    if entity_type:
+        query["entity_type"] = entity_type
+    if action:
+        query["action"] = action
+    if user_email:
+        query["user_email"] = user_email
+    
+    # Date range filter
+    if date_from or date_to:
+        date_filter = {}
+        if date_from:
+            date_filter["$gte"] = f"{date_from}T00:00:00"
+        if date_to:
+            date_filter["$lte"] = f"{date_to}T23:59:59"
+        if date_filter:
+            query["timestamp"] = date_filter
+    
+    # Non-admins can only see their own logs or logs for projects they own
+    if current_user and current_user.get("role") != "admin":
+        query["$or"] = [
+            {"user_id": current_user.get("id")},
+            {"project_id": {"$in": await get_user_project_ids(current_user.get("id"))}}
+        ]
+    
+    logs = await db.audit_logs.find(query, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    for log in logs:
+        if isinstance(log.get('timestamp'), str):
+            log['timestamp'] = datetime.fromisoformat(log['timestamp'])
+    
+    return logs
+
+
+async def get_user_project_ids(user_id: str) -> List[str]:
+    """Helper to get project IDs owned by a user"""
+    projects = await db.projects.find({"created_by_id": user_id}, {"id": 1}).to_list(1000)
+    return [p["id"] for p in projects]
+
+
+@api_router.get("/audit-logs/project/{project_id}")
+async def get_project_audit_logs(project_id: str, user: dict = Depends(get_current_user)):
+    """Get all audit logs for a specific project"""
+    logs = await db.audit_logs.find(
+        {"project_id": project_id},
+        {"_id": 0}
+    ).sort("timestamp", -1).to_list(500)
+    
+    for log in logs:
+        if isinstance(log.get('timestamp'), str):
+            log['timestamp'] = datetime.fromisoformat(log['timestamp'])
+    
+    return logs
+
+
+@api_router.get("/audit-logs/summary")
+async def get_audit_summary(user: dict = Depends(require_admin)):
+    """Get audit log summary statistics - admin only"""
+    # Count by action type
+    action_counts = await db.audit_logs.aggregate([
+        {"$group": {"_id": "$action", "count": {"$sum": 1}}}
+    ]).to_list(100)
+    
+    # Count by user
+    user_counts = await db.audit_logs.aggregate([
+        {"$group": {"_id": "$user_email", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]).to_list(10)
+    
+    # Recent activity (last 7 days)
+    seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    recent_count = await db.audit_logs.count_documents({"timestamp": {"$gte": seven_days_ago}})
+    
+    return {
+        "action_counts": {item["_id"]: item["count"] for item in action_counts},
+        "top_users": [{"email": item["_id"], "count": item["count"]} for item in user_counts],
+        "recent_activity_count": recent_count,
+        "total_logs": await db.audit_logs.count_documents({})
+    }
+
+
 # Dashboard analytics endpoint
 @api_router.get("/dashboard/analytics")
 async def get_dashboard_analytics(
