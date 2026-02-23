@@ -256,9 +256,32 @@ const Projects = () => {
       await axios.delete(`${API}/projects/${id}`);
       toast.success("Project deleted successfully");
       fetchProjects();
+      fetchArchivedProjects();
       setAllVersions({});
     } catch (error) {
       toast.error("Failed to delete project");
+    }
+  };
+
+  const handleArchiveProject = async (id) => {
+    try {
+      await axios.post(`${API}/projects/${id}/archive`);
+      toast.success("Project archived successfully");
+      fetchProjects();
+      fetchArchivedProjects();
+    } catch (error) {
+      toast.error("Failed to archive project");
+    }
+  };
+
+  const handleUnarchiveProject = async (id) => {
+    try {
+      await axios.post(`${API}/projects/${id}/unarchive`);
+      toast.success("Project restored successfully");
+      fetchProjects();
+      fetchArchivedProjects();
+    } catch (error) {
+      toast.error("Failed to restore project");
     }
   };
 
