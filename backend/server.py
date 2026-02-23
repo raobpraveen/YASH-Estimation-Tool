@@ -538,6 +538,10 @@ class Project(BaseModel):
     approved_at: Optional[str] = None
     submitted_by: str = ""
     approved_by: str = ""
+    # Audit fields
+    created_by_id: str = ""  # User ID who created the project
+    created_by_name: str = ""  # User name who created the project
+    created_by_email: str = ""  # User email who created the project
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

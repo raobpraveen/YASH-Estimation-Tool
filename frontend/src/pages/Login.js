@@ -72,17 +72,16 @@ const Login = ({ onLogin }) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-0 shadow-2xl bg-white/95 backdrop-blur">
         <CardHeader className="text-center pb-2">
-          <div className="flex flex-col items-center mb-4">
+          <div className="flex items-center justify-center gap-4 mb-4">
             <img 
-              src="/yash-logo.svg" 
+              src="/yash-tech-new.png" 
               alt="YASH Technologies" 
-              className="h-10 mb-4"
-              style={{ filter: "brightness(0)" }}
+              className="h-14"
             />
             <img 
-              src="/yash-estipro-logo.png" 
+              src="/yash-estipro-new.png" 
               alt="YASH EstiPro" 
-              className="h-20 mb-2"
+              className="h-14"
             />
           </div>
           <CardTitle className="text-2xl font-bold text-slate-900">YASH EstiPro</CardTitle>
