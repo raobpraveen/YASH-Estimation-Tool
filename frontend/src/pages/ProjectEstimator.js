@@ -1866,6 +1866,22 @@ const ProjectEstimator = () => {
                                   data-testid="custom-salary-input"
                                 />
                               </div>
+
+                              <div>
+                                <Label htmlFor="default-mm">Default Effort (apply to all months)</Label>
+                                <Input
+                                  id="default-mm"
+                                  type="number"
+                                  step="0.1"
+                                  placeholder="e.g., 1 for 1 MM per month"
+                                  value={newAllocation.default_mm}
+                                  onChange={(e) => setNewAllocation({ ...newAllocation, default_mm: e.target.value })}
+                                  data-testid="default-mm-input"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  If provided, this value will be set for all {wave.phase_names.length} months
+                                </p>
+                              </div>
                               
                               <div className="flex items-center gap-2">
                                 <Switch
