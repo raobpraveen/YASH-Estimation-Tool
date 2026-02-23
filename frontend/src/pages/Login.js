@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { LogIn, UserPlus, Calculator } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -76,15 +76,17 @@ const Login = ({ onLogin }) => {
             <img 
               src="/yash-logo.svg" 
               alt="YASH Technologies" 
-              className="h-12 mb-4"
+              className="h-10 mb-4"
               style={{ filter: "brightness(0)" }}
             />
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg">
-              <Calculator className="w-7 h-7 text-white" />
-            </div>
+            <img 
+              src="/yash-estipro-logo.png" 
+              alt="YASH EstiPro" 
+              className="h-20 mb-2"
+            />
           </div>
-          <CardTitle className="text-2xl font-bold text-slate-900">Project Estimator</CardTitle>
-          <CardDescription className="text-slate-600">IT Cost Calculator & Project Management</CardDescription>
+          <CardTitle className="text-2xl font-bold text-slate-900">YASH EstiPro</CardTitle>
+          <CardDescription className="text-slate-600">Project Cost Estimator</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>

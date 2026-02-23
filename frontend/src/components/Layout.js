@@ -11,7 +11,8 @@ import {
   FolderKanban,
   LogOut,
   User,
-  UserCog
+  UserCog,
+  Settings
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -34,6 +35,9 @@ const Layout = ({ user, onLogout }) => {
     navItems.push({ path: "/users", icon: UserCog, label: "User Management" });
   }
 
+  // Add Settings for all users
+  navItems.push({ path: "/settings", icon: Settings, label: "Settings" });
+
   const getRoleBadge = (role) => {
     const config = {
       admin: { label: "Admin", color: "bg-red-500/20 text-red-300" },
@@ -50,10 +54,14 @@ const Layout = ({ user, onLogout }) => {
           <img 
             src="/yash-logo.svg" 
             alt="YASH Technologies" 
-            className="h-8 mb-3"
+            className="h-6 mb-3"
           />
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Project Estimator</h1>
-          <p className="text-xs text-white/60 mt-1">IT Cost Calculator</p>
+          <img 
+            src="/yash-estipro-logo.png" 
+            alt="YASH EstiPro" 
+            className="h-12 mb-2"
+          />
+          <p className="text-xs text-white/60 mt-1">Project Cost Estimator</p>
         </div>
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
