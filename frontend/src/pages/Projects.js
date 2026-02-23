@@ -536,6 +536,16 @@ const Projects = () => {
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => handleArchiveProject(project.id)}
+                  className="text-orange-600 hover:text-orange-600 hover:bg-orange-600/10"
+                  title="Archive"
+                  data-testid={`archive-project-${project.id}`}
+                >
+                  <Archive className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleDeleteProject(project.id)}
                   className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
                   title="Delete"
@@ -544,6 +554,60 @@ const Projects = () => {
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  };
+
+  // Render archived project row
+  const renderArchivedProjectRow = (project) => {
+    const { sellingPrice, totalMM, resourceCount } = calculateProjectValue(project);
+    
+    return (
+      <TableRow key={project.id} className="bg-gray-50" data-testid={`archived-row-${project.id}`}>
+        <TableCell className="font-mono font-medium">{project.project_number || "—"}</TableCell>
+        <TableCell className="font-medium max-w-xs truncate">{project.name}</TableCell>
+        <TableCell>{project.customer_name || "—"}</TableCell>
+        <TableCell className="text-center">{getStatusBadge(project.status)}</TableCell>
+        <TableCell className="text-center">{resourceCount}</TableCell>
+        <TableCell className="text-right font-mono tabular-nums">{totalMM.toFixed(1)}</TableCell>
+        <TableCell className="text-right font-mono tabular-nums font-semibold text-gray-500">
+          ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+        </TableCell>
+        <TableCell className="text-xs text-gray-500">{formatDate(project.archived_at)}</TableCell>
+        <TableCell className="text-right">
+          <div className="flex gap-1 justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/projects/${project.id}/summary`)}
+              className="text-[#8B5CF6] hover:text-[#8B5CF6] hover:bg-[#8B5CF6]/10"
+              title="View Summary"
+            >
+              <FileText className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleUnarchiveProject(project.id)}
+              className="text-green-600 hover:text-green-600 hover:bg-green-600/10"
+              title="Restore"
+              data-testid={`unarchive-project-${project.id}`}
+            >
+              <ArchiveRestore className="w-4 h-4" />
+            </Button>
+            {canEditProject(project) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteProject(project.id)}
+                className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                title="Delete Permanently"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             )}
           </div>
         </TableCell>
