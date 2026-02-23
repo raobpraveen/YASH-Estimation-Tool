@@ -1503,6 +1503,27 @@ const ProjectEstimator = () => {
             </p>
           </CardContent>
         </Card>
+        <Card className="border border-blue-500 shadow-sm bg-blue-50/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Nego Buffer</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-extrabold font-mono text-blue-600" data-testid="total-nego-buffer">
+              ${overall.negoBuffer.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-2 border-emerald-600 shadow-md bg-emerald-50/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-700">Final Price</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-extrabold font-mono text-emerald-700" data-testid="final-price">
+              ${overall.finalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </p>
+            <p className="text-xs text-emerald-600 mt-1">incl. nego buffer</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Detailed Price Breakdown Cards */}
