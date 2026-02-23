@@ -1685,13 +1685,37 @@ const ProjectEstimator = () => {
                 return (
                 <TabsContent key={wave.id} value={wave.id}>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-4 flex-wrap">
                         <h3 className="text-lg font-semibold text-[#0F172A]">{wave.name}</h3>
                         <span className="text-sm text-gray-600">Duration: {wave.duration_months} months</span>
                         <span className="text-sm text-gray-600">Resources: {wave.grid_allocations.length}</span>
                         <span className="text-sm text-[#F59E0B]">Onsite: {waveSummary.onsiteResourceCount}</span>
                         <span className="text-sm text-purple-600">Traveling: {waveSummary.travelingResourceCount}</span>
+                        {/* Nego Buffer Input */}
+                        <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-blue-50 rounded-lg border border-blue-200">
+                          <Label className="text-xs text-blue-700 whitespace-nowrap">Nego Buffer:</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.5"
+                            value={wave.nego_buffer_percentage || 0}
+                            onChange={(e) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              setWaves(waves.map(w => w.id === wave.id ? { ...w, nego_buffer_percentage: value } : w));
+                            }}
+                            className="w-16 h-7 text-xs text-right"
+                            disabled={isReadOnly}
+                            data-testid={`nego-buffer-${wave.id}`}
+                          />
+                          <span className="text-xs text-blue-700">%</span>
+                          {waveSummary.negoBufferAmount > 0 && (
+                            <span className="text-xs text-blue-700 font-mono">
+                              (${waveSummary.negoBufferAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })})
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Button 
