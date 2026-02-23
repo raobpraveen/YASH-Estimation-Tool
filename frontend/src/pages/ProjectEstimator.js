@@ -817,13 +817,15 @@ const ProjectEstimator = () => {
     }
 
     const payload = getProjectPayload();
+    const token = localStorage.getItem("token");
+    const config = { headers: { Authorization: `Bearer ${token}` } };
 
     try {
       if (projectId) {
-        await axios.put(`${API}/projects/${projectId}`, payload);
+        await axios.put(`${API}/projects/${projectId}`, payload, config);
         toast.success(`Project ${projectNumber} v${projectVersion} updated`);
       } else {
-        const response = await axios.post(`${API}/projects`, payload);
+        const response = await axios.post(`${API}/projects`, payload, config);
         setProjectId(response.data.id);
         setProjectNumber(response.data.project_number);
         setProjectVersion(response.data.version);
@@ -848,9 +850,11 @@ const ProjectEstimator = () => {
     }
 
     const payload = getProjectPayload();
+    const token = localStorage.getItem("token");
+    const config = { headers: { Authorization: `Bearer ${token}` } };
 
     try {
-      const response = await axios.post(`${API}/projects/${projectId}/new-version`, payload);
+      const response = await axios.post(`${API}/projects/${projectId}/new-version`, payload, config);
       setProjectId(response.data.id);
       setProjectVersion(response.data.version);
       setSaveAsNewVersionDialog(false);
@@ -867,8 +871,11 @@ const ProjectEstimator = () => {
       return;
     }
 
+    const token = localStorage.getItem("token");
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+
     try {
-      const response = await axios.post(`${API}/projects/${projectId}/clone`);
+      const response = await axios.post(`${API}/projects/${projectId}/clone`, {}, config);
       toast.success(`Project cloned as ${response.data.project_number}`);
       navigate(`/estimator?edit=${response.data.id}`);
     } catch (error) {
