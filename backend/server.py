@@ -1042,11 +1042,14 @@ async def remove_template(project_id: str):
     return {"message": "Template removed"}
 
 @api_router.post("/projects/create-from-template/{template_id}")
-async def create_from_template(template_id: str):
+async def create_from_template(template_id: str, user: dict = Depends(require_auth)):
     """Create a new project from a template"""
     template = await db.projects.find_one({"id": template_id, "is_template": True}, {"_id": 0})
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
+    
+    # Get current user info
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
     
     # Get next project number
     last_project = await db.projects.find_one(
@@ -1079,6 +1082,11 @@ async def create_from_template(template_id: str):
     new_project_data["customer_name"] = ""
     new_project_data["created_at"] = datetime.now(timezone.utc)
     new_project_data["updated_at"] = datetime.now(timezone.utc)
+    # Set audit fields
+    if current_user:
+        new_project_data["created_by_id"] = current_user.get("id", "")
+        new_project_data["created_by_name"] = current_user.get("name", "")
+        new_project_data["created_by_email"] = current_user.get("email", "")
     
     # Generate new IDs for waves and allocations
     for wave in new_project_data.get("waves", []):
