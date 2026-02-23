@@ -511,6 +511,32 @@ const ProjectEstimator = () => {
     ));
   };
 
+  // Apply a value to all months for a resource
+  const handleApplyToAllMonths = (waveId, allocationId, value) => {
+    const wave = waves.find(w => w.id === waveId);
+    if (!wave) return;
+    
+    const numMonths = wave.phase_names.length;
+    const phaseAllocations = {};
+    for (let i = 0; i < numMonths; i++) {
+      phaseAllocations[i] = parseFloat(value) || 0;
+    }
+    
+    setWaves(waves.map(w => 
+      w.id === waveId
+        ? {
+            ...w,
+            grid_allocations: w.grid_allocations.map(a =>
+              a.id === allocationId
+                ? { ...a, phase_allocations: phaseAllocations }
+                : a
+            )
+          }
+        : w
+    ));
+    toast.success(`Applied ${value} MM to all ${numMonths} months`);
+  };
+
   // Calculate resource base cost (salary only)
   const calculateResourceBaseCost = (allocation) => {
     const totalManMonths = Object.values(allocation.phase_allocations || {}).reduce((sum, val) => sum + val, 0);
