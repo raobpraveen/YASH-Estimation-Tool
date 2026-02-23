@@ -4,10 +4,13 @@ import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   FolderKanban, TrendingUp, DollarSign, Users, 
   FileCheck, FileClock, FileX, FileEdit,
-  Bell, ArrowRight, CheckCircle, XCircle, Clock
+  Bell, ArrowRight, CheckCircle, XCircle, Clock, Filter, X
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -29,16 +32,40 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [analytics, setAnalytics] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    customerId: "",
+  });
 
   useEffect(() => {
     fetchDashboardData();
+    fetchCustomers();
   }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/customers`);
+      setCustomers(response.data);
+    } catch (error) {
+      console.error("Failed to fetch customers");
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
+      let url = `${API}/dashboard/analytics`;
+      const params = new URLSearchParams();
+      if (filters.dateFrom) params.append("date_from", filters.dateFrom);
+      if (filters.dateTo) params.append("date_to", filters.dateTo);
+      if (filters.customerId) params.append("customer_id", filters.customerId);
+      if (params.toString()) url += `?${params.toString()}`;
+
       const [analyticsRes, notificationsRes] = await Promise.all([
-        axios.get(`${API}/dashboard/analytics`),
+        axios.get(url),
         axios.get(`${API}/notifications?unread_only=true`)
       ]);
       setAnalytics(analyticsRes.data);
@@ -48,6 +75,17 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    setLoading(true);
+    fetchDashboardData();
+  };
+
+  const clearFilters = () => {
+    setFilters({ dateFrom: "", dateTo: "", customerId: "" });
+    setLoading(true);
+    setTimeout(() => fetchDashboardData(), 100);
   };
 
   const markAsRead = async (notificationId) => {
