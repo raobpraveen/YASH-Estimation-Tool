@@ -907,6 +907,59 @@ async def update_project(project_id: str, input: ProjectUpdate):
         updated['updated_at'] = datetime.fromisoformat(updated['updated_at'])
     return updated
 
+
+@api_router.post("/projects/{project_id}/archive")
+async def archive_project(project_id: str):
+    """Archive a project"""
+    existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    await db.projects.update_one(
+        {"id": project_id},
+        {"$set": {
+            "is_archived": True,
+            "archived_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    return {"message": "Project archived successfully"}
+
+
+@api_router.post("/projects/{project_id}/unarchive")
+async def unarchive_project(project_id: str):
+    """Unarchive a project"""
+    existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    await db.projects.update_one(
+        {"id": project_id},
+        {"$set": {
+            "is_archived": False,
+            "archived_at": None,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    return {"message": "Project unarchived successfully"}
+
+
+@api_router.get("/projects/archived")
+async def get_archived_projects():
+    """Get all archived projects"""
+    projects = await db.projects.find(
+        {"is_archived": True, "is_latest_version": True},
+        {"_id": 0}
+    ).sort("archived_at", -1).to_list(500)
+    
+    for p in projects:
+        if isinstance(p.get('created_at'), str):
+            p['created_at'] = datetime.fromisoformat(p['created_at'])
+        if isinstance(p.get('updated_at'), str):
+            p['updated_at'] = datetime.fromisoformat(p['updated_at'])
+    return projects
+
+
 @api_router.post("/projects/{project_id}/new-version", response_model=Project)
 async def create_new_version(project_id: str, input: ProjectUpdate):
     """Create a new version of an existing project"""
