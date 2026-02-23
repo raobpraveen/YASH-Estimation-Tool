@@ -701,6 +701,22 @@ async def delete_proficiency_rate(rate_id: str):
         raise HTTPException(status_code=404, detail="Proficiency rate not found")
     return {"message": "Proficiency rate deleted successfully"}
 
+@api_router.put("/proficiency-rates/{rate_id}")
+async def update_proficiency_rate(rate_id: str, avg_monthly_salary: float):
+    """Update only the salary of a proficiency rate"""
+    if avg_monthly_salary <= 0:
+        raise HTTPException(status_code=400, detail="Salary must be positive")
+    
+    result = await db.proficiency_rates.update_one(
+        {"id": rate_id},
+        {"$set": {"avg_monthly_salary": avg_monthly_salary}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Proficiency rate not found")
+    
+    updated = await db.proficiency_rates.find_one({"id": rate_id}, {"_id": 0})
+    return updated
+
 
 # Projects Routes
 async def generate_project_number():
