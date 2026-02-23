@@ -249,6 +249,7 @@ const ProjectEstimator = () => {
       duration_months: parseFloat(newWave.duration_months),
       phase_names: phaseNames,
       logistics_config: { ...waveLogistics },
+      nego_buffer_percentage: 0,
       grid_allocations: [],
     };
 
