@@ -23,16 +23,22 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - **Unique key combination**: Technology + Skill + Base Location + Proficiency Level
 - **Technology as first column** in the table
 
-### Cost Calculation
+### Cost Calculation (Updated Feb 23, 2026)
 - Calculate costs based on average monthly salary for a resource's skill and proficiency
 - Add percentage-based "Overheads" cost configurable per base location
 - Add percentage-based "Profit Margin" (default 35%) to determine final selling price
-- **Selling Price Formula**: `(Base Cost + Overheads) / (1 - (Profit Margin / 100))`
-- **Average Selling Price per MM** displayed for onsite and offshore resources
+- **Row Selling Price Formula**: `(Salary Cost + Overhead) / (1 - Profit Margin %)`
+- **Wave Selling Price** = Sum of all row selling prices + Logistics Selling Price Markup
+- **Total Selling Price** = Sum of all wave selling prices
+- **Onsite Selling Price** = Sum of row selling prices where `is_onsite=true` + logistics markup
+- **Offshore Selling Price** = Sum of row selling prices where `is_onsite=false`
+- **Avg $/MM** = Selling Price / Man-Months for each category (onsite/offshore)
+- **Nego Buffer NOT included** in Average $/MM calculations
 
 ### Logistics Costs (Traveling Resources)
 - **Travel Required toggle** per skill row to indicate if resource needs travel logistics
 - Calculated at wave level for resources with `travel_required=true`
+- **Logistics Config Persists** - Values saved per wave and restored on project load
 - **Formulas**:
   - Per-diems, Accommodation, Conveyance: `Traveling MM × Daily Rate × Days`
   - Air Fare, Visa & Medical: `Number of Traveling Resources × Rate × Number of Trips`
