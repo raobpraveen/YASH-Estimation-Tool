@@ -10,9 +10,11 @@ import {
   Calculator, 
   FolderKanban,
   LogOut,
-  User
+  User,
+  UserCog
 } from "lucide-react";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 
 const Layout = ({ user, onLogout }) => {
   const navItems = [
@@ -27,10 +29,29 @@ const Layout = ({ user, onLogout }) => {
     { path: "/projects", icon: FolderKanban, label: "Projects" },
   ];
 
+  // Add User Management for admins
+  if (user?.role === "admin") {
+    navItems.push({ path: "/users", icon: UserCog, label: "User Management" });
+  }
+
+  const getRoleBadge = (role) => {
+    const config = {
+      admin: { label: "Admin", color: "bg-red-500/20 text-red-300" },
+      approver: { label: "Approver", color: "bg-amber-500/20 text-amber-300" },
+      user: { label: "User", color: "bg-blue-500/20 text-blue-300" },
+    };
+    return config[role] || config.user;
+  };
+
   return (
     <div className="flex min-h-screen">
       <aside className="w-64 bg-[#0F172A] sidebar-texture flex flex-col">
         <div className="p-6 border-b border-white/10">
+          <img 
+            src="/yash-logo.svg" 
+            alt="YASH Technologies" 
+            className="h-8 mb-3"
+          />
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Project Estimator</h1>
           <p className="text-xs text-white/60 mt-1">IT Cost Calculator</p>
         </div>
@@ -64,9 +85,14 @@ const Layout = ({ user, onLogout }) => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">{user.name}</p>
-                <p className="text-xs text-white/50 truncate">{user.email}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-white/50 truncate">{user.email}</p>
+                </div>
               </div>
             </div>
+            <Badge className={`${getRoleBadge(user.role).color} text-xs mb-3 ml-2`}>
+              {getRoleBadge(user.role).label}
+            </Badge>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -80,7 +106,7 @@ const Layout = ({ user, onLogout }) => {
           </div>
         )}
         <div className="p-4 border-t border-white/10">
-          <p className="text-xs text-white/40">© 2026 Project Estimator</p>
+          <p className="text-xs text-white/40">© 2026 YASH Technologies</p>
         </div>
       </aside>
       <main className="flex-1 overflow-auto">
