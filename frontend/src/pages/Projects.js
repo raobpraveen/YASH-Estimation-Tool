@@ -80,6 +80,15 @@ const Projects = () => {
     }
   };
 
+  const fetchArchivedProjects = async () => {
+    try {
+      const response = await axios.get(`${API}/projects/archived`);
+      setArchivedProjects(response.data);
+    } catch (error) {
+      console.error("Failed to fetch archived projects");
+    }
+  };
+
   const fetchTemplates = async () => {
     try {
       const response = await axios.get(`${API}/templates`);
