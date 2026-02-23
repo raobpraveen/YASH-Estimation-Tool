@@ -409,6 +409,32 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 
 ---
 
+## February 23, 2026 - Iteration 13 Bug Fixes
+
+### Cost to Company Calculation Fix (COMPLETE)
+- [x] Cost to Company now correctly excludes logistics
+- [x] Formula: Cost to Company = Total Salary Cost + Total Overhead (no logistics)
+- [x] Updated in wave summary and overall project summary
+- [x] Excel export updated with correct Cost to Company values
+
+### KPI Card Reordering (COMPLETE)
+- [x] Onsite/Offshore breakdown row now appears BEFORE Total Selling Price/Final Price row
+- [x] New order: Row 1 (MM cards), Row 2 (Onsite/Offshore breakdown), Row 3 (Selling Price/Final Price)
+
+### Profit Calculation Fix (COMPLETE)
+- [x] Profit formula corrected: (Onsite Selling Price + Offshore Selling Price) - Cost to Company
+- [x] Updated in View Summary dialog - Overall Project Summary section
+- [x] Excel export updated with correct Profit values
+
+### Excel Export Enhancement (COMPLETE)
+- [x] Added Resources Price per wave
+- [x] Added Onsite/Offshore Selling Price per wave
+- [x] Added Profit per wave
+- [x] Added Total Resources Price in overall summary
+- [x] Added Total Profit in overall summary
+
+---
+
 ## Notes
 - Currency is always USD
 - Travel Required is SEPARATE from Onsite
