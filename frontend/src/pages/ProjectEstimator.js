@@ -748,6 +748,7 @@ const ProjectEstimator = () => {
         duration_months: w.duration_months,
         phase_names: w.phase_names,
         logistics_config: w.logistics_config,
+        nego_buffer_percentage: w.nego_buffer_percentage || 0,
         grid_allocations: w.grid_allocations,
       })),
       version_notes: versionNotes,
