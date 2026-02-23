@@ -14,6 +14,7 @@ import Projects from "@/pages/Projects";
 import ProjectSummary from "@/pages/ProjectSummary";
 import CompareVersions from "@/pages/CompareVersions";
 import Login from "@/pages/Login";
+import UserManagement from "@/pages/UserManagement";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
