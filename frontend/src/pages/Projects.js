@@ -407,7 +407,7 @@ const Projects = () => {
   };
 
   const renderProjectRow = (project, isSubVersion = false) => {
-    const { sellingPrice, totalMM, resourceCount } = calculateProjectValue(project);
+    const { sellingPrice, negoBuffer, finalPrice, totalMM, resourceCount } = calculateProjectValue(project);
     const hasVersions = project.version > 1 || (allVersions[project.project_number]?.length > 1);
     const isExpanded = expandedProjects[project.project_number];
     const isLoading = loadingVersions[project.project_number];
@@ -468,6 +468,12 @@ const Projects = () => {
         <TableCell className="text-right font-mono tabular-nums">{totalMM.toFixed(1)}</TableCell>
         <TableCell className="text-right font-mono tabular-nums font-semibold text-[#10B981]">
           ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+        </TableCell>
+        <TableCell className="text-right font-mono tabular-nums text-blue-600">
+          ${negoBuffer.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+        </TableCell>
+        <TableCell className="text-right font-mono tabular-nums font-bold text-emerald-700">
+          ${finalPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </TableCell>
         <TableCell className="text-xs text-gray-500">
           <div className="flex flex-col">
