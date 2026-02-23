@@ -597,7 +597,7 @@ const Projects = () => {
 
   // Render archived project row
   const renderArchivedProjectRow = (project) => {
-    const { sellingPrice, totalMM, resourceCount } = calculateProjectValue(project);
+    const { sellingPrice, negoBuffer, finalPrice, totalMM, resourceCount } = calculateProjectValue(project);
     
     return (
       <TableRow key={project.id} className="bg-gray-50" data-testid={`archived-row-${project.id}`}>
@@ -609,6 +609,12 @@ const Projects = () => {
         <TableCell className="text-right font-mono tabular-nums">{totalMM.toFixed(1)}</TableCell>
         <TableCell className="text-right font-mono tabular-nums font-semibold text-gray-500">
           ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+        </TableCell>
+        <TableCell className="text-right font-mono tabular-nums text-blue-600">
+          ${negoBuffer.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+        </TableCell>
+        <TableCell className="text-right font-mono tabular-nums font-bold text-emerald-700">
+          ${finalPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </TableCell>
         <TableCell className="text-xs text-gray-500">{formatDate(project.archived_at)}</TableCell>
         <TableCell className="text-right">
