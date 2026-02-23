@@ -996,7 +996,7 @@ async def get_project_versions(project_id: str):
     return versions
 
 @api_router.put("/projects/{project_id}", response_model=Project)
-async def update_project(project_id: str, input: ProjectUpdate):
+async def update_project(project_id: str, input: ProjectUpdate, user: dict = Depends(get_current_user)):
     existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not existing:
         raise HTTPException(status_code=404, detail="Project not found")
