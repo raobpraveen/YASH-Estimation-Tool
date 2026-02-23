@@ -183,14 +183,14 @@ const Dashboard = () => {
               <div>
                 <Label>Customer</Label>
                 <Select 
-                  value={filters.customerId} 
-                  onValueChange={(v) => setFilters({ ...filters, customerId: v })}
+                  value={filters.customerId || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, customerId: v === "all" ? "" : v })}
                 >
                   <SelectTrigger data-testid="filter-customer">
                     <SelectValue placeholder="All Customers" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Customers</SelectItem>
+                    <SelectItem value="all">All Customers</SelectItem>
                     {customers.map(c => (
                       <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                     ))}
