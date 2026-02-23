@@ -432,25 +432,47 @@ const ProjectSummary = () => {
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <p className="text-sm text-gray-600 mb-1">Total Logistics</p>
-              <p className="text-4xl font-bold font-mono">${overall.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              <p className="text-4xl font-bold font-mono text-[#8B5CF6]">${overall.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6">
+            <div className="text-center p-4 bg-amber-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Onsite Selling Price</p>
+              <p className="text-2xl font-bold font-mono text-[#F59E0B]">${overall.onsiteSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            </div>
+            <div className="text-center p-4 bg-blue-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Offshore Selling Price</p>
+              <p className="text-2xl font-bold font-mono text-[#0EA5E9]">${overall.offshoreSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            </div>
+            <div className="text-center p-4 bg-gray-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Cost to Company</p>
+              <p className="text-2xl font-bold font-mono">${overall.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            </div>
+            <div className="text-center p-4 bg-green-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Profit ({profitMargin}%)</p>
+              <p className="text-2xl font-bold font-mono text-[#10B981]">
+                ${((overall.onsiteSellingPrice + overall.offshoreSellingPrice) - overall.totalCostToCompany).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <div className="text-center p-6 bg-gray-100 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">Cost to Company</p>
-              <p className="text-3xl font-bold font-mono">${overall.totalCostToCompany.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            <div className="text-center p-6 bg-slate-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Total Resources Price</p>
+              <p className="text-3xl font-bold font-mono text-slate-600">${overall.totalRowsSellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
             </div>
-            <div className="text-center p-6 bg-green-100 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">Profit ({profitMargin}%)</p>
-              <p className="text-3xl font-bold font-mono text-[#10B981]">
-                ${(overall.sellingPrice - overall.totalCostToCompany).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </p>
+            <div className="text-center p-6 bg-green-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Total Selling Price</p>
+              <p className="text-3xl font-bold font-mono text-[#10B981]">${overall.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              <p className="text-xs text-gray-500">resources + logistics</p>
             </div>
             <div className="text-center p-6 bg-gradient-to-r from-green-200 to-emerald-200 rounded-lg border-2 border-[#10B981]">
-              <p className="text-lg text-gray-700 mb-2 font-semibold">SELLING PRICE</p>
+              <p className="text-lg text-gray-700 mb-2 font-semibold">FINAL PRICE</p>
               <p className="text-5xl font-extrabold font-mono text-[#10B981]">
-                ${overall.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                ${overall.finalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </p>
+              {overall.negoBuffer > 0 && (
+                <p className="text-xs text-gray-500 mt-1">incl. nego buffer: ${overall.negoBuffer.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              )}
             </div>
           </div>
         </CardContent>
