@@ -1,6 +1,7 @@
 export const COUNTRIES = [
   { code: "AE", name: "United Arab Emirates" },
   { code: "SA", name: "Saudi Arabia" },
+  { code: "IQ", name: "Iraq" },
   { code: "IN", name: "India" },
   { code: "US", name: "United States" },
   { code: "GB", name: "United Kingdom" },
