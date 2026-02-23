@@ -34,6 +34,9 @@ const ProjectEstimator = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const editProjectId = searchParams.get("edit");
+  const viewProjectId = searchParams.get("view");
+  const projectIdToLoad = editProjectId || viewProjectId;
+  const isViewOnly = !!viewProjectId;
   
   const [rates, setRates] = useState([]);
   const [skills, setSkills] = useState([]);
