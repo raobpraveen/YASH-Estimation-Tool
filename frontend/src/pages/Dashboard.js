@@ -137,7 +137,17 @@ const Dashboard = () => {
           <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Dashboard</h1>
           <p className="text-base text-gray-600 mt-2">Project estimation analytics and overview</p>
         </div>
-        <Button 
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className={showFilters ? "bg-cyan-50 border-cyan-300" : ""}
+            data-testid="toggle-filters-button"
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
+          <Button 
           onClick={() => navigate("/estimator")} 
           className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
           data-testid="create-project-btn"
