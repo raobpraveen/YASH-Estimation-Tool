@@ -227,7 +227,14 @@ const ProjectSummary = () => {
       summaryData.push(["Offshore Man-Months", summary.offshoreMM.toFixed(2)]);
       summaryData.push(["Logistics Costs", `$${summary.totalLogisticsCost.toFixed(2)}`]);
       summaryData.push(["Cost to Company", `$${summary.totalCostToCompany.toFixed(2)}`]);
+      summaryData.push(["Resources Price", `$${summary.totalRowsSellingPrice.toFixed(2)}`]);
+      summaryData.push(["Onsite Selling Price", `$${summary.onsiteSellingPrice.toFixed(2)}`]);
+      summaryData.push(["Offshore Selling Price", `$${summary.offshoreSellingPrice.toFixed(2)}`]);
+      summaryData.push(["Profit", `$${((summary.onsiteSellingPrice + summary.offshoreSellingPrice) - summary.totalCostToCompany).toFixed(2)}`]);
       summaryData.push(["Wave Selling Price", `$${summary.sellingPrice.toFixed(2)}`]);
+      summaryData.push(["Nego Buffer %", `${summary.negoBufferPercentage}%`]);
+      summaryData.push(["Nego Buffer Amount", `$${summary.negoBufferAmount.toFixed(2)}`]);
+      summaryData.push(["Wave Final Price", `$${summary.finalPrice.toFixed(2)}`]);
       summaryData.push([]);
     });
 
@@ -238,7 +245,16 @@ const ProjectSummary = () => {
     summaryData.push(["Total Offshore MM", overall.offshoreMM.toFixed(2)]);
     summaryData.push(["Total Logistics", `$${overall.totalLogisticsCost.toFixed(2)}`]);
     summaryData.push(["Total Cost to Company", `$${overall.totalCostToCompany.toFixed(2)}`]);
-    summaryData.push(["GRAND TOTAL (Selling Price)", `$${overall.sellingPrice.toFixed(2)}`]);
+    summaryData.push(["Total Resources Price", `$${overall.totalRowsSellingPrice.toFixed(2)}`]);
+    summaryData.push([]);
+    summaryData.push(["PRICE BREAKDOWN"]);
+    summaryData.push(["Onsite Selling Price", `$${overall.onsiteSellingPrice.toFixed(2)}`]);
+    summaryData.push(["Offshore Selling Price", `$${overall.offshoreSellingPrice.toFixed(2)}`]);
+    summaryData.push(["Total Profit", `$${((overall.onsiteSellingPrice + overall.offshoreSellingPrice) - overall.totalCostToCompany).toFixed(2)}`]);
+    summaryData.push([]);
+    summaryData.push(["Total Selling Price", `$${overall.sellingPrice.toFixed(2)}`]);
+    summaryData.push(["Total Nego Buffer", `$${overall.negoBuffer.toFixed(2)}`]);
+    summaryData.push(["GRAND TOTAL (Final Price)", `$${overall.finalPrice.toFixed(2)}`]);
 
     const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
     summaryWs['!cols'] = [{ wch: 25 }, { wch: 20 }];
