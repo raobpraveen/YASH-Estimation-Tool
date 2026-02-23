@@ -50,18 +50,20 @@ const Layout = ({ user, onLogout }) => {
   return (
     <div className="flex min-h-screen">
       <aside className="w-64 bg-[#0F172A] sidebar-texture flex flex-col">
-        <div className="p-6 border-b border-white/10">
-          <img 
-            src="/yash-logo.svg" 
-            alt="YASH Technologies" 
-            className="h-6 mb-3"
-          />
-          <img 
-            src="/yash-estipro-logo.png" 
-            alt="YASH EstiPro" 
-            className="h-12 mb-2"
-          />
-          <p className="text-xs text-white/60 mt-1">Project Cost Estimator</p>
+        <div className="p-4 border-b border-white/10">
+          <div className="flex items-center gap-3 mb-2">
+            <img 
+              src="/yash-tech-new.png" 
+              alt="YASH Technologies" 
+              className="h-10"
+            />
+            <img 
+              src="/yash-estipro-new.png" 
+              alt="YASH EstiPro" 
+              className="h-10"
+            />
+          </div>
+          <p className="text-xs text-white/60">Project Cost Estimator</p>
         </div>
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
