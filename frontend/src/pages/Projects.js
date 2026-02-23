@@ -875,6 +875,8 @@ const Projects = () => {
                       <TableHead className="text-center">Resources</TableHead>
                       <TableHead className="text-right">Man-Months</TableHead>
                       <TableHead className="text-right">Selling Price</TableHead>
+                      <TableHead className="text-right">Nego Buffer</TableHead>
+                      <TableHead className="text-right">Final Price</TableHead>
                       <TableHead>Archived</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
