@@ -1182,13 +1182,51 @@ async def clone_project(project_id: str, user: dict = Depends(require_auth)):
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
     await db.projects.insert_one(doc)
+    
+    # Create audit log for clone
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="cloned",
+            entity_type="project",
+            entity_id=project_obj.id,
+            entity_name=project_obj.name,
+            project_id=project_obj.id,
+            project_number=project_obj.project_number,
+            project_name=project_obj.name,
+            metadata={
+                "cloned_from_id": project_id,
+                "cloned_from_number": existing.get("project_number", ""),
+                "cloned_from_name": existing.get("name", "")
+            }
+        )
+    
     return project_obj
 
 @api_router.delete("/projects/{project_id}")
-async def delete_project(project_id: str):
+async def delete_project(project_id: str, user: dict = Depends(get_current_user)):
+    existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
     result = await db.projects.delete_one({"id": project_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Create audit log for delete
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="deleted",
+            entity_type="project",
+            entity_id=project_id,
+            entity_name=existing.get("name", ""),
+            project_id=project_id,
+            project_number=existing.get("project_number", ""),
+            project_name=existing.get("name", "")
+        )
+    
     return {"message": "Project deleted successfully"}
 
 
