@@ -1141,6 +1141,26 @@ async def create_new_version(project_id: str, input: ProjectUpdate):
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
     await db.projects.insert_one(doc)
+    
+    # Create audit log for new version
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="version_created",
+            entity_type="project",
+            entity_id=project_obj.id,
+            entity_name=project_obj.name,
+            project_id=project_obj.id,
+            project_number=project_obj.project_number,
+            project_name=project_obj.name,
+            metadata={
+                "new_version": new_version,
+                "previous_version": existing.get("version", 1),
+                "version_notes": update_data.get("version_notes", "")
+            }
+        )
+    
     return project_obj
 
 @api_router.post("/projects/{project_id}/clone", response_model=Project)
