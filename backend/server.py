@@ -1220,13 +1220,15 @@ async def get_dashboard_analytics(
     # Build query based on filters
     query = {}
     
-    # Date range filter
+    # Date range filter - handle string date format from frontend
     if date_from or date_to:
         date_filter = {}
         if date_from:
-            date_filter["$gte"] = date_from
+            # Frontend sends YYYY-MM-DD format
+            date_filter["$gte"] = datetime.strptime(date_from, "%Y-%m-%d")
         if date_to:
-            date_filter["$lte"] = date_to + "T23:59:59"
+            # Add end of day for date_to
+            date_filter["$lte"] = datetime.strptime(date_to, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
         if date_filter:
             query["created_at"] = date_filter
     
