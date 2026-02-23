@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Upload, Download } from "lucide-react";
+import { Plus, Trash2, Upload, Download, Edit2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { PROFICIENCY_LEVELS } from "@/utils/constants";
 
