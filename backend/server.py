@@ -38,7 +38,8 @@ class User(BaseModel):
     email: str
     password_hash: str
     name: str
-    role: str = "user"  # user, admin
+    role: str = "user"  # user, approver, admin
+    is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserRegister(BaseModel):
@@ -55,6 +56,19 @@ class UserResponse(BaseModel):
     email: str
     name: str
     role: str
+    is_active: bool = True
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    name: str
+    role: str = "user"
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class AuthResponse(BaseModel):
     token: str
