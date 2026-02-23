@@ -910,6 +910,7 @@ const ProjectEstimator = () => {
     
     // Summary sheet
     const summaryData = [];
+    summaryData.push(["YASH Technologies - EstiPro"]);
     summaryData.push(["PROJECT ESTIMATE SUMMARY"]);
     summaryData.push([]);
     summaryData.push(["Project Number", projectNumber || "Not Saved"]);
