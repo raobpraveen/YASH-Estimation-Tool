@@ -950,7 +950,7 @@ async def create_new_version(project_id: str, input: ProjectUpdate):
     return project_obj
 
 @api_router.post("/projects/{project_id}/clone", response_model=Project)
-async def clone_project(project_id: str):
+async def clone_project(project_id: str, user: dict = Depends(require_auth)):
     """Clone a project as a new project with new project number"""
     existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not existing:
@@ -958,6 +958,9 @@ async def clone_project(project_id: str):
     
     # Generate new project number
     new_project_number = await generate_project_number()
+    
+    # Get current user info
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
     
     # Create cloned project
     cloned_data = {**existing}
@@ -974,6 +977,11 @@ async def clone_project(project_id: str):
     cloned_data["approved_at"] = None
     cloned_data["created_at"] = datetime.now(timezone.utc)
     cloned_data["updated_at"] = datetime.now(timezone.utc)
+    # Set audit fields to current user (cloner becomes owner)
+    if current_user:
+        cloned_data["created_by_id"] = current_user.get("id", "")
+        cloned_data["created_by_name"] = current_user.get("name", "")
+        cloned_data["created_by_email"] = current_user.get("email", "")
     
     project_obj = Project(**cloned_data)
     doc = project_obj.model_dump()
