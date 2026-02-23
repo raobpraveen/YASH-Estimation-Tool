@@ -728,66 +728,6 @@ const Projects = () => {
         </Card>
       )}
 
-      {/* Save as Template Dialog */}
-      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Save as Template</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div>
-              <Label>Template Name</Label>
-              <Input
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                placeholder="Enter template name"
-                data-testid="template-name-input"
-              />
-            </div>
-            <p className="text-sm text-gray-500">
-              This will save the project structure (waves, resources, logistics config) as a reusable template.
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleSaveAsTemplate} data-testid="confirm-save-template">Save Template</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create from Template Dialog */}
-      <Dialog open={createFromTemplateDialogOpen} onOpenChange={setCreateFromTemplateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create from Template</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div>
-              <Label>Select Template</Label>
-              <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                <SelectTrigger data-testid="template-select">
-                  <SelectValue placeholder="Choose a template" />
-                </SelectTrigger>
-                <SelectContent>
-                  {templates.map(template => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.template_name} ({template.waves?.length || 0} waves)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-sm text-gray-500">
-              A new project will be created with the template's waves, resources, and configuration.
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setCreateFromTemplateDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleCreateFromTemplate} data-testid="confirm-create-from-template">Create Project</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="active" className="flex items-center gap-2">
