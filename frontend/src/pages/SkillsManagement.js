@@ -191,6 +191,10 @@ const SkillsManagement = () => {
           <p className="text-base text-gray-600 mt-2">Manage your technology skills catalog</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} data-testid="toggle-filters">
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
           <Button variant="outline" onClick={handleDownloadTemplate} data-testid="download-template-button">
             <Download className="w-4 h-4 mr-2" />
             Template
