@@ -375,14 +375,93 @@ const ProficiencyRates = () => {
         </div>
       </div>
 
+      {/* Filters Panel */}
+      {showFilters && (
+        <Card className="mb-6 border border-[#E2E8F0]">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label>Skill</Label>
+                <Select 
+                  value={filters.skill || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, skill: v === "all" ? "" : v })}
+                >
+                  <SelectTrigger data-testid="filter-skill">
+                    <SelectValue placeholder="All Skills" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Skills</SelectItem>
+                    {skills.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Location</Label>
+                <Select 
+                  value={filters.location || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, location: v === "all" ? "" : v })}
+                >
+                  <SelectTrigger data-testid="filter-location">
+                    <SelectValue placeholder="All Locations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {locations.map(l => (
+                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Proficiency Level</Label>
+                <Select 
+                  value={filters.proficiency || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, proficiency: v === "all" ? "" : v })}
+                >
+                  <SelectTrigger data-testid="filter-proficiency">
+                    <SelectValue placeholder="All Levels" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Levels</SelectItem>
+                    {PROFICIENCY_LEVELS.map(p => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button variant="outline" onClick={clearFilters} className="w-full" data-testid="clear-filters">
+                  <X className="w-4 h-4 mr-1" />
+                  Clear
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border border-[#E2E8F0] shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-[#0F172A]">Configured Rates</CardTitle>
+          <CardTitle className="text-xl font-bold text-[#0F172A]">
+            Configured Rates
+            {filteredRates.length !== rates.length && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                ({filteredRates.length} of {rates.length})
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          {rates.length === 0 ? (
+          {filteredRates.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">No proficiency rates configured yet.</p>
+              <p className="text-gray-500">
+                {rates.length === 0 
+                  ? "No proficiency rates configured yet."
+                  : "No rates match your filter criteria."
+                }
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -398,7 +477,7 @@ const ProficiencyRates = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rates.map((rate) => (
+                  {filteredRates.map((rate) => (
                     <TableRow key={rate.id} data-testid={`rate-row-${rate.id}`}>
                       <TableCell>{rate.technology_name}</TableCell>
                       <TableCell className="font-medium">{rate.skill_name}</TableCell>
