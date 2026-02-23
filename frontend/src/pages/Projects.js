@@ -788,66 +788,79 @@ const Projects = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="border border-[#E2E8F0] shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl font-bold text-[#0F172A]">
-            Projects List {filteredProjects.length !== projects.length && (
-              <span className="text-sm font-normal text-gray-500 ml-2">
-                ({filteredProjects.length} of {projects.length})
-              </span>
-            )}
-          </CardTitle>
-          <div className="flex gap-2">
-            <Badge variant="outline" className="text-xs">
-              <span className="w-2 h-2 rounded-full bg-green-500 mr-1 inline-block"></span>
-              Latest Version
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {filteredProjects.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">
-                {projects.length === 0 
-                  ? "No projects saved yet. Create an estimate in the Estimator page."
-                  : "No projects match your filter criteria."
-                }
-              </p>
-              {projects.length === 0 && (
-                <Button className="mt-4 bg-[#0EA5E9]" onClick={() => navigate("/estimator")}>
-                  Create New Project
-                </Button>
-              )}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project #</TableHead>
-                  <TableHead>Project Name</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead className="text-center">Version</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-center">Resources</TableHead>
-                  <TableHead className="text-right">Man-Months</TableHead>
-                  <TableHead className="text-right">Selling Price</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProjects.map((project) => {
-                  const isExpanded = expandedProjects[project.project_number];
-                  const versions = allVersions[project.project_number] || [];
-                  const otherVersions = versions.filter(v => v.id !== project.id);
-                  
-                  return (
-                    <>
-                      {renderProjectRow(project)}
-                      {isExpanded && otherVersions.map((version) => renderProjectRow(version, true))}
-                    </>
-                  );
-                })}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="active" className="flex items-center gap-2">
+            <FolderKanban className="w-4 h-4" />
+            Active Projects ({projects.length})
+          </TabsTrigger>
+          <TabsTrigger value="archived" className="flex items-center gap-2">
+            <Archive className="w-4 h-4" />
+            Archived ({archivedProjects.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="active">
+          <Card className="border border-[#E2E8F0] shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl font-bold text-[#0F172A]">
+                Projects List {filteredProjects.length !== projects.length && (
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    ({filteredProjects.length} of {projects.length})
+                  </span>
+                )}
+              </CardTitle>
+              <div className="flex gap-2">
+                <Badge variant="outline" className="text-xs">
+                  <span className="w-2 h-2 rounded-full bg-green-500 mr-1 inline-block"></span>
+                  Latest Version
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {filteredProjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">
+                    {projects.length === 0 
+                      ? "No projects saved yet. Create an estimate in the Estimator page."
+                      : "No projects match your filter criteria."
+                    }
+                  </p>
+                  {projects.length === 0 && (
+                    <Button className="mt-4 bg-[#0EA5E9]" onClick={() => navigate("/estimator")}>
+                      Create New Project
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Project #</TableHead>
+                      <TableHead>Project Name</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead className="text-center">Version</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-center">Resources</TableHead>
+                      <TableHead className="text-right">Man-Months</TableHead>
+                      <TableHead className="text-right">Selling Price</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProjects.map((project) => {
+                      const isExpanded = expandedProjects[project.project_number];
+                      const versions = allVersions[project.project_number] || [];
+                      const otherVersions = versions.filter(v => v.id !== project.id);
+                      
+                      return (
+                        <>
+                          {renderProjectRow(project)}
+                          {isExpanded && otherVersions.map((version) => renderProjectRow(version, true))}
+                        </>
+                      );
+                    })}
               </TableBody>
             </Table>
           )}
