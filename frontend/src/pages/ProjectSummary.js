@@ -604,6 +604,80 @@ const ProjectSummary = () => {
         );
       })}
 
+      {/* Audit Trail Section */}
+      <Card className="print:hidden">
+        <CardHeader className="cursor-pointer" onClick={() => setShowAuditLogs(!showAuditLogs)}>
+          <CardTitle className="text-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <History className="w-5 h-5 text-[#0EA5E9]" />
+              Audit Trail ({auditLogs.length})
+            </div>
+            {showAuditLogs ? (
+              <ChevronDown className="w-5 h-5 text-gray-400" />
+            ) : (
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            )}
+          </CardTitle>
+        </CardHeader>
+        {showAuditLogs && (
+          <CardContent>
+            {auditLogs.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No audit logs available</p>
+            ) : (
+              <div className="space-y-3">
+                {auditLogs.map((log) => (
+                  <div key={log.id} className="flex items-start gap-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 text-cyan-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-gray-800">{log.user_name}</span>
+                        <Badge className={
+                          log.action === 'created' ? 'bg-green-500/20 text-green-600' :
+                          log.action === 'updated' ? 'bg-blue-500/20 text-blue-600' :
+                          log.action === 'status_change' ? 'bg-amber-500/20 text-amber-600' :
+                          log.action === 'version_created' ? 'bg-indigo-500/20 text-indigo-600' :
+                          log.action === 'cloned' ? 'bg-purple-500/20 text-purple-600' :
+                          log.action === 'archived' ? 'bg-gray-500/20 text-gray-600' :
+                          'bg-gray-500/20 text-gray-600'
+                        }>
+                          {log.action.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">{log.user_email}</p>
+                      {log.changes && log.changes.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {log.changes.map((change, idx) => (
+                            <div key={idx} className="text-sm flex items-center gap-2">
+                              <span className="font-medium capitalize">{change.field}:</span>
+                              <span className="text-red-500">{change.old_value || '(empty)'}</span>
+                              <ArrowRight className="w-3 h-3 text-gray-400" />
+                              <span className="text-green-600">{change.new_value || '(empty)'}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {log.metadata && Object.keys(log.metadata).length > 0 && (
+                        <div className="mt-2 text-xs text-gray-500">
+                          {log.metadata.version_notes && <p>Notes: {log.metadata.version_notes}</p>}
+                          {log.metadata.new_version && <p>Version: v{log.metadata.new_version}</p>}
+                          {log.metadata.cloned_from_number && <p>Cloned from: {log.metadata.cloned_from_number}</p>}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-400 flex items-center gap-1 flex-shrink-0">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(log.timestamp).toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+
       {/* Print Footer */}
       <div className="hidden print:block mt-8 pt-4 border-t text-center text-sm text-gray-500">
         <p>Generated on {new Date().toLocaleDateString()} | {project.project_number} v{project.version || 1}</p>
