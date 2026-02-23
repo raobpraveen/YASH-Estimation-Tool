@@ -4,7 +4,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Printer, FileDown, Edit2, Plane, History } from "lucide-react";
+import { ArrowLeft, Printer, FileDown, Edit2, Plane, History, ChevronDown, ChevronRight, User, Calendar, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 
