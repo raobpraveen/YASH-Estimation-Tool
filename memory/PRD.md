@@ -304,15 +304,49 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 ---
 
 ## Test Coverage
-- Test reports: `/app/test_reports/iteration_10.json`
-- All iteration 10 features tested and verified working:
-  - Login/Sidebar dual logos (YASH Tech + EstiPro)
-  - Dashboard filters (date range + customer)
-  - Projects filter panel (5 filters)
-  - Created column with audit fields
-  - Access control (owner/admin edit, others view-only)
-- Backend: 100% pass rate (11/11 tests)
-- Frontend: 100% pass rate (14/14 features verified via Playwright)
+- Test reports: `/app/test_reports/iteration_11.json`
+- All iteration 11 features tested and verified working:
+  - Project Archiving (archive/unarchive flow)
+  - Archived Projects Tab
+  - Dashboard Date Filter Fix (verified)
+  - Collapsible Sidebar
+  - Apply Skill for All Months
+  - Selling Price Calculation Bug Fix (no overhead on logistics)
+  - Nego Buffer Display Bug Fix (not in avg $/MM)
+- Backend: 100% pass rate (8/8 tests)
+- Frontend: 100% pass rate (19/19 features verified via Playwright)
+
+---
+
+## February 23, 2026 - Iteration 11 Features
+
+### Project Archiving (COMPLETE)
+- [x] Archive button on each project in Projects list
+- [x] POST `/api/projects/{id}/archive` sets is_archived=true
+- [x] POST `/api/projects/{id}/unarchive` restores project  
+- [x] GET `/api/projects/archived` returns archived projects list
+- [x] Active Projects tab and Archived tab in Projects page
+- [x] Archived tab shows projects with Restore and Delete buttons
+- [x] Success toast messages for archive/unarchive operations
+
+### Collapsible Sidebar (COMPLETE)
+- [x] Toggle button in sidebar (ChevronLeft/ChevronRight icon)
+- [x] Sidebar collapses from 256px to 64px
+- [x] Icons only visible when collapsed
+- [x] Full menu labels visible when expanded
+- [x] User info and footer hidden when collapsed
+
+### Apply Skill for All Months (COMPLETE)
+- [x] "Default Effort" input field in Add Resource dialog
+- [x] If default_mm is provided, applies to all months when adding resource
+- [x] Calculator icon button in resource grid Actions column
+- [x] Click prompts user for value, then applies to all months
+- [x] Toast shows "Applied X MM to all N months"
+
+### Bug Fixes (COMPLETE)
+- [x] Selling Price Calculation: Overhead applied ONLY to salary, NOT to logistics
+- [x] Avg $/MM Display: Nego buffer NOT included in average selling price per MM
+- [x] Final Price card correctly includes nego buffer
 
 ---
 
