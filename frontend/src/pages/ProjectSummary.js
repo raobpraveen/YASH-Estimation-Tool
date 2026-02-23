@@ -266,11 +266,11 @@ const ProjectSummary = () => {
       waveData.push([`${wave.name} - ${wave.duration_months} months`]);
       waveData.push([]);
       
-      const header = ["Skill", "Level", "Location", "$/Month", "Onsite", ...(wave.phase_names || []), "Total MM", "Base Cost", "OH Cost", "Selling Price"];
+      const header = ["Skill", "Level", "Location", "$/Month", "Onsite", ...(wave.phase_names || []), "Total MM", "Salary Cost", "OH Cost", "Selling Price"];
       waveData.push(header);
 
       (wave.grid_allocations || []).forEach(alloc => {
-        const { totalManMonths, baseCost, overheadCost, sellingPrice } = calculateAllocationCost(alloc, profitMargin);
+        const { totalManMonths, baseSalaryCost, overheadCost, sellingPrice } = calculateAllocationCost(alloc, profitMargin);
         const row = [
           alloc.skill_name,
           alloc.proficiency_level,
@@ -279,7 +279,7 @@ const ProjectSummary = () => {
           alloc.is_onsite ? "ON" : "OFF",
           ...(wave.phase_names || []).map((_, i) => (alloc.phase_allocations || {})[i] || 0),
           totalManMonths.toFixed(2),
-          baseCost.toFixed(2),
+          baseSalaryCost.toFixed(2),
           overheadCost.toFixed(2),
           sellingPrice.toFixed(2),
         ];
