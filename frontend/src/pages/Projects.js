@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Trash2, Edit2, Copy, FileText, GitCompare, 
   ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, FileEdit,
-  Bookmark, BookmarkCheck, Plus
+  Bookmark, BookmarkCheck, Plus, Filter, Search, X, User, Calendar,
+  Eye
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,7 +29,10 @@ const STATUS_CONFIG = {
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
+  const [filteredProjects, setFilteredProjects] = useState([]);
   const [templates, setTemplates] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [allVersions, setAllVersions] = useState({});
   const [expandedProjects, setExpandedProjects] = useState({});
   const [loadingVersions, setLoadingVersions] = useState({});
@@ -37,12 +41,31 @@ const Projects = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [templateName, setTemplateName] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
+  
+  // Current user from localStorage
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  
+  // Filters state
+  const [filters, setFilters] = useState({
+    customerName: "",
+    description: "",
+    createdBy: "",
+    dateFrom: "",
+    dateTo: "",
+  });
 
   useEffect(() => {
     fetchProjects();
     fetchTemplates();
+    fetchCustomers();
+    fetchUsers();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [projects, filters]);
 
   const fetchProjects = async () => {
     try {
@@ -62,9 +85,74 @@ const Projects = () => {
     }
   };
 
+  const fetchCustomers = async () => {
+    try {
+      const response = await axios.get(`${API}/customers`);
+      setCustomers(response.data);
+    } catch (error) {
+      console.error("Failed to fetch customers");
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/users`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Failed to fetch users");
+    }
+  };
+
+  const applyFilters = () => {
+    let result = [...projects];
+    
+    if (filters.customerName) {
+      result = result.filter(p => 
+        p.customer_name?.toLowerCase().includes(filters.customerName.toLowerCase())
+      );
+    }
+    
+    if (filters.description) {
+      result = result.filter(p => 
+        p.description?.toLowerCase().includes(filters.description.toLowerCase()) ||
+        p.name?.toLowerCase().includes(filters.description.toLowerCase())
+      );
+    }
+    
+    if (filters.createdBy) {
+      result = result.filter(p => p.created_by_id === filters.createdBy);
+    }
+    
+    if (filters.dateFrom) {
+      const fromDate = new Date(filters.dateFrom);
+      result = result.filter(p => new Date(p.created_at) >= fromDate);
+    }
+    
+    if (filters.dateTo) {
+      const toDate = new Date(filters.dateTo);
+      toDate.setHours(23, 59, 59);
+      result = result.filter(p => new Date(p.created_at) <= toDate);
+    }
+    
+    setFilteredProjects(result);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      customerName: "",
+      description: "",
+      createdBy: "",
+      dateFrom: "",
+      dateTo: "",
+    });
+  };
+
   const fetchVersions = async (projectId, projectNumber) => {
     if (allVersions[projectNumber]) {
-      return; // Already fetched
+      return;
     }
     
     setLoadingVersions(prev => ({ ...prev, [projectNumber]: true }));
@@ -113,7 +201,12 @@ const Projects = () => {
       return;
     }
     try {
-      const response = await axios.post(`${API}/projects/create-from-template/${selectedTemplateId}`);
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API}/projects/create-from-template/${selectedTemplateId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       toast.success("Project created from template");
       setCreateFromTemplateDialogOpen(false);
       setSelectedTemplateId("");
@@ -150,7 +243,6 @@ const Projects = () => {
       await axios.delete(`${API}/projects/${id}`);
       toast.success("Project deleted successfully");
       fetchProjects();
-      // Clear versions cache
       setAllVersions({});
     } catch (error) {
       toast.error("Failed to delete project");
@@ -159,12 +251,25 @@ const Projects = () => {
 
   const handleCloneProject = async (id) => {
     try {
-      const response = await axios.post(`${API}/projects/${id}/clone`);
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API}/projects/${id}/clone`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       toast.success(`Project cloned as ${response.data.project_number}`);
       fetchProjects();
     } catch (error) {
       toast.error("Failed to clone project");
     }
+  };
+
+  // Check if current user can edit the project
+  const canEditProject = (project) => {
+    if (!currentUser) return false;
+    if (currentUser.role === "admin") return true;
+    if (project.created_by_id === currentUser.id) return true;
+    return false;
   };
 
   const calculateProjectValue = (project) => {
@@ -202,7 +307,6 @@ const Projects = () => {
         }
       });
       
-      // Calculate wave-level logistics for traveling resources
       if (waveTravelingCount > 0) {
         const perDiem = waveTravelingMM * (config.per_diem_daily || 50) * (config.per_diem_days || 30);
         const accommodation = waveTravelingMM * (config.accommodation_daily || 80) * (config.accommodation_days || 30);
@@ -232,11 +336,18 @@ const Projects = () => {
     );
   };
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "—";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  };
+
   const renderProjectRow = (project, isSubVersion = false) => {
     const { sellingPrice, totalMM, resourceCount } = calculateProjectValue(project);
     const hasVersions = project.version > 1 || (allVersions[project.project_number]?.length > 1);
     const isExpanded = expandedProjects[project.project_number];
     const isLoading = loadingVersions[project.project_number];
+    const canEdit = canEditProject(project);
     
     return (
       <TableRow 
@@ -294,6 +405,18 @@ const Projects = () => {
         <TableCell className="text-right font-mono tabular-nums font-semibold text-[#10B981]">
           ${sellingPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </TableCell>
+        <TableCell className="text-xs text-gray-500">
+          <div className="flex flex-col">
+            <span className="flex items-center gap-1">
+              <User className="w-3 h-3" />
+              {project.created_by_name || "—"}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {formatDate(project.created_at)}
+            </span>
+          </div>
+        </TableCell>
         <TableCell className="text-right">
           <div className="flex gap-1 justify-end">
             <Button
@@ -316,16 +439,29 @@ const Projects = () => {
             >
               <GitCompare className="w-4 h-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/estimator?edit=${project.id}`)}
-              className="text-[#0EA5E9] hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
-              title="Edit"
-              data-testid={`edit-project-${project.id}`}
-            >
-              <Edit2 className="w-4 h-4" />
-            </Button>
+            {canEdit ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/estimator?edit=${project.id}`)}
+                className="text-[#0EA5E9] hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
+                title="Edit"
+                data-testid={`edit-project-${project.id}`}
+              >
+                <Edit2 className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/estimator?view=${project.id}`)}
+                className="text-gray-500 hover:text-gray-600 hover:bg-gray-100"
+                title="View Only"
+                data-testid={`view-project-${project.id}`}
+              >
+                <Eye className="w-4 h-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -336,39 +472,43 @@ const Projects = () => {
             >
               <Copy className="w-4 h-4" />
             </Button>
-            {project.is_template ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleRemoveTemplate(project.id)}
-                className="text-emerald-600 hover:text-emerald-600 hover:bg-emerald-600/10"
-                title="Remove Template"
-                data-testid={`remove-template-${project.id}`}
-              >
-                <BookmarkCheck className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => openTemplateDialog(project)}
-                className="text-cyan-600 hover:text-cyan-600 hover:bg-cyan-600/10"
-                title="Save as Template"
-                data-testid={`save-template-${project.id}`}
-              >
-                <Bookmark className="w-4 h-4" />
-              </Button>
+            {canEdit && (
+              <>
+                {project.is_template ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveTemplate(project.id)}
+                    className="text-emerald-600 hover:text-emerald-600 hover:bg-emerald-600/10"
+                    title="Remove Template"
+                    data-testid={`remove-template-${project.id}`}
+                  >
+                    <BookmarkCheck className="w-4 h-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openTemplateDialog(project)}
+                    className="text-cyan-600 hover:text-cyan-600 hover:bg-cyan-600/10"
+                    title="Save as Template"
+                    data-testid={`save-template-${project.id}`}
+                  >
+                    <Bookmark className="w-4 h-4" />
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteProject(project.id)}
+                  className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                  title="Delete"
+                  data-testid={`delete-project-${project.id}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeleteProject(project.id)}
-              className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
-              title="Delete"
-              data-testid={`delete-project-${project.id}`}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
           </div>
         </TableCell>
       </TableRow>
@@ -383,6 +523,14 @@ const Projects = () => {
           <p className="text-base text-gray-600 mt-2">View and manage your project estimates</p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            data-testid="toggle-filters"
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
           <Button
             variant="outline"
             onClick={() => setCreateFromTemplateDialogOpen(true)}
@@ -402,6 +550,83 @@ const Projects = () => {
           </Button>
         </div>
       </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <Card className="mb-6 border border-[#E2E8F0]">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div>
+                <Label>Customer Name</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Search customer..."
+                    value={filters.customerName}
+                    onChange={(e) => setFilters({ ...filters, customerName: e.target.value })}
+                    className="pl-9"
+                    data-testid="filter-customer-name"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Project Name/Description</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Search description..."
+                    value={filters.description}
+                    onChange={(e) => setFilters({ ...filters, description: e.target.value })}
+                    className="pl-9"
+                    data-testid="filter-description"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Created By</Label>
+                <Select 
+                  value={filters.createdBy || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, createdBy: v === "all" ? "" : v })}
+                >
+                  <SelectTrigger data-testid="filter-created-by">
+                    <SelectValue placeholder="All Users" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Users</SelectItem>
+                    {users.map(u => (
+                      <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Date From</Label>
+                <Input
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                  data-testid="filter-date-from"
+                />
+              </div>
+              <div>
+                <Label>Date To</Label>
+                <Input
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                  data-testid="filter-date-to"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end mt-4">
+              <Button variant="outline" onClick={clearFilters} data-testid="clear-filters">
+                <X className="w-4 h-4 mr-1" />
+                Clear Filters
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Save as Template Dialog */}
       <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
@@ -465,7 +690,13 @@ const Projects = () => {
 
       <Card className="border border-[#E2E8F0] shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl font-bold text-[#0F172A]">Projects List</CardTitle>
+          <CardTitle className="text-xl font-bold text-[#0F172A]">
+            Projects List {filteredProjects.length !== projects.length && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                ({filteredProjects.length} of {projects.length})
+              </span>
+            )}
+          </CardTitle>
           <div className="flex gap-2">
             <Badge variant="outline" className="text-xs">
               <span className="w-2 h-2 rounded-full bg-green-500 mr-1 inline-block"></span>
@@ -474,12 +705,19 @@ const Projects = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {projects.length === 0 ? (
+          {filteredProjects.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">No projects saved yet. Create an estimate in the Estimator page.</p>
-              <Button className="mt-4 bg-[#0EA5E9]" onClick={() => navigate("/estimator")}>
-                Create New Project
-              </Button>
+              <p className="text-gray-500">
+                {projects.length === 0 
+                  ? "No projects saved yet. Create an estimate in the Estimator page."
+                  : "No projects match your filter criteria."
+                }
+              </p>
+              {projects.length === 0 && (
+                <Button className="mt-4 bg-[#0EA5E9]" onClick={() => navigate("/estimator")}>
+                  Create New Project
+                </Button>
+              )}
             </div>
           ) : (
             <Table>
@@ -493,11 +731,12 @@ const Projects = () => {
                   <TableHead className="text-center">Resources</TableHead>
                   <TableHead className="text-right">Man-Months</TableHead>
                   <TableHead className="text-right">Selling Price</TableHead>
+                  <TableHead>Created</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projects.map((project) => {
+                {filteredProjects.map((project) => {
                   const isExpanded = expandedProjects[project.project_number];
                   const versions = allVersions[project.project_number] || [];
                   const otherVersions = versions.filter(v => v.id !== project.id);
