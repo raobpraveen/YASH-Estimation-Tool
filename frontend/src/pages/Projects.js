@@ -9,11 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Trash2, Edit2, Copy, FileText, GitCompare, 
   ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, FileEdit,
   Bookmark, BookmarkCheck, Plus, Filter, Search, X, User, Calendar,
-  Eye
+  Eye, Archive, ArchiveRestore
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,6 +31,8 @@ const STATUS_CONFIG = {
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
+  const [archivedProjects, setArchivedProjects] = useState([]);
+  const [activeTab, setActiveTab] = useState("active");
   const [templates, setTemplates] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);
@@ -58,6 +61,7 @@ const Projects = () => {
 
   useEffect(() => {
     fetchProjects();
+    fetchArchivedProjects();
     fetchTemplates();
     fetchCustomers();
     fetchUsers();
