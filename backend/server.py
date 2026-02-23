@@ -904,6 +904,21 @@ async def create_project(input: ProjectCreate, user: dict = Depends(require_auth
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
     await db.projects.insert_one(doc)
+    
+    # Create audit log for project creation
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="created",
+            entity_type="project",
+            entity_id=project_obj.id,
+            entity_name=project_obj.name,
+            project_id=project_obj.id,
+            project_number=project_obj.project_number,
+            project_name=project_obj.name,
+            metadata={"version": project_obj.version}
+        )
+    
     return project_obj
 
 @api_router.get("/projects", response_model=List[Project])
