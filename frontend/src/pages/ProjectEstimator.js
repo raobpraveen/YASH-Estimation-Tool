@@ -2128,17 +2128,42 @@ const ProjectEstimator = () => {
                                     ${((baseSalaryCost + baseSalaryCost * (allocation.overhead_percentage / 100)) / (1 - profitMarginPercentage / 100)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                   </td>
                                   <td className="p-3 text-center">
-                                    {!isReadOnly && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeleteAllocation(wave.id, allocation.id)}
-                                      className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
-                                      data-testid={`delete-allocation-${allocation.id}`}
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                    )}
+                                    <div className="flex items-center justify-center gap-1">
+                                      {!isReadOnly && (
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => {
+                                                const value = prompt(`Enter MM value to apply to all ${wave.phase_names.length} months:`, "1");
+                                                if (value !== null) {
+                                                  handleApplyToAllMonths(wave.id, allocation.id, value);
+                                                }
+                                              }}
+                                              className="text-[#8B5CF6] hover:text-[#8B5CF6] hover:bg-[#8B5CF6]/10"
+                                              data-testid={`apply-all-${allocation.id}`}
+                                            >
+                                              <Calculator className="w-4 h-4" />
+                                            </Button>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>Apply same value to all months</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      )}
+                                      {!isReadOnly && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleDeleteAllocation(wave.id, allocation.id)}
+                                          className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                                          data-testid={`delete-allocation-${allocation.id}`}
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      )}
+                                    </div>
                                   </td>
                                 </tr>
                               );
