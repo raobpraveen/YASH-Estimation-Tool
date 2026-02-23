@@ -433,6 +433,44 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - [x] Added Total Resources Price in overall summary
 - [x] Added Total Profit in overall summary
 
+### Project Summary Page Fix (COMPLETE)
+- [x] Rewritten calculation logic to match ProjectEstimator.js
+- [x] Cost to Company now excludes logistics
+- [x] Profit calculation corrected
+- [x] Added all missing fields (Resources Price, Onsite/Offshore Selling Prices)
+- [x] Excel export updated with all fields
+
+---
+
+## February 23, 2026 - Iteration 14: Sidebar & Audit Log Features
+
+### Enhanced Collapsible Sidebar (COMPLETE)
+- [x] Hover-to-expand: Sidebar auto-expands on hover when collapsed
+- [x] Keyboard shortcut: Ctrl+B to toggle sidebar
+- [x] Remember preference: Collapse state saved to localStorage
+- [x] Tooltips: Show nav item names on hover when collapsed
+- [x] Grouped navigation: Main, Master Data, Admin, Settings sections
+
+### Full Audit Log Feature (COMPLETE)
+- [x] New `audit_logs` MongoDB collection
+- [x] Audit tracking for all project operations:
+  - Project create/update/delete
+  - Clone and archive/unarchive
+  - Status changes (submit, approve, reject)
+  - Version creation
+  - Field-level change tracking
+- [x] New Audit Log page for admins (/audit-logs)
+  - Summary statistics (total logs, recent activity, top action, most active user)
+  - Filterable table (by action, entity type, user, date range)
+  - Expandable rows showing changes and metadata
+- [x] Audit Trail section on Project Summary page
+  - Shows project-specific audit history
+  - Collapsible section with timeline view
+- [x] Backend API endpoints:
+  - GET /api/audit-logs - List all logs with filters
+  - GET /api/audit-logs/project/{id} - Project-specific logs
+  - GET /api/audit-logs/summary - Admin statistics
+
 ---
 
 ## Notes
