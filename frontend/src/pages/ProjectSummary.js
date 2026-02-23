@@ -540,7 +540,7 @@ const ProjectSummary = () => {
                     </thead>
                     <tbody>
                       {wave.grid_allocations.map((alloc, allocIndex) => {
-                        const { totalManMonths, baseCost, overheadCost, sellingPrice } = calculateAllocationCost(alloc, profitMargin);
+                        const { totalManMonths, baseSalaryCost, overheadCost, sellingPrice } = calculateAllocationCost(alloc, profitMargin);
                         return (
                           <tr key={alloc.id || allocIndex} className={alloc.is_onsite ? "bg-amber-50/30" : ""}>
                             <td className="border p-2 font-medium">{alloc.skill_name}</td>
@@ -558,7 +558,7 @@ const ProjectSummary = () => {
                               </td>
                             ))}
                             <td className="border p-2 text-right font-mono font-semibold">{totalManMonths.toFixed(1)}</td>
-                            <td className="border p-2 text-right font-mono text-gray-600">${baseCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                            <td className="border p-2 text-right font-mono text-gray-600">${baseSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                             <td className="border p-2 text-right font-mono text-gray-600">${overheadCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                             <td className="border p-2 text-right font-mono font-bold text-[#10B981]">${sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                           </tr>
