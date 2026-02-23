@@ -304,10 +304,50 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 ---
 
 ## Test Coverage
-- Test reports: `/app/test_reports/iteration_7.json`
-- All 8 iteration 7 features tested and verified working
-- Backend: 100% pass rate (13/13 tests)
-- Frontend: 100% pass rate (All 8 features verified via Playwright)
+- Test reports: `/app/test_reports/iteration_9.json`
+- All iteration 9 features tested and verified working:
+  - Admin Login, Dashboard KPIs/Charts/Filters
+  - User Management (CRUD, RBAC)
+  - Proficiency Rates inline editing
+- Backend: 93% pass rate (14/15 tests)
+- Frontend: 100% pass rate (All 11 features verified via Playwright)
+
+---
+
+## February 23, 2026 - Iteration 9 Features
+
+### Role-Based Access Control (COMPLETE)
+- [x] User model with `role` field (admin, approver, user)
+- [x] User Management page only visible to admins
+- [x] Backend APIs protected with admin role checks
+- [x] Conditional navigation in sidebar based on role
+
+### User Management (COMPLETE)
+- [x] List all users with Name, Email, Role badges, Status
+- [x] Create new user (Full Name, Email, Password, Role)
+- [x] Edit user (change name, email, role, active status)
+- [x] Delete user (with confirmation)
+- [x] Reset password functionality
+- [x] API endpoints: GET/POST/PUT/DELETE `/api/users`
+
+### Dashboard Filters (COMPLETE)
+- [x] Toggle Filters button in dashboard header
+- [x] Date From / Date To date pickers
+- [x] Customer dropdown with "All Customers" option
+- [x] Apply and Clear buttons
+- [x] Fixed Select component empty value issue
+
+### Inline Editing for Proficiency Rates (COMPLETE)
+- [x] Edit button (pencil icon) per row
+- [x] Click edit shows inline input field for salary
+- [x] Save (checkmark) and Cancel (X) buttons
+- [x] PUT /api/proficiency-rates/{id} endpoint
+- [x] Real-time data refresh after save
+
+### Branding (COMPLETE)
+- [x] YASH Technologies logo on login page
+- [x] YASH Technologies logo in sidebar
+- [x] Footer with "© 2026 YASH Technologies"
 
 ---
 
