@@ -75,6 +75,21 @@ class AuthResponse(BaseModel):
     user: UserResponse
 
 
+# User Settings Model
+class UserSettings(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    theme: str = "light"
+    custom_theme_image: str = ""
+    date_format: str = "MM/DD/YYYY"
+    number_format: str = "en-US"
+    currency: str = "USD"
+    compact_numbers: bool = True
+    show_grid_lines: bool = True
+    default_profit_margin: float = 35
+    default_contingency: float = 5
+
+
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
