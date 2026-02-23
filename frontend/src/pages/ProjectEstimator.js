@@ -2696,7 +2696,7 @@ const ProjectEstimator = () => {
                   <div className="text-center p-4 bg-green-100 rounded">
                     <p className="text-sm text-gray-600 mb-2">Profit ({profitMarginPercentage}%)</p>
                     <p className="text-2xl font-bold font-mono text-[#10B981]">
-                      ${(overall.sellingPrice - overall.totalCostToCompany).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      ${((overall.onsiteSellingPrice + overall.offshoreSellingPrice) - overall.totalCostToCompany).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                   </div>
                   <div className="text-center p-4 bg-blue-50 rounded border border-blue-200">
