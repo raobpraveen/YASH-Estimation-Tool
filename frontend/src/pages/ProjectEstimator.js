@@ -2141,7 +2141,7 @@ const ProjectEstimator = () => {
                           <CardTitle className="text-lg font-bold text-[#0F172A]">{wave.name} Summary</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
                             <div>
                               <p className="text-gray-600">Total Man-Months</p>
                               <p className="font-mono font-semibold text-lg">{waveSummary.totalMM.toFixed(1)}</p>
@@ -2157,16 +2157,17 @@ const ProjectEstimator = () => {
                               <p className="text-xs text-gray-500">${waveSummary.offshoreSalaryCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                             </div>
                             <div>
-                              <p className="text-gray-600">Traveling ({waveSummary.travelingResourceCount} resources)</p>
-                              <p className="font-mono font-semibold text-lg text-purple-600">{waveSummary.travelingMM.toFixed(1)} MM</p>
-                            </div>
-                            <div>
                               <p className="text-gray-600">Total Logistics</p>
                               <p className="font-mono font-semibold text-lg">${waveSummary.totalLogisticsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                             </div>
-                            <div className="col-span-2">
-                              <p className="text-gray-600">Wave Selling Price</p>
-                              <p className="font-mono font-semibold text-xl text-[#10B981]">${waveSummary.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            <div>
+                              <p className="text-gray-600">Selling Price</p>
+                              <p className="font-mono font-semibold text-lg text-[#10B981]">${waveSummary.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                            </div>
+                            <div className="bg-blue-50 p-2 rounded-lg border border-blue-200">
+                              <p className="text-gray-600">Nego Buffer ({waveSummary.negoBufferPercentage}%)</p>
+                              <p className="font-mono font-semibold text-lg text-blue-600">${waveSummary.negoBufferAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                              <p className="text-xs font-semibold text-blue-800 mt-1">Final: ${waveSummary.finalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                             </div>
                           </div>
                         </CardContent>
