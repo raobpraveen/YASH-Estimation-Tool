@@ -542,6 +542,8 @@ class Project(BaseModel):
     created_by_id: str = ""  # User ID who created the project
     created_by_name: str = ""  # User name who created the project
     created_by_email: str = ""  # User email who created the project
+    is_archived: bool = False  # Whether the project is archived
+    archived_at: Optional[datetime] = None  # When the project was archived
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
