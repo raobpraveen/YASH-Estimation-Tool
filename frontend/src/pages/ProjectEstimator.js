@@ -631,7 +631,7 @@ const ProjectEstimator = () => {
     };
   };
 
-  // Calculate wave summary - Wave selling price = SUM of all skill rows selling price + logistics markup
+  // Calculate wave summary - Wave selling price = SUM of all skill rows selling price (logistics shown separately)
   const calculateWaveSummary = (wave) => {
     let totalMM = 0;
     let onsiteMM = 0;
@@ -667,11 +667,8 @@ const ProjectEstimator = () => {
     // Get wave-level logistics (calculated based on travel_required flag)
     const logistics = calculateWaveLogistics(wave);
     
-    // Logistics selling price markup = logistics cost / (1 - profit margin)
-    const logisticsSellingPrice = logistics.totalLogistics / (1 - profitMarginPercentage / 100);
-    
-    // Wave Selling Price = Sum of all rows selling price + logistics selling price markup
-    const waveSellingPrice = totalRowsSellingPrice + logisticsSellingPrice;
+    // Wave Selling Price = Sum of all rows selling price (logistics is separate)
+    const waveSellingPrice = totalRowsSellingPrice;
     
     // Cost to Company = Salary + Overhead + Logistics
     const costToCompany = totalBaseSalaryCost + totalOverheadCost + logistics.totalLogistics;
@@ -690,7 +687,6 @@ const ProjectEstimator = () => {
       onsiteSellingPrice,
       offshoreSellingPrice,
       totalRowsSellingPrice,
-      logisticsSellingPrice,
       totalLogisticsCost: logistics.totalLogistics,
       totalCostToCompany: costToCompany,
       sellingPrice: waveSellingPrice,
@@ -704,7 +700,7 @@ const ProjectEstimator = () => {
     };
   };
 
-  // Calculate overall summary - Total selling price = SUM of all waves selling price
+  // Calculate overall summary - Total selling price = SUM of all waves selling price (rows only)
   const calculateOverallSummary = () => {
     let totalMM = 0;
     let onsiteMM = 0;
@@ -729,7 +725,7 @@ const ProjectEstimator = () => {
       offshoreSalaryCost += summary.offshoreSalaryCost;
       totalLogisticsCost += summary.totalLogisticsCost;
       totalCostToCompany += summary.totalCostToCompany;
-      totalSellingPrice += summary.sellingPrice;  // Sum of all waves selling prices
+      totalSellingPrice += summary.sellingPrice;  // Sum of all waves selling prices (rows only)
       totalNegoBuffer += summary.negoBufferAmount;
       totalFinalPrice += summary.finalPrice;
       
@@ -738,11 +734,7 @@ const ProjectEstimator = () => {
       offshoreSellingPrice += summary.offshoreSellingPrice;
     });
 
-    // Add logistics to onsite selling price (logistics applies to onsite/traveling resources)
-    const logisticsTotalSellingPrice = totalLogisticsCost / (1 - profitMarginPercentage / 100);
-    onsiteSellingPrice += logisticsTotalSellingPrice;
-    
-    // Calculate avg $/MM = Selling Price / MM for each category (WITHOUT nego buffer)
+    // Calculate avg $/MM = Selling Price / MM for each category (WITHOUT nego buffer, WITHOUT logistics)
     const onsiteAvgPerMM = onsiteMM > 0 ? onsiteSellingPrice / onsiteMM : 0;
     const offshoreAvgPerMM = offshoreMM > 0 ? offshoreSellingPrice / offshoreMM : 0;
 
