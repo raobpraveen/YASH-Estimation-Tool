@@ -631,7 +631,7 @@ const ProjectEstimator = () => {
     };
   };
 
-  // Calculate wave summary - Wave selling price = SUM of all skill rows selling price (logistics shown separately)
+  // Calculate wave summary - Wave selling price = SUM of all skill rows selling price + logistics
   const calculateWaveSummary = (wave) => {
     let totalMM = 0;
     let onsiteMM = 0;
@@ -667,13 +667,13 @@ const ProjectEstimator = () => {
     // Get wave-level logistics (calculated based on travel_required flag)
     const logistics = calculateWaveLogistics(wave);
     
-    // Wave Selling Price = Sum of all rows selling price (logistics is separate)
-    const waveSellingPrice = totalRowsSellingPrice;
+    // Wave Selling Price = Sum of all rows selling price + logistics cost
+    const waveSellingPrice = totalRowsSellingPrice + logistics.totalLogistics;
     
     // Cost to Company = Salary + Overhead + Logistics
     const costToCompany = totalBaseSalaryCost + totalOverheadCost + logistics.totalLogistics;
     
-    // Calculate nego buffer (on wave selling price)
+    // Calculate nego buffer (on total selling price including logistics)
     const negoBufferPercentage = wave.nego_buffer_percentage || 0;
     const negoBufferAmount = waveSellingPrice * (negoBufferPercentage / 100);
     const finalPrice = waveSellingPrice + negoBufferAmount;
@@ -689,7 +689,7 @@ const ProjectEstimator = () => {
       totalRowsSellingPrice,
       totalLogisticsCost: logistics.totalLogistics,
       totalCostToCompany: costToCompany,
-      sellingPrice: waveSellingPrice,
+      sellingPrice: waveSellingPrice,  // includes logistics
       negoBufferPercentage,
       negoBufferAmount,
       finalPrice,
@@ -700,7 +700,7 @@ const ProjectEstimator = () => {
     };
   };
 
-  // Calculate overall summary - Total selling price = SUM of all waves selling price (rows only)
+  // Calculate overall summary - Total selling price = SUM of all rows + logistics
   const calculateOverallSummary = () => {
     let totalMM = 0;
     let onsiteMM = 0;
@@ -709,6 +709,7 @@ const ProjectEstimator = () => {
     let offshoreSalaryCost = 0;
     let totalLogisticsCost = 0;
     let totalCostToCompany = 0;
+    let totalRowsSellingPrice = 0;
     let totalSellingPrice = 0;
     let totalNegoBuffer = 0;
     let totalFinalPrice = 0;
@@ -725,7 +726,8 @@ const ProjectEstimator = () => {
       offshoreSalaryCost += summary.offshoreSalaryCost;
       totalLogisticsCost += summary.totalLogisticsCost;
       totalCostToCompany += summary.totalCostToCompany;
-      totalSellingPrice += summary.sellingPrice;  // Sum of all waves selling prices (rows only)
+      totalRowsSellingPrice += summary.totalRowsSellingPrice;
+      totalSellingPrice += summary.sellingPrice;  // Sum of all waves (rows + logistics)
       totalNegoBuffer += summary.negoBufferAmount;
       totalFinalPrice += summary.finalPrice;
       
@@ -746,9 +748,10 @@ const ProjectEstimator = () => {
       offshoreSalaryCost,
       totalLogisticsCost,
       totalCostToCompany,
-      sellingPrice: totalSellingPrice,
+      totalRowsSellingPrice,  // Just rows, no logistics
+      sellingPrice: totalSellingPrice,  // Rows + Logistics = Total Selling Price to customer
       negoBuffer: totalNegoBuffer,
-      finalPrice: totalFinalPrice,
+      finalPrice: totalFinalPrice,  // Total Selling Price + Nego Buffer
       onsiteSellingPrice,
       offshoreSellingPrice,
       onsiteAvgPerMM,
