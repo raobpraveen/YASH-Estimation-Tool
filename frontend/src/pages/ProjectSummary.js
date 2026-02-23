@@ -45,69 +45,153 @@ const ProjectSummary = () => {
     }
   };
 
+  // Calculate individual resource row cost and selling price
+  // Selling Price per row = (Salary Cost + Overhead) / (1 - profit margin)
   const calculateAllocationCost = (allocation, profitMargin) => {
     const totalManMonths = Object.values(allocation.phase_allocations || {}).reduce((sum, val) => sum + val, 0);
     const baseSalaryCost = (allocation.avg_monthly_salary || 0) * totalManMonths;
+    const overheadCost = baseSalaryCost * ((allocation.overhead_percentage || 0) / 100);
+    const totalCost = baseSalaryCost + overheadCost;
+    const sellingPrice = totalCost / (1 - (profitMargin / 100));
     
-    const perDiemCost = allocation.is_onsite ? (allocation.per_diem_daily || 0) * (allocation.per_diem_days || 0) * totalManMonths : 0;
-    const accommodationCost = allocation.is_onsite ? (allocation.accommodation_daily || 0) * (allocation.accommodation_days || 0) * totalManMonths : 0;
-    const conveyanceCost = allocation.is_onsite ? (allocation.local_conveyance_daily || 0) * (allocation.local_conveyance_days || 0) * totalManMonths : 0;
-    const flightCost = allocation.is_onsite ? (allocation.flight_cost_per_trip || 0) * (allocation.num_trips || 0) : 0;
-    const visaInsuranceCost = allocation.is_onsite ? (allocation.visa_insurance_per_trip || 0) * (allocation.num_trips || 0) : 0;
+    return { totalManMonths, baseSalaryCost, overheadCost, totalCost, sellingPrice };
+  };
+
+  // Calculate wave-level logistics based on travel_required flag
+  const calculateWaveLogistics = (wave) => {
+    const config = wave.logistics_config || {
+      per_diem_daily: 50,
+      per_diem_days: 30,
+      accommodation_daily: 80,
+      accommodation_days: 30,
+      local_conveyance_daily: 15,
+      local_conveyance_days: 21,
+      flight_cost_per_trip: 450,
+      visa_medical_per_trip: 400,
+      num_trips: 6,
+      contingency_percentage: 5,
+    };
+
+    let totalTravelingMM = 0;
+    let travelingResourceCount = 0;
     
-    const logisticsCost = perDiemCost + accommodationCost + conveyanceCost + flightCost + visaInsuranceCost;
+    (wave.grid_allocations || []).forEach(allocation => {
+      const mm = Object.values(allocation.phase_allocations || {}).reduce((sum, val) => sum + val, 0);
+      if (allocation.travel_required) {
+        totalTravelingMM += mm;
+        travelingResourceCount++;
+      }
+    });
+
+    const perDiemCost = totalTravelingMM * config.per_diem_daily * config.per_diem_days;
+    const accommodationCost = totalTravelingMM * config.accommodation_daily * config.accommodation_days;
+    const conveyanceCost = totalTravelingMM * config.local_conveyance_daily * config.local_conveyance_days;
+    const flightCost = travelingResourceCount * config.flight_cost_per_trip * config.num_trips;
+    const visaMedicalCost = travelingResourceCount * config.visa_medical_per_trip * config.num_trips;
     
-    const baseCost = baseSalaryCost + logisticsCost;
-    const overheadCost = baseCost * ((allocation.overhead_percentage || 0) / 100);
-    const costToCompany = baseCost + overheadCost;
-    const sellingPrice = costToCompany / (1 - (profitMargin / 100));
-    
-    return { totalManMonths, baseSalaryCost, logisticsCost, baseCost, overheadCost, costToCompany, sellingPrice };
+    const subtotal = perDiemCost + accommodationCost + conveyanceCost + flightCost + visaMedicalCost;
+    const contingencyCost = subtotal * (config.contingency_percentage / 100);
+    const totalLogistics = subtotal + contingencyCost;
+
+    return { totalTravelingMM, travelingResourceCount, totalLogistics };
   };
 
   const calculateWaveSummary = (wave, profitMargin) => {
-    let totalMM = 0, onsiteMM = 0, onsiteSalaryCost = 0, offshoreMM = 0, offshoreSalaryCost = 0;
-    let totalLogisticsCost = 0, totalCostToCompany = 0, totalSellingPrice = 0;
+    let totalMM = 0, onsiteMM = 0, offshoreMM = 0;
+    let onsiteSalaryCost = 0, offshoreSalaryCost = 0;
+    let onsiteSellingPrice = 0, offshoreSellingPrice = 0;
+    let totalBaseSalaryCost = 0, totalOverheadCost = 0, totalRowsSellingPrice = 0;
 
     (wave.grid_allocations || []).forEach(allocation => {
-      const { totalManMonths, baseSalaryCost, logisticsCost, costToCompany, sellingPrice } = calculateAllocationCost(allocation, profitMargin);
+      const { totalManMonths, baseSalaryCost, overheadCost, sellingPrice } = calculateAllocationCost(allocation, profitMargin);
       totalMM += totalManMonths;
-      totalCostToCompany += costToCompany;
-      totalSellingPrice += sellingPrice;
+      totalBaseSalaryCost += baseSalaryCost;
+      totalOverheadCost += overheadCost;
+      totalRowsSellingPrice += sellingPrice;
 
       if (allocation.is_onsite) {
         onsiteMM += totalManMonths;
         onsiteSalaryCost += baseSalaryCost;
-        totalLogisticsCost += logisticsCost;
+        onsiteSellingPrice += sellingPrice;
       } else {
         offshoreMM += totalManMonths;
         offshoreSalaryCost += baseSalaryCost;
+        offshoreSellingPrice += sellingPrice;
       }
     });
 
-    return { totalMM, onsiteMM, onsiteSalaryCost, offshoreMM, offshoreSalaryCost, totalLogisticsCost, totalCostToCompany, sellingPrice: totalSellingPrice };
+    // Get wave-level logistics
+    const logistics = calculateWaveLogistics(wave);
+    
+    // Cost to Company = Salary + Overhead only (excludes logistics)
+    const costToCompany = totalBaseSalaryCost + totalOverheadCost;
+    
+    // Resources Price = Sum of all row selling prices
+    // Wave Selling Price = Resources Price + Logistics
+    const waveSellingPrice = totalRowsSellingPrice + logistics.totalLogistics;
+    
+    // Nego buffer
+    const negoBufferPercentage = wave.nego_buffer_percentage || 0;
+    const negoBufferAmount = waveSellingPrice * (negoBufferPercentage / 100);
+    const finalPrice = waveSellingPrice + negoBufferAmount;
+
+    return { 
+      totalMM, onsiteMM, offshoreMM,
+      onsiteSalaryCost, offshoreSalaryCost,
+      onsiteSellingPrice, offshoreSellingPrice,
+      totalRowsSellingPrice,
+      totalLogisticsCost: logistics.totalLogistics,
+      totalCostToCompany: costToCompany,
+      sellingPrice: waveSellingPrice,
+      negoBufferPercentage, negoBufferAmount, finalPrice
+    };
   };
 
   const calculateOverallSummary = () => {
-    if (!project?.waves) return { totalMM: 0, onsiteMM: 0, offshoreMM: 0, totalLogisticsCost: 0, totalCostToCompany: 0, sellingPrice: 0 };
+    if (!project?.waves) return { 
+      totalMM: 0, onsiteMM: 0, offshoreMM: 0, 
+      onsiteSalaryCost: 0, offshoreSalaryCost: 0,
+      onsiteSellingPrice: 0, offshoreSellingPrice: 0,
+      totalRowsSellingPrice: 0,
+      totalLogisticsCost: 0, totalCostToCompany: 0, 
+      sellingPrice: 0, negoBuffer: 0, finalPrice: 0
+    };
     
     const profitMargin = project.profit_margin_percentage || 35;
-    let totalMM = 0, onsiteMM = 0, onsiteSalaryCost = 0, offshoreMM = 0, offshoreSalaryCost = 0;
-    let totalLogisticsCost = 0, totalCostToCompany = 0, totalSellingPrice = 0;
+    let totalMM = 0, onsiteMM = 0, offshoreMM = 0;
+    let onsiteSalaryCost = 0, offshoreSalaryCost = 0;
+    let onsiteSellingPrice = 0, offshoreSellingPrice = 0;
+    let totalRowsSellingPrice = 0;
+    let totalLogisticsCost = 0, totalCostToCompany = 0;
+    let totalSellingPrice = 0, totalNegoBuffer = 0, totalFinalPrice = 0;
 
     project.waves.forEach(wave => {
       const summary = calculateWaveSummary(wave, profitMargin);
       totalMM += summary.totalMM;
       onsiteMM += summary.onsiteMM;
-      onsiteSalaryCost += summary.onsiteSalaryCost;
       offshoreMM += summary.offshoreMM;
+      onsiteSalaryCost += summary.onsiteSalaryCost;
       offshoreSalaryCost += summary.offshoreSalaryCost;
+      onsiteSellingPrice += summary.onsiteSellingPrice;
+      offshoreSellingPrice += summary.offshoreSellingPrice;
+      totalRowsSellingPrice += summary.totalRowsSellingPrice;
       totalLogisticsCost += summary.totalLogisticsCost;
       totalCostToCompany += summary.totalCostToCompany;
       totalSellingPrice += summary.sellingPrice;
+      totalNegoBuffer += summary.negoBufferAmount;
+      totalFinalPrice += summary.finalPrice;
     });
 
-    return { totalMM, onsiteMM, onsiteSalaryCost, offshoreMM, offshoreSalaryCost, totalLogisticsCost, totalCostToCompany, sellingPrice: totalSellingPrice };
+    return { 
+      totalMM, onsiteMM, offshoreMM,
+      onsiteSalaryCost, offshoreSalaryCost,
+      onsiteSellingPrice, offshoreSellingPrice,
+      totalRowsSellingPrice,
+      totalLogisticsCost, totalCostToCompany, 
+      sellingPrice: totalSellingPrice,
+      negoBuffer: totalNegoBuffer,
+      finalPrice: totalFinalPrice
+    };
   };
 
   const handlePrint = () => {
