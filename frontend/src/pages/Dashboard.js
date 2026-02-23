@@ -226,6 +226,8 @@ const Dashboard = () => {
             </p>
           </CardContent>
         </Card>
+        
+        <Card className="border border-[#E2E8F0] shadow-sm" data-testid="total-revenue-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-[#10B981]" />
