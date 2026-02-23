@@ -611,24 +611,23 @@ const ProjectEstimator = () => {
     const logistics = calculateWaveLogistics(wave);
     
     // Calculate costs
+    // Base cost = salary + logistics (NO overhead on logistics)
     const baseCost = totalBaseSalaryCost + logistics.totalLogistics;
     
-    // Calculate average overhead (weighted by MM)
+    // Calculate overhead ONLY on salary (NOT on logistics)
     let totalOverheadCost = 0;
     wave.grid_allocations.forEach(allocation => {
-      const { totalManMonths, baseSalaryCost } = calculateResourceBaseCost(allocation);
+      const { baseSalaryCost } = calculateResourceBaseCost(allocation);
       totalOverheadCost += baseSalaryCost * (allocation.overhead_percentage / 100);
     });
-    // Add overhead on logistics too
-    const avgOverhead = wave.grid_allocations.length > 0 
-      ? wave.grid_allocations.reduce((sum, a) => sum + a.overhead_percentage, 0) / wave.grid_allocations.length 
-      : 0;
-    totalOverheadCost += logistics.totalLogistics * (avgOverhead / 100);
     
-    const costToCompany = baseCost + totalOverheadCost;
+    // Cost to Company = Salary + Overhead on Salary + Logistics
+    const costToCompany = totalBaseSalaryCost + totalOverheadCost + logistics.totalLogistics;
+    
+    // Selling Price = CTC / (1 - profit margin)
     const sellingPrice = costToCompany / (1 - (profitMarginPercentage / 100));
     
-    // Calculate nego buffer
+    // Calculate nego buffer (on selling price, NOT included in avg $/MM)
     const negoBufferPercentage = wave.nego_buffer_percentage || 0;
     const negoBufferAmount = sellingPrice * (negoBufferPercentage / 100);
     const finalPrice = sellingPrice + negoBufferAmount;
