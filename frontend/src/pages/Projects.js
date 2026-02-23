@@ -14,7 +14,7 @@ import {
   Trash2, Edit2, Copy, FileText, GitCompare, 
   ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, FileEdit,
   Bookmark, BookmarkCheck, Plus, Filter, Search, X, User, Calendar,
-  Eye, Archive, ArchiveRestore
+  Eye, Archive, ArchiveRestore, FolderKanban
 } from "lucide-react";
 import { toast } from "sonner";
 
