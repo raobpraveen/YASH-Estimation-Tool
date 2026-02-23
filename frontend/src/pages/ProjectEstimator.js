@@ -2530,10 +2530,22 @@ const ProjectEstimator = () => {
                       ${(overall.sellingPrice - overall.totalCostToCompany).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                   </div>
-                  <div className="col-span-2 md:col-span-4 text-center p-6 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg border-2 border-[#10B981]">
-                    <p className="text-lg text-gray-700 mb-3 font-semibold">GRAND TOTAL (Selling Price)</p>
-                    <p className="text-5xl font-extrabold font-mono text-[#10B981]">
+                  <div className="text-center p-4 bg-blue-50 rounded border border-blue-200">
+                    <p className="text-sm text-gray-600 mb-2">Total Nego Buffer</p>
+                    <p className="text-2xl font-bold font-mono text-blue-600">
+                      ${overall.negoBuffer.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </p>
+                  </div>
+                  <div className="col-span-2 text-center p-4 bg-green-50 rounded">
+                    <p className="text-sm text-gray-600 mb-2">Total Selling Price</p>
+                    <p className="text-3xl font-bold font-mono text-[#10B981]">
                       ${overall.sellingPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </p>
+                  </div>
+                  <div className="col-span-2 md:col-span-4 text-center p-6 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-lg border-2 border-emerald-600">
+                    <p className="text-lg text-emerald-800 mb-3 font-semibold">GRAND TOTAL (Final Price incl. Nego Buffer)</p>
+                    <p className="text-5xl font-extrabold font-mono text-emerald-700">
+                      ${overall.finalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                   </div>
                 </div>
