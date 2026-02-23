@@ -658,6 +658,8 @@ const ProjectEstimator = () => {
     let totalLogisticsCost = 0;
     let totalCostToCompany = 0;
     let totalSellingPrice = 0;
+    let totalNegoBuffer = 0;
+    let totalFinalPrice = 0;
     let onsiteOverheadCost = 0;
     let offshoreOverheadCost = 0;
 
@@ -671,6 +673,8 @@ const ProjectEstimator = () => {
       totalLogisticsCost += summary.totalLogisticsCost;
       totalCostToCompany += summary.totalCostToCompany;
       totalSellingPrice += summary.sellingPrice;
+      totalNegoBuffer += summary.negoBufferAmount;
+      totalFinalPrice += summary.finalPrice;
       
       // Calculate overhead for onsite and offshore separately
       wave.grid_allocations.forEach(allocation => {
@@ -698,6 +702,8 @@ const ProjectEstimator = () => {
       totalLogisticsCost,
       totalCostToCompany,
       sellingPrice: totalSellingPrice,
+      negoBuffer: totalNegoBuffer,
+      finalPrice: totalFinalPrice,
       onsiteSellingPrice,
       offshoreSellingPrice,
     };
