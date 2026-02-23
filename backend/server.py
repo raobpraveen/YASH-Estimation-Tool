@@ -1138,9 +1138,30 @@ async def mark_all_notifications_read(user_email: str = None):
 
 # Dashboard analytics endpoint
 @api_router.get("/dashboard/analytics")
-async def get_dashboard_analytics():
-    # Get all projects
-    projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
+async def get_dashboard_analytics(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    customer_id: Optional[str] = None
+):
+    # Build query based on filters
+    query = {}
+    
+    # Date range filter
+    if date_from or date_to:
+        date_filter = {}
+        if date_from:
+            date_filter["$gte"] = date_from
+        if date_to:
+            date_filter["$lte"] = date_to + "T23:59:59"
+        if date_filter:
+            query["created_at"] = date_filter
+    
+    # Customer filter
+    if customer_id:
+        query["customer_id"] = customer_id
+    
+    # Get filtered projects
+    projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
     
     # Calculate metrics
     total_projects = len(projects)
