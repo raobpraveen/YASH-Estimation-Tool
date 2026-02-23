@@ -261,14 +261,72 @@ const SkillsManagement = () => {
         </div>
       </div>
 
+      {/* Filters Panel */}
+      {showFilters && (
+        <Card className="mb-6 border border-[#E2E8F0]">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label>Skill Name</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Search by name..."
+                    value={filters.name}
+                    onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+                    className="pl-9"
+                    data-testid="filter-name"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Technology</Label>
+                <Select 
+                  value={filters.technology_id || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, technology_id: v === "all" ? "" : v })}
+                >
+                  <SelectTrigger data-testid="filter-technology">
+                    <SelectValue placeholder="All Technologies" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Technologies</SelectItem>
+                    {technologies.map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button variant="outline" onClick={clearFilters} className="w-full" data-testid="clear-filters">
+                  <X className="w-4 h-4 mr-1" />
+                  Clear
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border border-[#E2E8F0] shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-[#0F172A]">Skills List</CardTitle>
+          <CardTitle className="text-xl font-bold text-[#0F172A]">
+            Skills List
+            {filteredSkills.length !== skills.length && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                ({filteredSkills.length} of {skills.length})
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          {skills.length === 0 ? (
+          {filteredSkills.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">No skills added yet. Click "Add Skill" to get started.</p>
+              <p className="text-gray-500">
+                {skills.length === 0 
+                  ? 'No skills added yet. Click "Add Skill" to get started.'
+                  : "No skills match your filter criteria."
+                }
+              </p>
             </div>
           ) : (
             <Table>
@@ -280,7 +338,7 @@ const SkillsManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {skills.map((skill) => (
+                {filteredSkills.map((skill) => (
                   <TableRow key={skill.id} data-testid={`skill-row-${skill.id}`}>
                     <TableCell>{skill.technology_name}</TableCell>
                     <TableCell className="font-medium">{skill.name}</TableCell>
