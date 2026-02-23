@@ -72,6 +72,7 @@ function App() {
               <Route path="projects" element={<Projects />} />
               <Route path="projects/:projectId/summary" element={<ProjectSummary />} />
               <Route path="projects/:projectId/compare" element={<CompareVersions />} />
+              <Route path="users" element={<UserManagement />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
           )}
