@@ -1458,11 +1458,12 @@ async def approve_project(project_id: str, comments: str = "", user: dict = Depe
 
 # Reject project
 @api_router.post("/projects/{project_id}/reject")
-async def reject_project(project_id: str, comments: str = ""):
+async def reject_project(project_id: str, comments: str = "", user: dict = Depends(get_current_user)):
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     
+    old_status = project.get("status", "in_review")
     update_data = {
         "status": "rejected",
         "approval_comments": comments,
@@ -1470,6 +1471,22 @@ async def reject_project(project_id: str, comments: str = ""):
     }
     
     await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    
+    # Create audit log for rejection
+    current_user = await db.users.find_one({"id": user["user_id"]}, {"_id": 0})
+    if current_user:
+        await create_audit_log(
+            user=current_user,
+            action="status_change",
+            entity_type="project",
+            entity_id=project_id,
+            entity_name=project.get("name", ""),
+            project_id=project_id,
+            project_number=project.get("project_number", ""),
+            project_name=project.get("name", ""),
+            changes=[{"field": "status", "old_value": old_status, "new_value": "rejected"}],
+            metadata={"comments": comments}
+        )
     
     # Create notification
     notification = Notification(
