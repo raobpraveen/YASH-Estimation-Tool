@@ -310,17 +310,33 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 ---
 
 ## Test Coverage
-- Test reports: `/app/test_reports/iteration_11.json`
-- All iteration 11 features tested and verified working:
-  - Project Archiving (archive/unarchive flow)
-  - Archived Projects Tab
-  - Dashboard Date Filter Fix (verified)
-  - Collapsible Sidebar
-  - Apply Skill for All Months
-  - Selling Price Calculation Bug Fix (no overhead on logistics)
-  - Nego Buffer Display Bug Fix (not in avg $/MM)
-- Backend: 100% pass rate (8/8 tests)
-- Frontend: 100% pass rate (19/19 features verified via Playwright)
+- Test reports: `/app/test_reports/iteration_12.json`
+- All iteration 12 calculation fixes tested and verified:
+  - Logistics Config Persistence
+  - Row Selling Price = (Salary + Overhead) / (1 - margin)
+  - Wave Selling Price = Sum(Row SP) + Logistics SP
+  - Total Selling Price = Sum(Wave SP)
+  - Onsite/Offshore based on is_onsite indicator
+  - Avg $/MM calculations correct
+- Backend: 100% pass rate (9/9 tests)
+- Frontend: 100% pass rate (all UI values match calculations)
+
+---
+
+## February 23, 2026 - Iteration 12 Bug Fixes
+
+### Logistics Persistence Bug (FIXED)
+- [x] Added `logistics_config` field to backend `ProjectWave` model
+- [x] Logistics values now persist after save and page reload
+- [x] Each wave stores its own logistics configuration
+
+### Selling Price Calculation Fixes (FIXED)
+- [x] Row Selling Price = (Salary Cost + Overhead) / 0.65 (at 35% margin)
+- [x] Wave Selling Price = Sum of all row selling prices + logistics markup
+- [x] Total Selling Price = Sum of all wave selling prices
+- [x] Onsite Selling Price = Sum of row SP where is_onsite=true + logistics
+- [x] Offshore Selling Price = Sum of row SP where is_onsite=false
+- [x] Avg $/MM = Selling Price / MM for each category
 
 ---
 
