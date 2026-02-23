@@ -1,149 +1,106 @@
 <analysis>**original_problem_statement:**
-Build an IT/Software Project estimator tool.
+Build an IT/Software Project estimator tool named YASH EstPro.
 
 **PRODUCT REQUIREMENTS:**
-- **Core Estimator Grid:**
-    - Wave-based estimation with dynamic monthly phases.
-    - Resources defined by Skill, Proficiency Level, and Location.
-    - Excel-like data entry: Skill, Level, and Location should be editable dropdowns in the grid. Changing any of these should automatically fetch the correct salary from the proficiency rate masters.
-    - Editable average monthly salary per resource for overrides.
-    - Onsite and Travel Required toggles per resource.
-- **Cost Calculation:**
-    - Base Cost: Calculated from resource salaries.
-    - Overheads: A configurable percentage based on the project's base location.
-    - Profit Margin: A configurable percentage (defaults to 35%).
-    - Selling Price: .
-    - Logistics Costs: Calculated at the wave level for resources marked Travel Required, based on editable rates for per-diems, accommodation, airfare, etc.
-- **Project & Version Management:**
-    - Header data: Customer, multi-select for Project Location(s), Technology, and Project Type.
-    - Versioning: Each estimation has a unique project number and version. Cloning creates new versions.
-    - Version Comments: A mandatory text field to capture changes for each version.
-    - Read-Only States:
-        - Older versions of a project must be in display-only mode.
-        - Projects with Approved or In Review status must be entirely read-only, including the grid.
-- **Workflow & Analytics:**
-    - Approval Workflow: A simple status system (Draft, In Review, Approved, Rejected) with in-app notifications and the ability for approvers to edit and create new versions.
-    - Dashboard: Analytics showing project counts by status, costs vs. selling price, etc.
-    - Comparison: A screen to compare two versions of a project side-by-side, including version comments and cost breakdowns.
-- **Master Data Management:** CRUD for Customers, Technologies, Project Types, Base Locations, Skills, and Proficiency Rates. Uniqueness must be enforced.
-- **UI/UX:**
-    - A summary screen showing wave-wise breakdowns and KPIs (e.g., avg. selling price per man-month for onsite/offshore).
-    - Export to Excel functionality.
+- **Core Estimator Grid:** Wave-based estimation with dynamic monthly phases, editable resource definitions (Skill, Level, Location) with automatic salary lookups, and editable cost columns. A Nego Buffer percentage should be captured at the wave level. Add an option to apply a resource/skill to all months in a wave simultaneously.
+- **Cost Calculation:** Comprehensive cost breakdown including Base Cost, Overheads, Profit Margin, Selling Price, and Logistics.
+- **Project & Version Management:** Full project lifecycle with versioning, cloning, mandatory version comments, and read-only states. Projects must capture audit fields (Created By, Created Date). Add project archiving functionality.
+- **Workflow & Analytics:** Approval workflow (Draft, In Review, Approved, Rejected), a dashboard for analytics, and a version comparison screen. Dashboard and project lists need robust filtering capabilities (Customer, Dates, Created By, etc.).
+- **Master Data Management:** Full CRUD for all master data, with filter capabilities on all master data screens.
+- **UI/UX:** A summary screen, KPIs, Export to Excel, and a collapsible sidebar. User-specific profile settings for theme (light/dark/custom) and date format.
+- **Authentication & Authorization**: JWT-based authentication and role-based access control (Admin, Approver, User). Non-owners/admins should have view-only access to projects.
+- **User Management**: Admins can manage users (create, edit, deactivate).
+- **Project Templates**: Ability to save a project as a template and create new projects from it.
+- **Data Import**: Excel upload for Skills and Proficiency Rates.
+- **Branding**: Add company logos (YASH Technologies and YASH EstPro) to the application and exports.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a FastAPI backend and React frontend. It includes:
--   **Master Data Management**: Full CRUD for all master data entities (Skills, Technologies, etc.) with backend uniqueness validation.
--   **Project Lifecycle**: Users can create, edit, clone (version), and delete projects. The UI supports an expandable version history on the main projects list.
--   **Approval Workflow**: An in-app approval system with statuses (Draft, In Review, Approved, Rejected) and corresponding UI controls is implemented.
--   **Dashboard**: A new dashboard page uses  to display project analytics.
--   **Estimator Page**: The main estimation page supports wave-based planning, cost calculations, and toggles for Onsite and Travel Required. It includes a read-only mode for old/approved versions. Recent changes were made to support multi-select for project locations.
--   **Backend**: The FastAPI backend supports versioning, the approval workflow, notifications, and has been updated to store multiple locations, technologies, and project types.
+A comprehensive full-stack project estimation tool, YASH EstPro. The application is feature-rich and includes:
+- **Authentication & RBAC**: A complete JWT-based system with Admin, Approver, and User roles. Access controls are implemented to restrict editing of projects to owners and admins.
+- **User & Master Data Management**: Full CRUD capabilities for Users, Customers, Skills, Project Types, etc., with recently added filtering functionality on the list pages.
+- **Project Lifecycle**: Full support for creating, cloning, versioning, and managing projects. Projects now include audit trails (, ). An archiving feature has been partially implemented.
+- **Estimator Grid**: A functional grid with inline resource editing, automatic salary lookups, and calculated costs. A Nego Buffer input has been added at the wave level, and its calculation has been integrated into the project summary.
+- **Dashboard & Reporting**: An analytics dashboard with KPI cards and charts. Filtering logic for dates and customers has been implemented in the backend.
+- **UI/UX & Branding**: The application has been branded with YASH Technologies and YASH EstPro logos. A user settings page allows theme selection (light/dark). A collapsible sidebar has been partially implemented.
+- **Bug Fixes**: Critical bugs related to selling price calculation (not applying overhead to logistics) and average selling price display (excluding nego buffer) have been addressed.
 
 **Last working item**:
--   Last item agent was working: Implementing a large batch of 9 user-requested features. The agent was focused on updating the  component to support **inline grid editing** (Excel-like dropdowns for Skill, Level, Location) and **multi-select for Technology and Project Type**. The last action was updating the backend Pydantic model in  to support these multi-select fields.
+-   Last item agent was working: The agent was in the middle of implementing a large batch of features requested by the user. The final action was adding the  component to  to create separate views for Active and Archived projects. This is part of the project archiving feature. The agent was also working on adding filter panels to all master data screens and fixing critical calculation bugs.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? **both**. The changes are extensive, touching the frontend UI (), frontend logic (new salary lookups), and the backend data model ().
+-   Which testing method agent to use? **both**. The session included extensive changes to the backend data models (), APIs (archiving, settings, dashboard filters), and multiple frontend pages (, , , master data pages). Full-stack testing is required.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: (P0) Implement Inline Grid Editing in Estimator
--   **Issue 2**: (P0) Update KPIs and View Summary Screen
--   **Issue 3**: (P1) Complete Read-Only Logic for In Review Status
--   **Issue 4**: (P1) Implement Multi-Select for Technology & Project Type
--   **Issue 5**: (P2) Make Version Comments Mandatory
--   **Issue 6**: (P2) Update Comparison Screen with New Requirements
+-   Issue 1: (P0) Selling Price Calculation Error in Project PRJ-0016
+-   Issue 2: (P0) Nego Buffer Incorrectly Included in Average Selling Price/Man-Month
+-   Issue 3: (P1) Dashboard Date Filter Not Working
+-   Issue 4: (P1) Complete Project Archiving Feature
 
 **Issues Detail**:
 -   **Issue 1**:
-    -   Description: The user wants an Excel-like data entry experience in the estimator grid. The 'Skill', 'Level', and 'Location' columns for each resource should be dropdowns. When a value is changed, the salary cost should automatically update by looking up the new combination from the  master data.
-    -   Attempted fixes: The agent created a function  in  to handle the logic and started modifying the JSX to replace text fields with  dropdowns. This implementation is incomplete and untested.
-    -   Next debug checklist:
-        1.  Verify the  dropdowns are correctly rendered for Skill, Level, and Location in the grid in .
-        2.  Ensure the  function is correctly wired to the  event of these dropdowns.
-        3.  Test the API call within  to fetch the new salary and ensure the frontend state () is updated correctly, triggering a re-render of the costs.
-    -   Why fix this issue and what will be achieved with the fix?: This is a critical usability improvement requested by the user to make data entry faster and less error-prone.
-    -   Status: **IN PROGRESS**
-    -   Should Test frontend/backend/both after fix?: Both.
+    -   Description: User reported the total selling price in the KPI cards was incorrect for project PRJ-0016, suggesting an error of  instead of the correct . The agent identified that overhead was being incorrectly applied to logistics costs.
+    -   Attempted fixes: The agent modified the summary calculation logic in  to remove the overhead calculation on logistics ( no longer includes ).
+    -   Next debug checklist: Verify the fix by manually checking the calculations for PRJ-0016 or a similar project. Take a screenshot showing the corrected KPI card value.
+    -   Why fix this issue and what will be achieved with the fix?: This is a critical bug that affects the core functionality and financial accuracy of the tool.
+    -   Status: **TESTING PENDING**
+    -   Is recurring issue? N
+    -   Should Test frontend/backend/both after fix?: Frontend
 -   **Issue 2**:
-    -   Description:
-        1.  The KPI cards above the waves in  should show separate Onsite Avg. Selling Price/MM and Offshore Avg. Selling Price/MM.
-        2.  The View Summary modal needs the same two KPIs (Onsite/Offshore Avg.) and also the  value displayed for each wave.
-    -   Attempted fixes: The agent started updating the KPI cards in . The changes to the View Summary modal have not been implemented.
-    -   Next debug checklist:
-        1.  Review the  function in  to ensure it correctly calculates separate onsite/offshore averages.
-        2.  Update the JSX for the KPI cards to display these two new values.
-        3.  Modify the View Summary modal to include the new KPIs and the profit margin per wave.
-    -   Why fix this issue and what will be achieved with the fix?: Provides more granular and useful financial metrics to the user.
-    -   Status: **IN PROGRESS**
-    -   Should Test frontend/backend/both after fix?: Frontend.
+    -   Description: User reported that the negotiation buffer value should not be part of the Avg. Selling Price per Man-Month KPI.
+    -   Attempted fixes: The agent reviewed the calculation in  and confirmed that the average selling price KPIs (, ) are derived from totals that do *not* include the . The  KPI correctly includes it.
+    -   Next debug checklist: Re-confirm through visual inspection and a screenshot that the Avg. Selling Price KPIs remain unchanged when a Nego Buffer is added, while the Final Price KPI updates correctly.
+    -   Why fix this issue and what will be achieved with the fix?: Ensures financial metrics are displayed correctly and are not misleading.
+    -   Status: **TESTING PENDING**
+    -   Is recurring issue? N
+    -   Should Test frontend/backend/both after fix?: Frontend
 -   **Issue 3**:
-    -   Description: Projects with status In Review should be entirely read-only, similar to Approved projects. This includes the main form fields and the estimator grid.
-    -   Attempted fixes: The agent updated the  check in  to include .
-    -   Next debug checklist:
-        1.  Verify that all interactive elements (inputs, buttons, toggles, grid dropdowns) in  are disabled when a project with In Review status is loaded.
-    -   Why fix this issue and what will be achieved with the fix?: Prevents users from making changes to an estimation that is pending approval, ensuring data integrity during the review process.
-    -   Status: **IN PROGRESS**
-    -   Should Test frontend/backend/both after fix?: Frontend.
+    -   Description: The date filter on the dashboard does not correctly filter the KPI data. This is a recurring issue.
+    -   Attempted fixes: The agent updated the backend query in  at the  endpoint. The logic was changed from direct  object comparison to string-based comparison (, ) on the  field, assuming it's stored as an ISO string.
+    -   Next debug checklist: Test the dashboard filter functionality directly on the UI. Select a date range and verify via screenshot that the KPI card values (e.g., Total Projects, Total Revenue) update accordingly. If it fails, use  to test the backend endpoint directly.
+    -   Why fix this issue and what will be achieved with the fix?: Makes the dashboard interactive and allows users to analyze data within specific timeframes.
+    -   Status: **TESTING PENDING**
+    -   Is recurring issue? Y
+    -   Should Test frontend/backend/both after fix?: Both
 -   **Issue 4**:
-    -   Description: The 'Technology' and 'Project Type' fields in the  header should be multi-select dropdowns.
-    -   Attempted fixes: The agent updated the backend model in , updated state management in  to use  and , and started replacing the UI components.
+    -   Description: The project archiving feature is incomplete. The UI in  needs to be finalized to show active and archived projects separately.
+    -   Attempted fixes: The agent added  to the backend  model. New APIs  and  were created. The main  GET endpoint was modified to exclude archived projects by default. The  component was being updated to use Shadcn  for Active and Archived views.
     -   Next debug checklist:
-        1.  Finalize and verify the multi-select UI component implementation in .
-        2.  Test saving and loading a project with multiple technologies and project types to ensure data persistence.
-    -   Why fix this issue and what will be achieved with the fix?: Allows for more accurate project classification.
+        1.  Complete the  component. Ensure the Archived tab fetches data from a new endpoint (e.g., ) or that the component fetches both sets of data.
+        2.  Ensure the Archive and Unarchive buttons in the project list call the correct APIs and update the UI.
+        3.  Test the full flow: archive a project, see it move to the Archived tab, then unarchive it.
+    -   Why fix this issue and what will be achieved with the fix?: Allows users to clean up their main project list without permanently deleting old projects.
     -   Status: **IN PROGRESS**
-    -   Should Test frontend/backend/both after fix?: Both.
--   **Issue 5**:
-    -   Description: The Version Comments field must not be empty when saving a project.
-    -   Attempted fixes: The agent added a validation check in the  function in .
-    -   Next debug checklist:
-        1.  Test saving a project with an empty Version Comments field and confirm that an error/toast message is shown and the save is prevented.
-        2.  Test saving with a non-empty comment to ensure it works.
-    -   Why fix this issue and what will be achieved with the fix?: Enforces good practice of documenting changes between versions.
-    -   Status: **IN PROGRESS**
-    -   Should Test frontend/backend/both after fix?: Frontend.
--   **Issue 6**:
-    -   Description: The Compare Versions screen needs to be updated to:
-        1.  Display the Version Comments for each of the two versions being compared.
-        2.  Show Total Selling Price for Onsite Man-Months and Total Selling Price for Offshore Man-Months.
-    -   Attempted fixes: None. The agent has not worked on  yet.
-    -   Next debug checklist:
-        1.  Update the backend endpoint (if necessary) to include  in the project data.
-        2.  Modify the  component to fetch and display the comments and the new onsite/offshore cost breakdowns.
-    -   Why fix this issue and what will be achieved with the fix?: Enhances the utility of the comparison feature, making it easier to see why versions differ.
-    -   Status: **NOT STARTED**
-    -   Should Test frontend/backend/both after fix?: Both.
+    -   Is recurring issue? N
+    -   Should Test frontend/backend/both after fix?: Both
 
 **In progress Task List**:
-The current work is tracked in the All Pending/In progress Issue list.
+-   Task 1: (P1) Implement Apply Skill for All Months in Resource Grid
+    -   Where to resume: This task has not been started. The work needs to be done in , specifically within the resource grid or the Add Resource modal.
+    -   What will be achieved with this?: Improves user efficiency by allowing them to set a default value for a resource's effort across all months of a wave in one action.
+    -   Status: **NOT STARTED**
+    -   Should Test frontend/backend/both after fix?: Frontend
 
 **Upcoming and Future Tasks**
+-   **Upcoming Tasks**:
+    -   (P1) **Finalize Collapsible Sidebar**: The UI toggle exists in , but the logic to expand/collapse the sidebar (e.g., by changing CSS classes to hide menu item text) needs to be implemented.
+    -   (P2) **Rename Application to YASH EstPro**: The user has confirmed the name via the new logo. A global search-and-replace for Project Estimator and similar terms should be performed to standardize branding.
 -   **Future Tasks:**
-    -   **Export to Excel Enhancement (P1)**: Update the Export to Excel functionality to reflect the complex grid structure, waves, phases, versions, and all detailed cost components.
-    -   **Email Notifications (P2)**: Implement email notifications for the approval workflow (currently deferred in favor of in-app notifications).
+    -   (P2) **User Profile - Custom Theme**: Implement backend logic and file storage to allow users to upload a background image for a custom theme.
+    -   (P2) **Email Notifications**: Implement email notifications for the project approval workflow.
+    -   (P1) **Export to Excel Enhancement**: Verify that the Excel export includes all new fields (audit data, nego buffer) and the new branding logos.
 
 **Completed work in this session**
--   **Approval Workflow & Notifications**:
-    -   Implemented a full project status lifecycle (Draft, In Review, Approved, Rejected) in  and .
-    -   Added new API endpoints (, , ).
-    -   Created an in-app notification system with a dedicated API endpoint ().
--   **Dashboard & Analytics**:
-    -   Created a new  page.
-    -   Integrated  to display analytics charts (e.g., Project Status Distribution, Cost vs Selling Price).
--   **Project List Enhancements**:
-    -   Rewrote  to feature an expandable version history for each project, showing older versions nested under the latest.
-    -   Added a Status column to the projects list.
--   **Major Bug Fixes & User Requests**:
-    -   **Uniqueness Validation**: Implemented backend validation to prevent duplicate entries for Skills and Proficiency Rates.
-    -   **Multi-Location Support**: Updated the project model and estimator UI to support multiple project locations.
-    -   **Read-Only Mode**: Implemented a read-only mode for older project versions and approved projects.
-    -   **UI/UX Fixes**: Resolved an issue where buttons overflowed at 100% zoom; added various summary KPIs and tooltips.
+-   **Branding Overhaul**: Updated the application with new YASH EstPro and YASH Technologies logos on the login page and sidebar.
+-   **Project Archiving (Backend)**: Added the  flag to the  model and created the necessary backend APIs for archiving/unarchiving.
+-   **Master Data Filters**: Implemented search and filter functionality on the , , and  pages.
+-   **Missing Country Data**: Added Iraq to the hardcoded list of countries.
+-   **Previous Feature Completion & Deployment Prep**: Successfully resolved all pending issues from the prior session, passed a deployment health check, and implemented a large set of features including advanced audit fields, project access controls, user settings (themes), and the Nego Buffer feature.
 
 **Earlier issues found/mentioned but not fixed**
-None.
+-   **Dashboard Date Filter**: This issue was reported in a previous session (message #178), an attempt was made to fix it, but the user reported it again (message #254). The latest fix has not been verified.
 
 **Known issue recurrence from previous fork**
 -   Issue recurrence in previous fork: N/A
@@ -154,11 +111,11 @@ None.
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI
--   **Frontend**: React.js
+-   **Backend**: FastAPI, JWT Authentication, Pydantic Models
+-   **Frontend**: React.js, React Hooks, Context API ()
 -   **Database**: MongoDB
--   **UI**: Shadcn UI components, Tailwind CSS
--   **Charting**: Recharts
+-   **UI**: Shadcn UI components, Tailwind CSS,  for charts
+-   **File Handling**:  for Excel export/import
 
 **key DB schema**
 -   : 
@@ -166,73 +123,68 @@ None.
 -   : 
 
 **changes in tech stack**
--   Added  for dashboard analytics.
+-   No changes to the core tech stack.
 
 **All files of reference**
--   **/app/backend/server.py**: Contains all API endpoints and Pydantic models. Recently updated to support multi-select fields and uniqueness validation.
--   **/app/frontend/src/pages/ProjectEstimator.js**: The most critical and complex component. It is **currently in a half-implemented state** and is the main focus of the pending issues.
--   **/app/frontend/src/pages/Projects.js**: The project listing page with expandable version history.
--   **/app/frontend/src/pages/Dashboard.js**: The new analytics dashboard.
--   **/app/frontend/src/pages/CompareVersions.js**: The version comparison page, which needs to be updated.
--   **/app/frontend/src/pages/Skills.js**: UI updated to handle backend validation errors.
--   **/app/frontend/src/pages/ProficiencyRates.js**: UI updated to handle backend validation errors.
+-   **/app/backend/server.py**: Heavily modified to add project archiving APIs, user settings APIs, updated dashboard analytics filter logic, and logic to populate audit fields on project creation/cloning.
+-   **/app/frontend/src/pages/ProjectEstimator.js**: Modified to fix the selling price calculation bug, adjust the display of average selling price, and integrate  into wave data.
+-   **/app/frontend/src/pages/Projects.js**: Significantly updated to add filters and is currently being rewritten to include  for the new archiving feature.
+-   **/app/frontend/src/pages/Login.js**: Updated with new branding logos.
+-   **/app/frontend/src/components/Layout.js**: Updated with new sidebar logos and the initial implementation of the collapsible sidebar.
+-   **/app/frontend/src/pages/Customers.js**, **/app/frontend/src/pages/Skills.js**, **/app/frontend/src/pages/ProficiencyRates.js**: Updated to include new filter panels.
+-   **/app/frontend/src/lib/constants.js**: Updated to add Iraq to the countries list.
+-   **/app/public/**: New logo files were added.
 
 **Areas that need refactoring**:
--   The  file has grown extremely large and complex. It urgently needs to be broken down into smaller, manageable components (e.g., , , , ) to improve maintainability. This should be a priority after stabilizing the current feature set.
+-   The  file contains a long, hardcoded list of countries. This could be moved to a separate JSON file or a database collection for better management.
+-   The agent created  at one point, which appears to be a duplicate or older version of . This should be investigated and cleaned up to avoid confusion.
 
 **key api endpoints**
--    (GET, POST)
--    (GET, PUT)
--    (POST)
--    (POST)
--    (POST)
--    (POST)
--    (GET)
--    (POST) - (A new endpoint will likely be needed for inline grid editing).
+-   **Archiving**:  (POST),  (POST)
+-   **User Settings**:  (GET, PUT)
+-   **Analytics**:  (GET with query params: , , )
 
 **Critical Info for New Agent**
--   The application is in a **fragile, partially implemented state**. The previous agent attempted a large number of simultaneous changes in , which is the source of all current pending issues.
--   Your first priority is to stabilize the application by systematically completing and testing the pending features listed in the All Pending/In progress Issue list. **Do not attempt to implement them all at once.**
--   Tackle the issues one by one, testing incrementally after each small change. Start with  (Multi-Select) and  (Read-Only Logic) to stabilize the form, then move to  (Inline Grid Editing), which is the most complex.
--   The  function and the associated UI for the inline editable grid in  are incomplete. You will need to finish this implementation and likely create a new backend endpoint to fetch salaries on the fly.
+-   You are picking up in the middle of a large feature implementation batch. Prioritize verifying the bug fixes for selling price calculation and the dashboard date filter, as these are critical user-facing issues.
+-   The project archiving feature is the next priority. The backend is mostly done, but the frontend work in  needs to be completed. You will need to implement the logic to fetch and display archived projects in the new Archived tab.
+-   The Apply Skill for All Months feature is a net-new request and has not been started. This will require careful modification of the resource grid logic in .
+-   Once the current batch of features is complete, a full regression test using the  is mandatory due to the widespread changes across the application.
 
 **documents and test reports created in this job**
--   /app/memory/PRD.md
--   /app/test_reports/iteration_5.json
--   /app/test_reports/iteration_6.json
+-   /app/memory/PRD.md (updated multiple times)
+-   /app/test_reports/iteration_9.json
+-   /app/test_reports/iteration_10.json
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user**: (After a major update) Provides a list of 9 required fixes/improvements.
-2.  **agent**: Acknowledges the request and begins implementation.
-3.  **agent**: (Internal thought) Plans to implement all changes, starting with .
-4.  **agent**: (Action) Updates  check in .
-5.  **agent**: (Action) Updates state and functions in  for multi-select and inline editing.
-6.  **agent**: (Action) Adds validation for version notes.
-7.  **agent**: (Action) Starts updating UI components for multi-select and inline grid dropdowns.
-8.  **agent**: (Action) Updates the backend  model in  to support multi-select fields.
-9.  **The conversation ends here, mid-implementation.** The user has not seen the results of this work.
+1.  **user**: Requests 5 new features/fixes: update logos, fix dashboard date filter, add filters to , add audit fields & access control. Approves plan.
+2.  **agent**: Implements all 5 items.
+3.  **agent**: Runs comprehensive tests via .
+4.  **agent**: Reads test report; all 14 features pass.
+5.  **agent**: Updates PRD.md and prepares to finish.
+6.  **user**: Provides 9 new items: update logos (again), make sidebar collapsible, fix missing Iraq, add filters to master data screens, add project archiving, add apply skill to all months feature, and reports two critical bugs (selling price calculation, nego buffer display).
+7.  **agent**: Creates a detailed plan to address all 9 items and asks clarifying questions.
+8.  **user**: Approves the plan and provides clarification.
+9.  **agent**: Starts implementation: downloads new logos, analyzes and fixes the two critical bugs in .
+10. **agent**: Continues implementation: updates logos, adds collapsible sidebar toggle, adds Iraq, implements filters on master data pages, and starts the archiving feature by modifying the backend and beginning edits on .
 
 **Project Health Check:**
--   **Broken**: The core  component is in a non-functional, half-implemented state due to the large number of simultaneous changes. Key features like inline grid editing, multi-select, and new KPI displays are incomplete.
+-   **Broken**: The project archiving UI is incomplete. The dashboard date filter's fix is unverified and may still be broken.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
--   **xlsx**: Used for Excel export.
+-   **xlsx**: Used for Excel export and import.
 -   **recharts**: Used for dashboard charts.
+-   **python-jose[cryptography]**, **passlib[bcrypt]**: Used for JWT authentication in the backend.
 
 **Testing status**
--   Testing agent used after significant changes: YES, but not after the most recent batch of changes.
+-   Testing agent used after significant changes: YES, but not after the most recent batch of changes. The last test run was before the user's final 9 requests.
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: None.
--   Known regressions: The main estimator page is likely non-functional.
+-   Known regressions: The dashboard date filter is a known recurring issue.
 
 **Credentials to test flow:**
-No authentication is implemented.
+Use the registration/login flow. The admin user  with password  was created for testing user management and admin-specific features.
 
 **What agent forgot to execute**
-The agent was in the middle of a large implementation task when the job ended. The following were started but not finished or not started at all from the user's last request:
--   **Incomplete**: Inline grid editing for Skill, Level, and Location.
--   **Incomplete**: Multi-select UI for Technology and Project Type.
--   **Incomplete**: Updating KPI cards and the View Summary screen.
--   **Not Started**: Updating the  screen with version comments and new cost breakdowns.
--   **Untested**: All the recent changes.</analysis>
+-   The Apply the skill for all months feature (item #7 in user message #254) has not been started.
+-   The collapsible sidebar functionality in  was only partially implemented (toggle button added, but not the collapse/expand logic).</analysis>
