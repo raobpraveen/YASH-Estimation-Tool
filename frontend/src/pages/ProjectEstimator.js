@@ -1034,11 +1034,13 @@ const ProjectEstimator = () => {
     summaryData.push(["Total Offshore MM", overall.offshoreMM.toFixed(2)]);
     summaryData.push(["Total Logistics", `$${overall.totalLogisticsCost.toFixed(2)}`]);
     summaryData.push(["Total Cost to Company", `$${overall.totalCostToCompany.toFixed(2)}`]);
+    summaryData.push(["Total Resources Price", `$${overall.totalRowsSellingPrice.toFixed(2)}`]);
     summaryData.push(["Profit Margin %", `${profitMarginPercentage}%`]);
     summaryData.push([]);
     summaryData.push(["PRICE BREAKDOWN"]);
-    summaryData.push(["Onsite Selling Price (incl. logistics)", `$${overall.onsiteSellingPrice.toFixed(2)}`]);
+    summaryData.push(["Onsite Selling Price", `$${overall.onsiteSellingPrice.toFixed(2)}`]);
     summaryData.push(["Offshore Selling Price", `$${overall.offshoreSellingPrice.toFixed(2)}`]);
+    summaryData.push(["Total Profit", `$${((overall.onsiteSellingPrice + overall.offshoreSellingPrice) - overall.totalCostToCompany).toFixed(2)}`]);
     summaryData.push(["Onsite Avg. $/MM", overall.onsiteMM > 0 ? `$${(overall.onsiteSellingPrice / overall.onsiteMM).toFixed(2)}` : "$0"]);
     summaryData.push(["Offshore Avg. $/MM", overall.offshoreMM > 0 ? `$${(overall.offshoreSellingPrice / overall.offshoreMM).toFixed(2)}` : "$0"]);
     summaryData.push([]);
