@@ -376,18 +376,68 @@ const ProficiencyRates = () => {
                       <TableCell>{rate.base_location_name}</TableCell>
                       <TableCell>{rate.proficiency_level}</TableCell>
                       <TableCell className="text-right font-mono tabular-nums">
-                        ${rate.avg_monthly_salary.toLocaleString()}
+                        {editingRate === rate.id ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-gray-500">$</span>
+                            <Input
+                              type="number"
+                              value={editSalary}
+                              onChange={(e) => setEditSalary(e.target.value)}
+                              className="w-28 text-right"
+                              autoFocus
+                              data-testid={`edit-salary-${rate.id}`}
+                            />
+                          </div>
+                        ) : (
+                          <span>${rate.avg_monthly_salary.toLocaleString()}</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteRate(rate.id)}
-                          className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
-                          data-testid={`delete-rate-${rate.id}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex gap-1 justify-end">
+                          {editingRate === rate.id ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => saveEditRate(rate.id)}
+                                className="text-[#10B981] hover:text-[#10B981] hover:bg-[#10B981]/10"
+                                data-testid={`save-rate-${rate.id}`}
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={cancelEditRate}
+                                className="text-gray-500 hover:text-gray-500 hover:bg-gray-100"
+                                data-testid={`cancel-edit-${rate.id}`}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => startEditRate(rate)}
+                                className="text-[#0EA5E9] hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
+                                data-testid={`edit-rate-${rate.id}`}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteRate(rate.id)}
+                                className="text-[#EF4444] hover:text-[#EF4444] hover:bg-[#EF4444]/10"
+                                data-testid={`delete-rate-${rate.id}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
