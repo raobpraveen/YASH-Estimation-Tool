@@ -86,6 +86,7 @@ const ProjectEstimator = () => {
     is_onsite: false,
     travel_required: false,
     custom_salary: "",
+    default_mm: "",  // Default effort to apply to all months
   });
   
   // Check if project is read-only (not latest version, approved, in_review, or view-only mode)
