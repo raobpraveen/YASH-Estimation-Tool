@@ -965,7 +965,9 @@ const ProjectEstimator = () => {
     summaryData.push(["Onsite Avg. $/MM", overall.onsiteMM > 0 ? `$${(overall.onsiteSellingPrice / overall.onsiteMM).toFixed(2)}` : "$0"]);
     summaryData.push(["Offshore Avg. $/MM", overall.offshoreMM > 0 ? `$${(overall.offshoreSellingPrice / overall.offshoreMM).toFixed(2)}` : "$0"]);
     summaryData.push([]);
-    summaryData.push(["GRAND TOTAL (Selling Price)", `$${overall.sellingPrice.toFixed(2)}`]);
+    summaryData.push(["Total Selling Price", `$${overall.sellingPrice.toFixed(2)}`]);
+    summaryData.push(["Total Nego Buffer", `$${overall.negoBuffer.toFixed(2)}`]);
+    summaryData.push(["GRAND TOTAL (Final Price)", `$${overall.finalPrice.toFixed(2)}`]);
 
     const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
     summaryWs['!cols'] = [{ wch: 25 }, { wch: 50 }, { wch: 20 }];
