@@ -16,12 +16,15 @@ const ProjectSummary = () => {
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [versions, setVersions] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (projectId) {
       fetchProject();
       fetchVersions();
+      fetchAuditLogs();
     }
   }, [projectId]);
 
@@ -42,6 +45,18 @@ const ProjectSummary = () => {
       setVersions(response.data);
     } catch (error) {
       console.error("Failed to fetch versions", error);
+    }
+  };
+
+  const fetchAuditLogs = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/audit-logs/project/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAuditLogs(response.data);
+    } catch (error) {
+      console.error("Failed to fetch audit logs", error);
     }
   };
 
