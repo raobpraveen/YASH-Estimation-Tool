@@ -624,6 +624,11 @@ const ProjectEstimator = () => {
     
     const costToCompany = baseCost + totalOverheadCost;
     const sellingPrice = costToCompany / (1 - (profitMarginPercentage / 100));
+    
+    // Calculate nego buffer
+    const negoBufferPercentage = wave.nego_buffer_percentage || 0;
+    const negoBufferAmount = sellingPrice * (negoBufferPercentage / 100);
+    const finalPrice = sellingPrice + negoBufferAmount;
 
     return {
       totalMM,
@@ -634,6 +639,9 @@ const ProjectEstimator = () => {
       totalLogisticsCost: logistics.totalLogistics,
       totalCostToCompany: costToCompany,
       sellingPrice,
+      negoBufferPercentage,
+      negoBufferAmount,
+      finalPrice,
       onsiteResourceCount: logistics.onsiteResourceCount,
       travelingResourceCount: logistics.travelingResourceCount,
       travelingMM: logistics.totalTravelingMM,
