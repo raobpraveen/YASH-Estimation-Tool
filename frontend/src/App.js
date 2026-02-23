@@ -76,6 +76,7 @@ function App() {
               <Route path="projects/:projectId/compare" element={<CompareVersions />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="audit-logs" element={<AuditLogs />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
           )}
