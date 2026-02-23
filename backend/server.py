@@ -841,10 +841,16 @@ async def create_project(input: ProjectCreate, user: dict = Depends(require_auth
 @api_router.get("/projects", response_model=List[Project])
 async def get_projects(latest_only: bool = True):
     # Handle legacy data: show projects where is_latest_version is True OR not set
+    # Exclude archived projects
     if latest_only:
-        query = {"$or": [{"is_latest_version": True}, {"is_latest_version": {"$exists": False}}]}
+        query = {
+            "$and": [
+                {"$or": [{"is_latest_version": True}, {"is_latest_version": {"$exists": False}}]},
+                {"$or": [{"is_archived": False}, {"is_archived": {"$exists": False}}]}
+            ]
+        }
     else:
-        query = {}
+        query = {"$or": [{"is_archived": False}, {"is_archived": {"$exists": False}}]}
     projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
     for project in projects:
         if isinstance(project.get('created_at'), str):
