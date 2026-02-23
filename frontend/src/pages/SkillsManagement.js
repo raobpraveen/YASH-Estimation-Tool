@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Upload, Download } from "lucide-react";
+import { Plus, Trash2, Upload, Download, Filter, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -16,8 +16,11 @@ const API = `${BACKEND_URL}/api`;
 
 const SkillsManagement = () => {
   const [skills, setSkills] = useState([]);
+  const [filteredSkills, setFilteredSkills] = useState([]);
   const [technologies, setTechnologies] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({ name: "", technology_id: "" });
   const [newSkill, setNewSkill] = useState({ name: "", technology_id: "" });
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -26,6 +29,25 @@ const SkillsManagement = () => {
     fetchSkills();
     fetchTechnologies();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [skills, filters]);
+
+  const applyFilters = () => {
+    let result = [...skills];
+    if (filters.name) {
+      result = result.filter(s => s.name?.toLowerCase().includes(filters.name.toLowerCase()));
+    }
+    if (filters.technology_id) {
+      result = result.filter(s => s.technology_id === filters.technology_id);
+    }
+    setFilteredSkills(result);
+  };
+
+  const clearFilters = () => {
+    setFilters({ name: "", technology_id: "" });
+  };
 
   const fetchSkills = async () => {
     try {
