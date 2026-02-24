@@ -66,6 +66,7 @@ const ProjectEstimator = () => {
   const [submitForReviewDialog, setSubmitForReviewDialog] = useState(false);
   const [approvalActionDialog, setApprovalActionDialog] = useState(false);
   const [approvalAction, setApprovalAction] = useState("");
+  const [approversList, setApproversList] = useState([]);
   
   // Waves
   const [waves, setWaves] = useState([]);
