@@ -1191,7 +1191,7 @@ const ProjectEstimator = () => {
               </Button>
               {projectStatus === "draft" && !isReadOnly && (
                 <Button 
-                  onClick={() => setSubmitForReviewDialog(true)} 
+                  onClick={openSubmitForReviewDialog} 
                   variant="outline" 
                   size="sm"
                   className="border-purple-600 text-purple-600"
