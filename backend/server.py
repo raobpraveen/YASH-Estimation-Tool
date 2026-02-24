@@ -1165,8 +1165,15 @@ async def create_new_version(project_id: str, input: ProjectUpdate, user: dict =
     new_project_data["submitted_at"] = None
     new_project_data["approved_at"] = None
     
-    # Apply updates
+    # Apply updates (but don't allow status to be overwritten)
     update_data = input.model_dump(exclude_unset=True)
+    # Remove status from update_data to prevent overwriting draft status
+    update_data.pop("status", None)
+    update_data.pop("approver_email", None)
+    update_data.pop("approval_comments", None)
+    update_data.pop("submitted_at", None)
+    update_data.pop("approved_at", None)
+    
     for key, value in update_data.items():
         if value is not None:
             new_project_data[key] = value
