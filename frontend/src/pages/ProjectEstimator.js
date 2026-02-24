@@ -942,6 +942,10 @@ const ProjectEstimator = () => {
       const response = await axios.post(`${API}/projects/${projectId}/new-version`, payload, config);
       setProjectId(response.data.id);
       setProjectVersion(response.data.version);
+      setProjectStatus(response.data.status || "draft");  // Update status from response
+      setApproverEmail(response.data.approver_email || "");  // Clear approver
+      setApprovalComments("");  // Clear approval comments
+      setIsLatestVersion(true);  // New version is always latest
       setSaveAsNewVersionDialog(false);
       toast.success(`New version ${response.data.project_number} v${response.data.version} created`);
     } catch (error) {
