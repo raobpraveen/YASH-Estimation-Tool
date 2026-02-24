@@ -1122,6 +1122,148 @@ const ProjectEstimator = () => {
     toast.success(`Template downloaded: ${fileName}`);
   };
 
+  const handleUploadWaveGrid = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const activeWave = waves.find(w => w.id === activeWaveId);
+    if (!activeWave) {
+      toast.error("Please select a wave first");
+      return;
+    }
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      
+      // Find the Resource Data sheet
+      const sheetName = workbook.SheetNames.find(name => 
+        name.toLowerCase().includes('resource') || name === 'Resource Data'
+      ) || workbook.SheetNames[0];
+      
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      
+      if (jsonData.length < 2) {
+        toast.error("No data found in the uploaded file");
+        return;
+      }
+
+      // Get headers from first row
+      const headers = jsonData[0].map(h => h?.toString().toLowerCase().replace(/[^a-z0-9]/g, '') || '');
+      
+      // Find column indexes
+      const colIndexes = {
+        skillName: headers.findIndex(h => h.includes('skillname') || h === 'skill'),
+        proficiency: headers.findIndex(h => h.includes('proficiency') || h.includes('level')),
+        location: headers.findIndex(h => h.includes('location') || h.includes('base')),
+        salary: headers.findIndex(h => h.includes('salary') || h.includes('monthly')),
+        overhead: headers.findIndex(h => h.includes('overhead')),
+        isOnsite: headers.findIndex(h => h.includes('onsite')),
+        travelRequired: headers.findIndex(h => h.includes('travel')),
+      };
+
+      // Find phase columns (anything with MM or M1, M2, etc.)
+      const phaseStartIndex = Math.max(
+        colIndexes.travelRequired + 1,
+        headers.findIndex(h => h.includes('mm') || /^m\d+/.test(h))
+      );
+
+      const newAllocations = [];
+      let successCount = 0;
+      let errorCount = 0;
+
+      // Process data rows (skip header)
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (!row || row.length === 0) continue;
+
+        const skillName = row[colIndexes.skillName]?.toString().trim();
+        const proficiencyLevel = row[colIndexes.proficiency]?.toString().trim();
+        const locationName = row[colIndexes.location]?.toString().trim();
+
+        if (!skillName || !proficiencyLevel || !locationName) {
+          errorCount++;
+          continue;
+        }
+
+        // Find matching rate from master data
+        const matchingRate = rates.find(r => 
+          r.skill_name?.toLowerCase() === skillName.toLowerCase() &&
+          r.proficiency_level?.toLowerCase() === proficiencyLevel.toLowerCase() &&
+          r.base_location_name?.toLowerCase() === locationName.toLowerCase()
+        );
+
+        // Find location for overhead
+        const location = baseLocations.find(l => 
+          l.name?.toLowerCase() === locationName.toLowerCase()
+        );
+
+        // Get custom salary if provided
+        const customSalary = colIndexes.salary >= 0 ? parseFloat(row[colIndexes.salary]) : NaN;
+        const overheadPct = colIndexes.overhead >= 0 ? parseFloat(row[colIndexes.overhead]) : NaN;
+        const isOnsite = colIndexes.isOnsite >= 0 ? 
+          ['true', 'yes', '1'].includes(row[colIndexes.isOnsite]?.toString().toLowerCase()) : false;
+        const travelRequired = colIndexes.travelRequired >= 0 ? 
+          ['true', 'yes', '1'].includes(row[colIndexes.travelRequired]?.toString().toLowerCase()) : false;
+
+        // Build phase allocations
+        const phaseAllocations = {};
+        const phaseNames = activeWave.phase_names?.length > 0 
+          ? activeWave.phase_names 
+          : Array.from({ length: Math.ceil(activeWave.duration_months) }, (_, i) => `M${i + 1}`);
+
+        for (let p = 0; p < phaseNames.length; p++) {
+          const colIdx = phaseStartIndex + p;
+          if (colIdx < row.length) {
+            const value = parseFloat(row[colIdx]) || 0;
+            phaseAllocations[p] = value;
+          }
+        }
+
+        const avgSalary = !isNaN(customSalary) && customSalary > 0 
+          ? customSalary 
+          : (matchingRate?.avg_monthly_salary || 0);
+
+        const allocation = {
+          id: `upload-${Date.now()}-${i}`,
+          skill_id: matchingRate?.skill_id || "",
+          skill_name: skillName,
+          proficiency_level: proficiencyLevel,
+          avg_monthly_salary: avgSalary,
+          original_monthly_salary: matchingRate?.avg_monthly_salary || avgSalary,
+          base_location_id: matchingRate?.base_location_id || location?.id || "",
+          base_location_name: locationName,
+          overhead_percentage: !isNaN(overheadPct) ? overheadPct : (location?.overhead_percentage || 30),
+          is_onsite: isOnsite,
+          travel_required: travelRequired,
+          phase_allocations: phaseAllocations,
+        };
+
+        newAllocations.push(allocation);
+        successCount++;
+      }
+
+      if (newAllocations.length > 0) {
+        // Update the wave with new allocations
+        setWaves(waves.map(w => 
+          w.id === activeWaveId 
+            ? { ...w, grid_allocations: [...w.grid_allocations, ...newAllocations] }
+            : w
+        ));
+        toast.success(`Imported ${successCount} resources successfully${errorCount > 0 ? ` (${errorCount} rows skipped)` : ''}`);
+      } else {
+        toast.error("No valid resources found in the file. Check skill names, proficiency levels, and locations match master data.");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to process the uploaded file");
+    }
+
+    // Reset the file input
+    event.target.value = '';
+  };
+
   const handleExportToExcel = () => {
     if (waves.length === 0) {
       toast.error("No data to export");
