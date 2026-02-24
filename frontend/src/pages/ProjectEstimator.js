@@ -849,7 +849,9 @@ const ProjectEstimator = () => {
     }
 
     try {
-      await axios.post(`${API}/projects/${projectId}/submit-for-review?approver_email=${encodeURIComponent(approverEmail)}`);
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API}/projects/${projectId}/submit-for-review?approver_email=${encodeURIComponent(approverEmail)}`, {}, config);
       setProjectStatus("in_review");
       setSubmitForReviewDialog(false);
       toast.success("Project submitted for review");
@@ -863,12 +865,14 @@ const ProjectEstimator = () => {
     if (!projectId) return;
 
     try {
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
       if (approvalAction === "approve") {
-        await axios.post(`${API}/projects/${projectId}/approve?comments=${encodeURIComponent(approvalComments)}`);
+        await axios.post(`${API}/projects/${projectId}/approve?comments=${encodeURIComponent(approvalComments)}`, {}, config);
         setProjectStatus("approved");
         toast.success("Project approved");
       } else if (approvalAction === "reject") {
-        await axios.post(`${API}/projects/${projectId}/reject?comments=${encodeURIComponent(approvalComments)}`);
+        await axios.post(`${API}/projects/${projectId}/reject?comments=${encodeURIComponent(approvalComments)}`, {}, config);
         setProjectStatus("rejected");
         toast.success("Project rejected");
       }
