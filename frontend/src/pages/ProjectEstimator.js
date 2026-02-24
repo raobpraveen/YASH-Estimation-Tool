@@ -1098,7 +1098,7 @@ const ProjectEstimator = () => {
     
     // Master Data Reference sheet
     const skillsRef = skills.map(s => [s.name, s.category || ""]);
-    const locationsRef = baseLocations.map(l => [l.name, l.country || "", `${l.overhead_percentage || 0}%`]);
+    const locationsRef = locations.map(l => [l.name, l.country || "", `${l.overhead_percentage || 0}%`]);
     const proficiencyLevels = ["Junior", "Mid", "Senior", "Lead", "Expert"];
     
     const masterData = [
@@ -1195,7 +1195,7 @@ const ProjectEstimator = () => {
         );
 
         // Find location for overhead
-        const location = baseLocations.find(l => 
+        const location = locations.find(l => 
           l.name?.toLowerCase() === locationName.toLowerCase()
         );
 
