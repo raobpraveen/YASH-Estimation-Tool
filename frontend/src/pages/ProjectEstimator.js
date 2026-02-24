@@ -1248,13 +1248,13 @@ const ProjectEstimator = () => {
 
       {/* Submit for Review Dialog */}
       <Dialog open={submitForReviewDialog} onOpenChange={setSubmitForReviewDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-[#0F172A]">Submit for Review</DialogTitle>
             <DialogDescription>Select an approver to submit this project for review.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
               <Label htmlFor="approver-select">Select Approver *</Label>
               {approversList.length === 0 ? (
                 <p className="text-sm text-amber-600 py-2">
@@ -1265,20 +1265,22 @@ const ProjectEstimator = () => {
                   value={approverEmail}
                   onValueChange={setApproverEmail}
                 >
-                  <SelectTrigger className="w-full" data-testid="approver-select">
+                  <SelectTrigger className="w-full h-12" data-testid="approver-select">
                     <SelectValue placeholder="Select an approver..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60">
                     {approversList.map((approver) => (
-                      <SelectItem key={approver.id} value={approver.email}>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{approver.name}</span>
-                          <span className="text-gray-500">({approver.email})</span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${
-                            approver.role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
-                          }`}>
-                            {approver.role}
-                          </span>
+                      <SelectItem key={approver.id} value={approver.email} className="py-3">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{approver.name}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              approver.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                            }`}>
+                              {approver.role}
+                            </span>
+                          </div>
+                          <span className="text-sm text-gray-500">{approver.email}</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -1290,7 +1292,7 @@ const ProjectEstimator = () => {
               The selected approver will receive a notification and can approve, reject, or request changes to this estimate.
             </p>
           </div>
-          <DialogFooter className="mt-4">
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setSubmitForReviewDialog(false)}>Cancel</Button>
             <Button 
               onClick={handleSubmitForReview} 
@@ -1299,7 +1301,7 @@ const ProjectEstimator = () => {
               data-testid="confirm-submit-review"
             >
               <Send className="w-4 h-4 mr-2" />
-              Submit
+              Submit for Review
             </Button>
           </DialogFooter>
         </DialogContent>
