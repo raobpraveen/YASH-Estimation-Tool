@@ -823,13 +823,28 @@ const ProjectEstimator = () => {
     };
   };
 
+  const fetchApprovers = async () => {
+    try {
+      const response = await axios.get(`${API}/users/approvers/list`);
+      setApproversList(response.data);
+    } catch (error) {
+      console.error("Failed to fetch approvers", error);
+      setApproversList([]);
+    }
+  };
+
+  const openSubmitForReviewDialog = () => {
+    fetchApprovers();
+    setSubmitForReviewDialog(true);
+  };
+
   const handleSubmitForReview = async () => {
     if (!projectId) {
       toast.error("Please save the project first");
       return;
     }
-    if (!approverEmail || !approverEmail.includes("@")) {
-      toast.error("Please enter a valid approver email");
+    if (!approverEmail) {
+      toast.error("Please select an approver");
       return;
     }
 
