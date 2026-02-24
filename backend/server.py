@@ -1437,7 +1437,7 @@ async def submit_for_review(project_id: str, approver_email: str, user: dict = D
 
 # Approve project
 @api_router.post("/projects/{project_id}/approve")
-async def approve_project(project_id: str, comments: str = "", user: dict = Depends(get_current_user)):
+async def approve_project(project_id: str, comments: str = "", user: dict = Depends(require_auth)):
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -1486,7 +1486,7 @@ async def approve_project(project_id: str, comments: str = "", user: dict = Depe
 
 # Reject project
 @api_router.post("/projects/{project_id}/reject")
-async def reject_project(project_id: str, comments: str = "", user: dict = Depends(get_current_user)):
+async def reject_project(project_id: str, comments: str = "", user: dict = Depends(require_auth)):
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
