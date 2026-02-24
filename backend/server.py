@@ -300,6 +300,20 @@ async def delete_user(user_id: str, user: dict = Depends(require_auth)):
     
     return {"message": "User deleted successfully"}
 
+
+@api_router.get("/users/approvers/list")
+async def get_approvers(user: dict = Depends(get_current_user)):
+    """Get list of users who can approve projects (approvers and admins)"""
+    approvers = await db.users.find(
+        {
+            "role": {"$in": ["approver", "admin"]},
+            "is_active": {"$ne": False}
+        },
+        {"_id": 0, "id": 1, "email": 1, "name": 1, "role": 1}
+    ).to_list(100)
+    return approvers
+
+
 @api_router.post("/users/{user_id}/reset-password")
 async def reset_password(user_id: str, new_password: str, user: dict = Depends(require_auth)):
     """Reset a user's password - Admin only"""
