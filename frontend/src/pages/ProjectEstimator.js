@@ -991,6 +991,137 @@ const ProjectEstimator = () => {
     toast.info("Ready for new project");
   };
 
+  const handleDownloadWaveTemplate = () => {
+    const activeWave = waves.find(w => w.id === activeWaveId);
+    if (!activeWave) {
+      toast.error("Please select a wave first");
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    
+    // Instructions sheet
+    const instructionsData = [
+      ["YASH EstiPro - Wave Grid Upload Template"],
+      [""],
+      ["INSTRUCTIONS:"],
+      ["1. Fill in the 'Resource Data' sheet with your resource allocations"],
+      ["2. Each row represents one resource in the wave grid"],
+      ["3. Required fields are marked with * in the header"],
+      ["4. Phase columns (M1, M2, etc.) should contain man-month values (e.g., 0.5, 1, 1.5)"],
+      ["5. Save this file and upload it using the 'Upload Grid' button"],
+      [""],
+      ["FIELD DESCRIPTIONS:"],
+      ["Skill Name* - Name of the skill/role (must match master data)"],
+      ["Proficiency Level* - Level like Junior, Mid, Senior, Lead, Expert"],
+      ["Base Location* - Location name (must match master data)"],
+      ["Monthly Salary - Override salary (leave empty to use master rate)"],
+      ["Overhead % - Overhead percentage (default: from master data)"],
+      ["Is Onsite - TRUE or FALSE (default: FALSE)"],
+      ["Travel Required - TRUE or FALSE for logistics calculation (default: FALSE)"],
+      ["M1, M2, M3... - Man-months for each phase/month"],
+      [""],
+      ["NOTES:"],
+      ["- Skill Name and Base Location must exist in master data"],
+      ["- Leave Monthly Salary empty to auto-fetch from Proficiency Rates"],
+      ["- Phase columns should match the wave duration"],
+    ];
+    const instructionsWs = XLSX.utils.aoa_to_sheet(instructionsData);
+    instructionsWs["!cols"] = [{ wch: 80 }];
+    XLSX.utils.book_append_sheet(wb, instructionsWs, "Instructions");
+
+    // Resource Data sheet with headers based on wave phases
+    const phaseHeaders = activeWave.phase_names?.length > 0 
+      ? activeWave.phase_names 
+      : Array.from({ length: Math.ceil(activeWave.duration_months) }, (_, i) => `M${i + 1}`);
+    
+    const headers = [
+      "Skill Name*",
+      "Proficiency Level*",
+      "Base Location*",
+      "Monthly Salary",
+      "Overhead %",
+      "Is Onsite",
+      "Travel Required",
+      ...phaseHeaders.map(p => `${p} (MM)`)
+    ];
+    
+    const resourceData = [headers];
+    
+    // Add example rows
+    resourceData.push([
+      "Project Manager",
+      "Senior",
+      "India",
+      "",
+      "",
+      "FALSE",
+      "FALSE",
+      ...phaseHeaders.map(() => "1")
+    ]);
+    resourceData.push([
+      "Developer",
+      "Mid",
+      "India",
+      "",
+      "",
+      "FALSE",
+      "FALSE",
+      ...phaseHeaders.map(() => "1")
+    ]);
+    resourceData.push([
+      "Solution Architect",
+      "Expert",
+      "United States",
+      "",
+      "",
+      "TRUE",
+      "TRUE",
+      ...phaseHeaders.map(() => "0.5")
+    ]);
+    
+    const resourceWs = XLSX.utils.aoa_to_sheet(resourceData);
+    
+    // Set column widths
+    resourceWs["!cols"] = [
+      { wch: 20 }, // Skill Name
+      { wch: 15 }, // Proficiency Level
+      { wch: 18 }, // Base Location
+      { wch: 14 }, // Monthly Salary
+      { wch: 12 }, // Overhead %
+      { wch: 10 }, // Is Onsite
+      { wch: 14 }, // Travel Required
+      ...phaseHeaders.map(() => ({ wch: 10 }))
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, resourceWs, "Resource Data");
+    
+    // Master Data Reference sheet
+    const skillsRef = skills.map(s => [s.name, s.category || ""]);
+    const locationsRef = baseLocations.map(l => [l.name, l.country || "", `${l.overhead_percentage || 0}%`]);
+    const proficiencyLevels = ["Junior", "Mid", "Senior", "Lead", "Expert"];
+    
+    const masterData = [
+      ["AVAILABLE SKILLS", "Category"],
+      ...skillsRef,
+      [""],
+      ["AVAILABLE BASE LOCATIONS", "Country", "Default Overhead %"],
+      ...locationsRef,
+      [""],
+      ["PROFICIENCY LEVELS"],
+      ...proficiencyLevels.map(l => [l])
+    ];
+    
+    const masterWs = XLSX.utils.aoa_to_sheet(masterData);
+    masterWs["!cols"] = [{ wch: 25 }, { wch: 20 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, masterWs, "Master Data Reference");
+    
+    // Download the file
+    const fileName = `WaveGrid_Template_${activeWave.name.replace(/\s+/g, '_')}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    toast.success(`Template downloaded: ${fileName}`);
+  };
+
   const handleExportToExcel = () => {
     if (waves.length === 0) {
       toast.error("No data to export");
