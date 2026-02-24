@@ -2186,6 +2186,37 @@ const ProjectEstimator = () => {
                               Add Resource
                             </Button>
                           </DialogTrigger>
+                          {!isReadOnly && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={handleDownloadWaveTemplate}
+                                className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                                data-testid="download-template-button"
+                              >
+                                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                                Download Template
+                              </Button>
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  accept=".xlsx,.xls"
+                                  onChange={handleUploadWaveGrid}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  data-testid="upload-grid-input"
+                                />
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  className="border-purple-600 text-purple-600 hover:bg-purple-50 pointer-events-none"
+                                >
+                                  <Upload className="w-4 h-4 mr-2" />
+                                  Upload Grid
+                                </Button>
+                              </div>
+                            </>
+                          )}
                           <DialogContent className="max-w-md">
                             <DialogHeader>
                               <DialogTitle className="text-2xl font-bold text-[#0F172A]">Add Resource to {wave.name}</DialogTitle>
