@@ -1158,6 +1158,13 @@ async def create_new_version(project_id: str, input: ProjectUpdate, user: dict =
     new_project_data["created_at"] = datetime.now(timezone.utc)
     new_project_data["updated_at"] = datetime.now(timezone.utc)
     
+    # Reset status and approval fields for new version
+    new_project_data["status"] = "draft"
+    new_project_data["approver_email"] = None
+    new_project_data["approval_comments"] = ""
+    new_project_data["submitted_at"] = None
+    new_project_data["approved_at"] = None
+    
     # Apply updates
     update_data = input.model_dump(exclude_unset=True)
     for key, value in update_data.items():
