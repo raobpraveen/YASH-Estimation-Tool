@@ -1247,22 +1247,43 @@ const ProjectEstimator = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-[#0F172A]">Submit for Review</DialogTitle>
-            <DialogDescription>Enter the approver's email address to submit this project for review.</DialogDescription>
+            <DialogDescription>Select an approver to submit this project for review.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div>
-              <Label htmlFor="approver-email">Approver Email *</Label>
-              <Input
-                id="approver-email"
-                type="email"
-                placeholder="approver@company.com"
-                value={approverEmail}
-                onChange={(e) => setApproverEmail(e.target.value)}
-                data-testid="approver-email-input"
-              />
+              <Label htmlFor="approver-select">Select Approver *</Label>
+              {approversList.length === 0 ? (
+                <p className="text-sm text-amber-600 py-2">
+                  No approvers available. Please contact an administrator to assign approver roles.
+                </p>
+              ) : (
+                <Select
+                  value={approverEmail}
+                  onValueChange={setApproverEmail}
+                >
+                  <SelectTrigger className="w-full" data-testid="approver-select">
+                    <SelectValue placeholder="Select an approver..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {approversList.map((approver) => (
+                      <SelectItem key={approver.id} value={approver.email}>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{approver.name}</span>
+                          <span className="text-gray-500">({approver.email})</span>
+                          <span className={`text-xs px-1.5 py-0.5 rounded ${
+                            approver.role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
+                          }`}>
+                            {approver.role}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <p className="text-xs text-gray-500">
-              The approver will receive a notification and can approve, reject, or request changes to this estimate.
+              The selected approver will receive a notification and can approve, reject, or request changes to this estimate.
             </p>
           </div>
           <DialogFooter className="mt-4">
@@ -1270,6 +1291,7 @@ const ProjectEstimator = () => {
             <Button 
               onClick={handleSubmitForReview} 
               className="bg-purple-600 hover:bg-purple-700 text-white"
+              disabled={!approverEmail || approversList.length === 0}
               data-testid="confirm-submit-review"
             >
               <Send className="w-4 h-4 mr-2" />
