@@ -41,6 +41,18 @@
      -d '{"email":"admin@company.com","password":"SecurePass123!","name":"Admin User","role":"admin"}'
    ```
 
+### Important Note: emergentintegrations Package
+
+The backend uses `emergentintegrations` package which is hosted on Emergent's private PyPI server. The Dockerfile is already configured to use the correct index URL:
+```
+--extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/
+```
+
+If you need to install manually:
+```bash
+pip install emergentintegrations --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/
+```
+
 ### Production Deployment
 
 1. **Update environment variables**
