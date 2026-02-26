@@ -1035,6 +1035,60 @@ async def update_proficiency_rate(rate_id: str, avg_monthly_salary: float):
     return updated
 
 
+# Sales Manager Routes
+@api_router.post("/sales-managers", response_model=SalesManager)
+async def create_sales_manager(input: SalesManagerCreate):
+    manager_obj = SalesManager(**input.model_dump())
+    doc = manager_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.sales_managers.insert_one(doc)
+    return manager_obj
+
+
+@api_router.get("/sales-managers", response_model=List[SalesManager])
+async def get_sales_managers(active_only: bool = False):
+    query = {"is_active": True} if active_only else {}
+    managers = await db.sales_managers.find(query, {"_id": 0}).to_list(1000)
+    for manager in managers:
+        if isinstance(manager.get('created_at'), str):
+            manager['created_at'] = datetime.fromisoformat(manager['created_at'])
+    return managers
+
+
+@api_router.get("/sales-managers/{manager_id}", response_model=SalesManager)
+async def get_sales_manager(manager_id: str):
+    manager = await db.sales_managers.find_one({"id": manager_id}, {"_id": 0})
+    if not manager:
+        raise HTTPException(status_code=404, detail="Sales Manager not found")
+    if isinstance(manager.get('created_at'), str):
+        manager['created_at'] = datetime.fromisoformat(manager['created_at'])
+    return manager
+
+
+@api_router.put("/sales-managers/{manager_id}", response_model=SalesManager)
+async def update_sales_manager(manager_id: str, input: SalesManagerUpdate):
+    existing = await db.sales_managers.find_one({"id": manager_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Sales Manager not found")
+    
+    update_data = input.model_dump(exclude_unset=True)
+    if update_data:
+        await db.sales_managers.update_one({"id": manager_id}, {"$set": update_data})
+    
+    updated = await db.sales_managers.find_one({"id": manager_id}, {"_id": 0})
+    if isinstance(updated.get('created_at'), str):
+        updated['created_at'] = datetime.fromisoformat(updated['created_at'])
+    return updated
+
+
+@api_router.delete("/sales-managers/{manager_id}")
+async def delete_sales_manager(manager_id: str):
+    result = await db.sales_managers.delete_one({"id": manager_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Sales Manager not found")
+    return {"message": "Sales Manager deleted successfully"}
+
+
 # Projects Routes
 async def generate_project_number():
     """Generate a unique project number like PRJ-0001"""
