@@ -309,6 +309,60 @@ const Layout = ({ user, onLogout }) => {
         )}
       </aside>
       <main className="flex-1 overflow-auto">
+        {/* Top Bar with Notifications */}
+        <div className="sticky top-0 z-10 bg-white border-b px-8 py-3 flex justify-end items-center">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="relative" data-testid="notification-bell">
+                <Bell className="w-5 h-5 text-gray-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="end">
+              <div className="p-3 border-b flex justify-between items-center">
+                <h4 className="font-semibold">Notifications</h4>
+                {unreadCount > 0 && (
+                  <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-xs text-blue-600">
+                    Mark all read
+                  </Button>
+                )}
+              </div>
+              <div className="max-h-80 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">
+                    No notifications
+                  </div>
+                ) : (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={`p-3 border-b last:border-b-0 hover:bg-gray-50 ${!notif.is_read ? 'bg-blue-50' : ''}`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                          notif.type === 'approved' ? 'bg-green-500' :
+                          notif.type === 'rejected' ? 'bg-red-500' :
+                          notif.type === 'review_request' ? 'bg-amber-500' : 'bg-blue-500'
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{notif.title}</p>
+                          <p className="text-xs text-gray-500 truncate">{notif.message}</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(notif.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
         <div className="p-8">
           <Outlet />
         </div>
