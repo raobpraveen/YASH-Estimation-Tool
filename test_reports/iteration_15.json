@@ -1,0 +1,49 @@
+{
+  "summary": "Iteration 15 testing complete. Tested all new features: Dashboard KPI charts with project_numbers, combination grouping, clickable bars for drill-down, comparison mode, Projects page filters (Sales Manager, Project Type, Technology), Sales Manager in View Summary dialog, and notification bell changes.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard", "issues": ["Console warnings about invalid HTML nesting (<tr> inside <span>). This is a hydration warning from the Sales Manager Leaderboard table."]},
+      {"screen": "Dashboard KPI Charts", "issues": ["Console warnings: 'The width(-1) and height(-1) of chart should be greater than 0' - this may indicate chart sizing issues during initial render but charts display correctly after load."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_iteration15_features.py", "/app/test_reports/pytest/pytest_iteration15.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Dashboard leaderboard table has invalid HTML structure - <span> wrapper around <tr> causing React hydration warnings. Consider restructuring the map iteration to avoid span wrappers inside tbody."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration15_features.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": {"email": "admin@emergent.com", "password": "password"},
+  "seed_data_creation": "None - used existing test data",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 15 added: 1) project_numbers array in all KPI data (technology_data, project_type_data, location_data, sales_manager_data), 2) combination grouping for KPIs (e.g., 'AE, SA' as one bar), 3) clickable bars navigate to /projects?filter_type=X&filter_value=Y, 4) /api/dashboard/compare endpoint for period comparison, 5) Projects page filters for Sales Manager, Project Type, Technology, 6) Sales Manager field in View Summary dialog, 7) Notification bell shows all notifications (read+unread). All features tested and working.",
+  "features_tested": {
+    "dashboard_kpi_project_numbers": "PASS - All KPI data includes project_numbers arrays in API response",
+    "dashboard_combination_grouping": "PASS - Location chart shows combination keys like 'AE, SA', 'AE, OM'",
+    "dashboard_bar_click_navigation": "PASS - Clicking bar navigates to /projects?filter_type=technology&filter_value=SAP%20S%2F4HANA",
+    "dashboard_no_notification_panel": "PASS - Recent Notifications panel removed from dashboard",
+    "bell_icon_notifications": "PASS - Bell icon opens popover with notifications",
+    "dashboard_compare_periods": "PASS - Comparison panel opens, accepts dates, shows results with delta indicators",
+    "projects_url_filter_params": "PASS - Projects page applies filter from URL params (filter_type, filter_value)",
+    "projects_filter_dropdowns": "PASS - Sales Manager, Project Type, Technology filter dropdowns present and functional",
+    "view_summary_sales_manager": "PASS - Sales Manager field displayed in View Summary dialog on ProjectEstimator page",
+    "backend_compare_endpoint": "PASS - /api/dashboard/compare returns period1, period2, deltas"
+  },
+  "test_execution": {
+    "backend_tests": "17/17 passed",
+    "frontend_tests": {
+      "dashboard_tests": "7/7 passed",
+      "projects_tests": "4/4 passed",
+      "estimator_tests": "2/2 passed",
+      "kpi_click_tests": "2/2 passed",
+      "comparison_tests": "4/4 passed"
+    }
+  }
+}
