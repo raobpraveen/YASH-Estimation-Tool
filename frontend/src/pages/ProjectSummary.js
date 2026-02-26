@@ -7,6 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Printer, FileDown, Edit2, Plane, History, ChevronDown, ChevronRight, User, Calendar, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import {
+  calculateResourceSellingPrice as calcAllocCost,
+  calculateWaveLogistics as calcWaveLog,
+  calculateWaveSummary as calcWaveSum,
+  calculateOverallSummary as calcOverall,
+} from "@/utils/calculations";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
