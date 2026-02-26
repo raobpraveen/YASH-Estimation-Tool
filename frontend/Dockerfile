@@ -7,10 +7,10 @@ WORKDIR /app
 # Copy package file
 COPY package.json ./
 
-# Install dependencies using npm (better network handling for scoped packages)
+# Install dependencies using npm
 RUN npm config set registry https://registry.npmjs.org && \
     npm config set fetch-timeout 120000 && \
-    npm install
+    npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
