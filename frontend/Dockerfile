@@ -7,10 +7,10 @@ WORKDIR /app
 # Copy package files
 COPY package.json yarn.lock ./
 
-# Install dependencies - use npm registry (yarn registry missing some scoped packages)
+# Install dependencies - use npm registry and skip frozen lockfile (yarnpkg registry has missing tarballs)
 RUN yarn config set registry https://registry.npmjs.org && \
     yarn config set network-timeout 120000 && \
-    yarn install --frozen-lockfile
+    yarn install
 
 # Copy source code
 COPY . .
