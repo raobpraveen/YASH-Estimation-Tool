@@ -143,6 +143,16 @@ const Projects = () => {
     }
   };
 
+  const fetchTechnologies = async () => {
+    try { setTechnologies((await axios.get(`${API}/technologies`)).data); } catch {}
+  };
+  const fetchProjectTypes = async () => {
+    try { setProjectTypes((await axios.get(`${API}/project-types`)).data); } catch {}
+  };
+  const fetchSalesManagers = async () => {
+    try { setSalesManagers((await axios.get(`${API}/sales-managers`)).data); } catch {}
+  };
+
   const applyFilters = () => {
     let result = [...projects];
     
