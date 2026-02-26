@@ -612,6 +612,8 @@ class ProjectCreate(BaseModel):
     version_notes: str = ""
     status: str = "draft"
     approver_email: str = ""
+    sales_manager_id: str = ""
+    sales_manager_name: str = ""
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
