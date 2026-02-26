@@ -297,6 +297,10 @@ const ProjectSummary = () => {
               <p className="font-semibold text-lg">{project.project_type_name || "—"}</p>
             </div>
             <div>
+              <p className="text-gray-500">Sales Manager</p>
+              <p className="font-semibold text-lg">{project.sales_manager_name || "—"}</p>
+            </div>
+            <div>
               <p className="text-gray-500">Profit Margin</p>
               <p className="font-semibold text-lg">{profitMargin}%</p>
             </div>
