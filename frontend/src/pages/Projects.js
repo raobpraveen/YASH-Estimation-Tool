@@ -72,7 +72,24 @@ const Projects = () => {
     fetchTemplates();
     fetchCustomers();
     fetchUsers();
+    fetchTechnologies();
+    fetchProjectTypes();
+    fetchSalesManagers();
   }, []);
+
+  // Handle URL query params from dashboard drill-down
+  useEffect(() => {
+    const filterType = searchParams.get("filter_type");
+    const filterValue = searchParams.get("filter_value");
+    if (filterType && filterValue) {
+      setShowFilters(true);
+      if (filterType === "technology") setFilters(prev => ({ ...prev, technology: filterValue }));
+      else if (filterType === "project_type") setFilters(prev => ({ ...prev, projectType: filterValue }));
+      else if (filterType === "location") setFilters(prev => ({ ...prev, description: filterValue }));
+      else if (filterType === "sales_manager") setFilters(prev => ({ ...prev, salesManager: filterValue }));
+      else if (filterType === "customer") setFilters(prev => ({ ...prev, customerName: filterValue }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     applyFilters();
