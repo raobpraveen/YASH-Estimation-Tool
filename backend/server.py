@@ -2197,12 +2197,14 @@ async def get_dashboard_analytics(
         "total_projects": total_projects,
         "total_revenue": total_revenue,
         "projects_by_status": projects_by_status,
+        "value_by_status": value_by_status,
         "monthly_data": monthly_data,
         "top_customers": top_customers,
         "technology_data": technology_data,
         "project_type_data": project_type_data,
         "location_data": location_data,
-        "sales_manager_data": sales_manager_data
+        "sales_manager_data": sales_manager_data,
+        "sales_manager_leaderboard": leaderboard_data
     }
 
 
