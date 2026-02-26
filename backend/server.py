@@ -2095,43 +2095,43 @@ async def get_dashboard_analytics(
         tech_key = ", ".join(tech_names) if tech_names else None
         if tech_key:
             if tech_key not in technology_stats:
-                technology_stats[tech_key] = {"count": 0, "value": 0, "project_numbers": []}
+                technology_stats[tech_key] = {"count": 0, "value": 0, "project_numbers": set()}
             technology_stats[tech_key]["count"] += 1
             technology_stats[tech_key]["value"] += project_value
             if project_number:
-                technology_stats[tech_key]["project_numbers"].append(project_number)
+                technology_stats[tech_key]["project_numbers"].add(project_number)
         
         # Project Type: group by sorted combination
         type_names = sorted([t for t in project.get("project_type_names", []) if t])
         type_key = ", ".join(type_names) if type_names else None
         if type_key:
             if type_key not in project_type_stats:
-                project_type_stats[type_key] = {"count": 0, "value": 0, "project_numbers": []}
+                project_type_stats[type_key] = {"count": 0, "value": 0, "project_numbers": set()}
             project_type_stats[type_key]["count"] += 1
             project_type_stats[type_key]["value"] += project_value
             if project_number:
-                project_type_stats[type_key]["project_numbers"].append(project_number)
+                project_type_stats[type_key]["project_numbers"].add(project_number)
         
         # Location: group by sorted combination
         locations = sorted([l for l in project.get("project_locations", []) if l])
         loc_key = ", ".join(locations) if locations else None
         if loc_key:
             if loc_key not in location_stats:
-                location_stats[loc_key] = {"count": 0, "value": 0, "project_numbers": []}
+                location_stats[loc_key] = {"count": 0, "value": 0, "project_numbers": set()}
             location_stats[loc_key]["count"] += 1
             location_stats[loc_key]["value"] += project_value
             if project_number:
-                location_stats[loc_key]["project_numbers"].append(project_number)
+                location_stats[loc_key]["project_numbers"].add(project_number)
         
         # Sales Manager breakdown
         sm_name = project.get("sales_manager_name", "")
         if sm_name:
             if sm_name not in sales_manager_stats:
-                sales_manager_stats[sm_name] = {"count": 0, "value": 0, "project_numbers": []}
+                sales_manager_stats[sm_name] = {"count": 0, "value": 0, "project_numbers": set()}
             sales_manager_stats[sm_name]["count"] += 1
             sales_manager_stats[sm_name]["value"] += project_value
             if project_number:
-                sales_manager_stats[sm_name]["project_numbers"].append(project_number)
+                sales_manager_stats[sm_name]["project_numbers"].add(project_number)
     
     # Convert to sorted lists
     technology_data = sorted(
