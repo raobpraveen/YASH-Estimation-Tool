@@ -1306,6 +1306,7 @@ const ProjectEstimator = () => {
     summaryData.push(["Project Location(s)", projectLocations.map(code => COUNTRIES.find(c => c.code === code)?.name || code).join(", ") || "—"]);
     summaryData.push(["Technology", technologyIds.map(id => technologies.find(t => t.id === id)?.name).filter(Boolean).join(", ") || ""]);
     summaryData.push(["Project Type", projectTypeIds.map(id => projectTypes.find(t => t.id === id)?.name).filter(Boolean).join(", ") || ""]);
+    summaryData.push(["Sales Manager", salesManagers.find(m => m.id === salesManagerId)?.name || "—"]);
     summaryData.push(["Description", projectDescription]);
     summaryData.push(["Profit Margin %", `${profitMarginPercentage}%`]);
     summaryData.push([]);
