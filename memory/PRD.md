@@ -1,7 +1,7 @@
 # IT/Software Project Estimator - PRD
 
 ## Original Problem Statement
-Build an IT/Software Project estimator tool with comprehensive features for:
+Build an IT/Software Project estimator tool named "YASH EstPro" with comprehensive features for:
 - Skills management with technology and proficiency levels
 - Cost calculation based on monthly salaries, overheads, and profit margins
 - Wave-based project estimation with Excel-like inline grid editing
@@ -40,12 +40,12 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - Calculated at wave level for resources with `travel_required=true`
 - **Logistics Config Persists** - Values saved per wave and restored on project load
 - **Formulas**:
-  - Per-diems, Accommodation, Conveyance: `Traveling MM × Daily Rate × Days`
-  - Air Fare, Visa & Medical: `Number of Traveling Resources × Rate × Number of Trips`
+  - Per-diems, Accommodation, Conveyance: `Traveling MM x Daily Rate x Days`
+  - Air Fare, Visa & Medical: `Number of Traveling Resources x Rate x Number of Trips`
 - Editable rates per wave
 
 ### Review & Approval Workflow
-- **Status Flow**: Draft → In Review → Approved/Rejected
+- **Status Flow**: Draft -> In Review -> Approved/Rejected
 - Submit for Review with approver email
 - Approver can Approve or Reject with comments
 - **Approved projects are read-only** - must clone to make changes
@@ -67,6 +67,7 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 - **Multiple project locations** from dropdown list
 - **Multiple technologies** via multi-select badges
 - **Multiple project types** via multi-select badges
+- **Sales Manager** dropdown for project assignment
 - **Inline grid editing** for Skill, Level, and Location with auto salary lookup
 - Summary cards with **Avg. Selling Price per MM**
 - **6 summary cards**: Total MM, Onsite MM (with avg), Offshore MM (with avg), Onsite Avg $/MM, Offshore Avg $/MM, Selling Price
@@ -75,410 +76,157 @@ Build an IT/Software Project estimator tool with comprehensive features for:
 
 ### Dashboard Analytics
 - Total Projects count
-- Total Revenue (sum of all project selling prices)
+- Total Value of Estimations (sum of all project selling prices)
 - Approved/In Review counts
 - Projects by Status pie chart
-- Revenue Trend line chart
-- Top Customers by Revenue bar chart
+- Estimation Value Trend line chart
+- Top Customers by Value bar chart
+- **By Technology** bar chart KPI
+- **By Project Type** bar chart KPI
+- **By Project Location** bar chart KPI
+- **By Sales Manager** bar chart KPI
 - Recent Notifications panel
+- Filterable by date range and customer
 
 ---
 
 ## What's Been Implemented
 
-### December 22, 2025 - Iteration 7 Features
+### February 26, 2026 - Iteration 13: New Features
 
-#### Inline Grid Editing (COMPLETE)
-- [x] Excel-like dropdowns for Skill, Level, and Location in resource grid
-- [x] Auto salary lookup when Skill/Level/Location changes via `lookupSalary()` function
-- [x] Updates `avg_monthly_salary`, `skill_name`, `base_location_name`, `overhead_percentage` on change
+#### Sales Manager CRUD (COMPLETE)
+- [x] New `sales_managers` MongoDB collection
+- [x] Backend endpoints: POST, GET, GET/{id}, PUT/{id}, DELETE/{id}
+- [x] Active/Inactive status with `is_active` flag
+- [x] Full CRUD UI page at `/sales-managers`
+- [x] Fields: Name, Email, Phone, Department, Active status
 
-#### Multi-Select Fields (COMPLETE)
-- [x] Technology(s) - multi-select with badge tags and X to remove
-- [x] Project Type(s) - multi-select with badge tags and X to remove
-- [x] Project Location(s) - multi-select with badge tags and X to remove
+#### Sales Manager on Estimator (COMPLETE)
+- [x] Sales Manager dropdown in Project Information section
+- [x] Fetches only active sales managers
+- [x] Persists `sales_manager_id` and `sales_manager_name` with project
+- [x] Resets on new project creation
 
-#### Read-Only Mode Enhancement (COMPLETE)
-- [x] Projects with "In Review" status are read-only
-- [x] Projects with "Approved" status are read-only
-- [x] Older versions are read-only
-- [x] All inputs, toggles, buttons disabled in read-only mode
-- [x] Delete button hidden in read-only mode
+#### Dashboard Revamp (COMPLETE)
+- [x] Renamed "Total Revenue" to "Total Value of Estimations"
+- [x] Removed "Create New Estimate" button from header
+- [x] Added "By Technology" KPI chart
+- [x] Added "By Project Type" KPI chart
+- [x] Added "By Project Location" KPI chart
+- [x] Added "By Sales Manager" KPI chart
+- [x] Renamed "Revenue Trend" to "Estimation Value Trend"
+- [x] Renamed "Top Customers by Revenue" to "Top Customers by Value"
 
-#### Version Notes Mandatory (COMPLETE)
-- [x] Version Notes field present in project header
-- [x] Validation: cannot save existing project without version notes
-- [x] Error toast shown when version notes empty
+#### Notification Bell (COMPLETE)
+- [x] Bell icon in top-right header corner
+- [x] Unread count badge (red circle with number)
+- [x] Popover dropdown with notification list
+- [x] Color-coded notification types (approved=green, rejected=red, review=amber)
+- [x] "Mark all read" button
+- [x] 30-second polling for real-time updates
 
-#### KPI Cards Enhancement (COMPLETE)
-- [x] Onsite Avg. $/MM card with amber border
-- [x] Offshore Avg. $/MM card with blue border
-- [x] Shows calculated average based on salary cost and profit margin
+#### Email Notifications (BACKEND READY)
+- [x] SMTP email sending logic in backend
+- [x] Email templates for: Project Submitted, Approved, Rejected
+- [x] Integrated into submit/approve/reject workflow endpoints
+- [x] Graceful skip when SMTP not configured (logs warning)
+- [ ] SMTP credentials not yet provided by user
 
-#### View Summary Enhancement (COMPLETE)
-- [x] Profit margin badge per wave (e.g., "Profit: 35%")
-- [x] Onsite MM with Avg price/MM
-- [x] Offshore MM with Avg price/MM
-
-#### Compare Versions Enhancement (COMPLETE)
-- [x] Version Notes displayed for each version being compared
-- [x] "Onsite Selling Price" row with diff calculation
-- [x] "Offshore Selling Price" row with diff calculation
-
-### Previous Implementation
+### Previous Implementation (Complete)
 
 #### Master Data Pages (COMPLETE)
-- [x] Dashboard with analytics (charts, metrics, notifications)
-- [x] Customers management page
-- [x] Technologies management page
-- [x] Project Types management page
-- [x] Base Locations management page (with overhead %)
-- [x] Skills management page (unique records, Technology first column)
-- [x] Proficiency Rates management page (unique key validation, Technology first column)
+- [x] Dashboard with analytics
+- [x] Customers, Technologies, Project Types, Base Locations
+- [x] Skills management (unique records, Technology first column)
+- [x] Proficiency Rates management
+- [x] Sales Managers management
 
 #### Project Estimator (COMPLETE)
-- [x] Profit Margin slider (default 35%)
-- [x] Wave management (Add/Delete waves)
-- [x] Dynamic columns based on wave duration
-- [x] Editable phase names per column
-- [x] Resource allocation with custom salary override
-- [x] **Onsite toggle** (amber ON/OFF)
-- [x] **Travel Required toggle** (purple YES/NO) with formula tooltip
+- [x] Profit Margin slider, Wave management, Dynamic columns
+- [x] Resource allocation with inline grid editing
+- [x] Onsite toggle, Travel Required toggle
 - [x] Logistics configuration per wave
-- [x] **Batch Update Logistics** for wave-level settings
 - [x] Real-time cost calculations
-- [x] Logistics breakdown table
-- [x] Export to Excel
-- [x] **Responsive buttons** (visible at 100% zoom)
+- [x] Export to Excel, Excel upload for grid data
 
 #### Review & Approval Workflow (COMPLETE)
-- [x] Status badge display (Draft/In Review/Approved/Rejected)
-- [x] Submit for Review button with email input dialog
-- [x] Approve/Reject buttons for reviewers
-- [x] Approval comments input
-- [x] In-app notifications system
+- [x] Status badges, Submit for Review, Approve/Reject
+- [x] Approver selection dropdown
+- [x] In-app notification system
 
 #### Version Management (COMPLETE)
-- [x] Unique project numbers (PRJ-0001 format)
-- [x] Version tracking (v1, v2, v3...)
-- [x] **Expandable version history** in Projects list
-- [x] Clone project (resets status to draft)
-- [x] New Version (same project number, increment version)
-- [x] Compare Versions page
+- [x] Project numbers, version tracking, expandable history
+- [x] Clone, New Version, Compare Versions
+
+#### Authentication & Authorization (COMPLETE)
+- [x] JWT authentication, Role-based access (Admin/Approver/User)
+- [x] Protected routes, User management for admins
+
+#### Project Templates (COMPLETE)
+- [x] Save as Template, Create from Template
+
+#### Project Archiving (COMPLETE)
+- [x] Archive/Unarchive, Active/Archived tabs
+
+#### Collapsible Sidebar (COMPLETE)
+- [x] Toggle, Hover-to-expand, Keyboard shortcut (Ctrl+B)
+- [x] Grouped navigation, State persisted in localStorage
+
+#### Audit Log System (COMPLETE)
+- [x] Full audit trail for all project operations
+- [x] Admin Audit Log page, Project-specific audit history
 
 ---
 
 ## Technical Architecture
 
 ### Backend (FastAPI)
-- Unique validation for Skills (name + technology_id)
-- Unique validation for Proficiency Rates (skill_id + base_location_id + proficiency_level)
-- Project supports `technology_ids[]`, `project_type_ids[]`, `project_locations[]` arrays
-- Clone resets status to draft and clears approval fields
-- Submit for review sets status to "in_review"
+- server.py: All routes, models, and business logic
+- JWT Authentication with HS256
+- MongoDB via motor (async)
+- SMTP email integration (configurable)
 
 ### Frontend (React)
-- Shadcn UI components
-- Tailwind CSS styling
-- recharts library for charts
-- XLSX library for Excel export
-- React Router for navigation
-- TooltipProvider for formula tooltips
-- Multi-select implemented via badge array pattern
+- Shadcn UI components, Tailwind CSS
+- recharts for charts, XLSX for Excel
+- React Router, Context API
 
 ### Database (MongoDB)
-- Collections: customers, technologies, project_types, base_locations, skills, proficiency_rates, projects, notifications
-
----
-
-## Key Data Models
-
-### Project
-```javascript
-{
-  id: string,
-  project_number: string,  // PRJ-0001
-  version: int,
-  version_notes: string,   // Notes for this version (mandatory on update)
-  is_latest_version: boolean,
-  project_locations: [string],  // Multiple ISO codes
-  technology_ids: [string],     // Multiple technology IDs
-  technology_names: [string],
-  project_type_ids: [string],   // Multiple project type IDs
-  project_type_names: [string],
-  status: string,          // draft, in_review, approved, rejected
-  approver_email: string,
-  waves: [WaveObject],
-}
-```
-
-### Skill
-```javascript
-{
-  id: string,
-  name: string,
-  technology_id: string,
-  technology_name: string,
-}
-// Unique: name + technology_id
-```
-
-### ProficiencyRate
-```javascript
-{
-  id: string,
-  skill_id: string,
-  base_location_id: string,
-  proficiency_level: string,
-  avg_monthly_salary: float,
-}
-// Unique: skill_id + base_location_id + proficiency_level
-```
+- Collections: customers, technologies, project_types, base_locations, skills, proficiency_rates, projects, notifications, audit_logs, sales_managers, users
 
 ---
 
 ## Prioritized Backlog
 
-### P0 - High Priority (ALL COMPLETE)
-- [x] Multi-select Technology and Project Type
-- [x] Inline grid editing (Excel-like dropdowns)
-- [x] Read-only mode for "In Review" projects
-- [x] Version Notes mandatory validation
-- [x] KPI cards with Onsite/Offshore Avg $/MM
-- [x] View Summary with profit margin per wave
-- [x] Compare Versions with version notes and selling prices
-- [x] Total Cost column in grid (Salary Cost + Overhead)
-- [x] Excel upload for Skills and Proficiency Rates
-- [x] JWT-based user authentication (login/register)
-- [x] Project templates (save as template, create from template)
+### P0 - ALL COMPLETE
 
 ### P1 - Medium Priority
-- [ ] Email notifications (SendGrid/Resend integration)
-- [x] Advanced dashboard filters (date range, customer filter) - COMPLETE
-- [x] Export to Excel Enhancement - reflect complex grid structure with Overhead, Total Cost, Selling Price, and all KPIs
-- [x] Inline editing for Proficiency Rates - COMPLETE
+- [x] Sales Manager entity with CRUD and Estimator integration - COMPLETE
+- [x] Dashboard KPIs (Technology, Project Type, Location, Sales Manager) - COMPLETE
+- [x] Notification Bell with unread count - COMPLETE
+- [ ] Export to Excel Enhancement - verify Sales Manager included
+- [ ] Sidebar hover-to-expand visual verification
 
 ### P2 - Low Priority
+- [ ] User Profile - Custom Theme (upload background image)
 - [ ] Export to PDF
-- [x] User authentication - COMPLETE (JWT-based)
 - [ ] Multi-currency support
-- [x] Role-based access control - COMPLETE (Admin, Approver, User roles)
+- [ ] SMTP configuration for email notifications
 
-### Refactoring Tasks
-- [x] Break down `ProjectEstimator.js` into smaller components:
-  - `/app/frontend/src/components/estimator/KPICards.js` - Summary KPI cards
-  - `/app/frontend/src/components/estimator/WaveSummary.js` - Wave summary card
-  - `/app/frontend/src/components/estimator/LogisticsBreakdown.js` - Logistics table
-  - `/app/frontend/src/components/estimator/ResourceGrid.js` - Resource allocation grid
-  - `/app/frontend/src/components/estimator/SummaryDialog.js` - View Summary modal
-
----
-
-## December 22, 2025 - Iteration 8 Features
-
-### JWT Authentication (COMPLETE)
-- [x] Login page with Login/Register tabs
-- [x] JWT token-based authentication (HS256, 24hr expiration)
-- [x] User session persisted in localStorage
-- [x] Protected routes redirect to login when not authenticated
-- [x] User info and Sign Out button in sidebar
-- [x] API endpoints: `/auth/register`, `/auth/login`, `/auth/me`
-
-### Grid Total Cost Column (COMPLETE)
-- [x] Added "Total Cost" column between Overhead and Selling Price
-- [x] Calculation: Salary Cost + Overhead
-- [x] Gray background to distinguish from Selling Price (green)
-- [x] Excel export updated to include Total Cost column
-
-### Excel Upload for Master Data (COMPLETE)
-- [x] Skills page: Template download + Upload Excel buttons
-- [x] Proficiency Rates page: Template download + Upload Excel buttons
-- [x] Template columns match screen columns
-- [x] Duplicate records skipped during upload
-- [x] Success toast with "X added, Y skipped" message
-
-### Project Templates (COMPLETE)
-- [x] "Save as Template" button (bookmark icon) on each project
-- [x] Template name input dialog
-- [x] "From Template" button in Projects header
-- [x] Template dropdown with wave count
-- [x] Template badge (green) shown on template projects
-- [x] Projects created from template show "(from template)" in name
-- [x] New project number assigned, status reset to draft
-- [x] API endpoints: `/templates`, `/save-as-template`, `/create-from-template`, `/remove-template`
+### Refactoring
+- [ ] Extract financial calculation logic from ProjectEstimator.js and ProjectSummary.js into shared utility
 
 ---
 
 ## Test Coverage
-- Test reports: `/app/test_reports/iteration_12.json`
-- All iteration 12 calculation fixes tested and verified:
-  - Logistics Config Persistence
-  - Row Selling Price = (Salary + Overhead) / (1 - margin)
-  - Wave Selling Price = Sum(Row SP) + Logistics SP
-  - Total Selling Price = Sum(Wave SP)
-  - Onsite/Offshore based on is_onsite indicator
-  - Avg $/MM calculations correct
-- Backend: 100% pass rate (9/9 tests)
-- Frontend: 100% pass rate (all UI values match calculations)
-
----
-
-## February 23, 2026 - Iteration 12 Bug Fixes
-
-### Logistics Persistence Bug (FIXED)
-- [x] Added `logistics_config` field to backend `ProjectWave` model
-- [x] Logistics values now persist after save and page reload
-- [x] Each wave stores its own logistics configuration
-
-### Selling Price Calculation Fixes (FIXED)
-- [x] Row Selling Price = (Salary Cost + Overhead) / 0.65 (at 35% margin)
-- [x] Wave Selling Price = Sum of all row selling prices + logistics markup
-- [x] Total Selling Price = Sum of all wave selling prices
-- [x] Onsite Selling Price = Sum of row SP where is_onsite=true + logistics
-- [x] Offshore Selling Price = Sum of row SP where is_onsite=false
-- [x] Avg $/MM = Selling Price / MM for each category
-
----
-
-## February 23, 2026 - Iteration 11 Features
-
-### Project Archiving (COMPLETE)
-- [x] Archive button on each project in Projects list
-- [x] POST `/api/projects/{id}/archive` sets is_archived=true
-- [x] POST `/api/projects/{id}/unarchive` restores project  
-- [x] GET `/api/projects/archived` returns archived projects list
-- [x] Active Projects tab and Archived tab in Projects page
-- [x] Archived tab shows projects with Restore and Delete buttons
-- [x] Success toast messages for archive/unarchive operations
-
-### Collapsible Sidebar (COMPLETE)
-- [x] Toggle button in sidebar (ChevronLeft/ChevronRight icon)
-- [x] Sidebar collapses from 256px to 64px
-- [x] Icons only visible when collapsed
-- [x] Full menu labels visible when expanded
-- [x] User info and footer hidden when collapsed
-
-### Apply Skill for All Months (COMPLETE)
-- [x] "Default Effort" input field in Add Resource dialog
-- [x] If default_mm is provided, applies to all months when adding resource
-- [x] Calculator icon button in resource grid Actions column
-- [x] Click prompts user for value, then applies to all months
-- [x] Toast shows "Applied X MM to all N months"
-
-### Bug Fixes (COMPLETE)
-- [x] Selling Price Calculation: Overhead applied ONLY to salary, NOT to logistics
-- [x] Avg $/MM Display: Nego buffer NOT included in average selling price per MM
-- [x] Final Price card correctly includes nego buffer
-
----
-
-## February 23, 2026 - Iteration 10 Features
-
-### New Branding (COMPLETE)
-- [x] New YASH Technologies logo + YASH EstiPro logo side-by-side
-- [x] Login page shows both logos horizontally
-- [x] Sidebar shows both logos
-- [x] "Project Cost Estimator" subtitle (removed "Project Management")
-
-### Dashboard Filters Fix (COMPLETE)
-- [x] Date From filter works (ISO string comparison)
-- [x] Date To filter works
-- [x] Customer dropdown filter works
-- [x] Filters update KPIs and charts
-
-### Projects List Filters (COMPLETE)
-- [x] Toggle Filters button
-- [x] Customer Name search input
-- [x] Project Name/Description search input
-- [x] Created By dropdown (populated from users)
-- [x] Date From/To date pickers
-- [x] Clear Filters button
-
-### Audit Fields (COMPLETE)
-- [x] `created_by_id` - User ID who created the project
-- [x] `created_by_name` - User name who created the project
-- [x] `created_by_email` - User email who created the project
-- [x] "Created" column in Projects table showing user + date
-- [x] Clone and create-from-template sets current user as owner
-
-### Access Control (COMPLETE)
-- [x] Non-owner users see "View" button (eye icon)
-- [x] Admin users can edit any project
-- [x] Project creator can edit their own projects
-- [x] Delete button only visible to owner/admin
-
----
-
-## February 23, 2026 - Iteration 13 Bug Fixes
-
-### Cost to Company Calculation Fix (COMPLETE)
-- [x] Cost to Company now correctly excludes logistics
-- [x] Formula: Cost to Company = Total Salary Cost + Total Overhead (no logistics)
-- [x] Updated in wave summary and overall project summary
-- [x] Excel export updated with correct Cost to Company values
-
-### KPI Card Reordering (COMPLETE)
-- [x] Onsite/Offshore breakdown row now appears BEFORE Total Selling Price/Final Price row
-- [x] New order: Row 1 (MM cards), Row 2 (Onsite/Offshore breakdown), Row 3 (Selling Price/Final Price)
-
-### Profit Calculation Fix (COMPLETE)
-- [x] Profit formula corrected: (Onsite Selling Price + Offshore Selling Price) - Cost to Company
-- [x] Updated in View Summary dialog - Overall Project Summary section
-- [x] Excel export updated with correct Profit values
-
-### Excel Export Enhancement (COMPLETE)
-- [x] Added Resources Price per wave
-- [x] Added Onsite/Offshore Selling Price per wave
-- [x] Added Profit per wave
-- [x] Added Total Resources Price in overall summary
-- [x] Added Total Profit in overall summary
-
-### Project Summary Page Fix (COMPLETE)
-- [x] Rewritten calculation logic to match ProjectEstimator.js
-- [x] Cost to Company now excludes logistics
-- [x] Profit calculation corrected
-- [x] Added all missing fields (Resources Price, Onsite/Offshore Selling Prices)
-- [x] Excel export updated with all fields
-
----
-
-## February 23, 2026 - Iteration 14: Sidebar & Audit Log Features
-
-### Enhanced Collapsible Sidebar (COMPLETE)
-- [x] Hover-to-expand: Sidebar auto-expands on hover when collapsed
-- [x] Keyboard shortcut: Ctrl+B to toggle sidebar
-- [x] Remember preference: Collapse state saved to localStorage
-- [x] Tooltips: Show nav item names on hover when collapsed
-- [x] Grouped navigation: Main, Master Data, Admin, Settings sections
-
-### Full Audit Log Feature (COMPLETE)
-- [x] New `audit_logs` MongoDB collection
-- [x] Audit tracking for all project operations:
-  - Project create/update/delete
-  - Clone and archive/unarchive
-  - Status changes (submit, approve, reject)
-  - Version creation
-  - Field-level change tracking
-- [x] New Audit Log page for admins (/audit-logs)
-  - Summary statistics (total logs, recent activity, top action, most active user)
-  - Filterable table (by action, entity type, user, date range)
-  - Expandable rows showing changes and metadata
-- [x] Audit Trail section on Project Summary page
-  - Shows project-specific audit history
-  - Collapsible section with timeline view
-- [x] Backend API endpoints:
-  - GET /api/audit-logs - List all logs with filters
-  - GET /api/audit-logs/project/{id} - Project-specific logs
-  - GET /api/audit-logs/summary - Admin statistics
+- Test reports: `/app/test_reports/iteration_13.json`
+- Backend: 100% pass rate (21/21 tests)
+- Frontend: 100% pass rate (all UI features verified)
 
 ---
 
 ## Notes
 - Currency is always USD
-- Travel Required is SEPARATE from Onsite
-- Logistics only calculated for resources with travel_required=true
-- Email notifications planned for future (currently in-app only)
+- SMTP not configured - emails skipped with warning
 - All projects default to "draft" status
-- Clone resets status to draft
-- Old versions, approved projects, and in_review projects are display-only
-- Version notes mandatory when updating existing projects (not for new projects)
+- Sales Manager dropdown only shows active managers
