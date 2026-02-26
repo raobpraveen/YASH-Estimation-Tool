@@ -1700,6 +1700,18 @@ async def approve_project(project_id: str, comments: str = "", user: dict = Depe
     notif_doc['created_at'] = notif_doc['created_at'].isoformat()
     await db.notifications.insert_one(notif_doc)
     
+    # Send email notification to project creator
+    creator_email = project.get("created_by_email", "")
+    if creator_email and current_user:
+        subject, html_body, text_body = get_approval_email(
+            project.get("project_number", ""),
+            project.get("name", ""),
+            "approved",
+            current_user.get("name", ""),
+            comments
+        )
+        await send_email(creator_email, subject, html_body, text_body)
+    
     return {"message": "Project approved", "status": "approved"}
 
 
