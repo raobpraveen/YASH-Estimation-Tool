@@ -117,6 +117,7 @@ const ProjectEstimator = () => {
     fetchTechnologies();
     fetchProjectTypes();
     fetchCustomers();
+    fetchSalesManagers();
   }, []);
 
   useEffect(() => {
@@ -174,6 +175,7 @@ const ProjectEstimator = () => {
       setProjectStatus(project.status || "draft");
       setApproverEmail(project.approver_email || "");
       setApprovalComments(project.approval_comments || "");
+      setSalesManagerId(project.sales_manager_id || "");
       setIsLatestVersion(project.is_latest_version !== false);
       
       if (project.waves && project.waves.length > 0) {
