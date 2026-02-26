@@ -103,6 +103,7 @@ const ProjectSummary = () => {
     summaryData.push(["Project Location", project.project_location_name || ""]);
     summaryData.push(["Technology", project.technology_name || ""]);
     summaryData.push(["Project Type", project.project_type_name || ""]);
+    summaryData.push(["Sales Manager", project.sales_manager_name || "—"]);
     summaryData.push(["Description", project.description || ""]);
     summaryData.push(["Profit Margin %", `${profitMargin}%`]);
     summaryData.push([]);
