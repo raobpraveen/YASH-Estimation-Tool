@@ -4,8 +4,8 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json yarn.lock ./
+# Copy package file
+COPY package.json ./
 
 # Install dependencies - delete stale lockfile (contains unpublished package versions)
 # and let yarn resolve fresh versions from npm registry
