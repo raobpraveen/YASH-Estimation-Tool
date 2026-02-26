@@ -9,6 +9,7 @@ import ProjectTypes from "@/pages/ProjectTypes";
 import BaseLocations from "@/pages/BaseLocations";
 import SkillsManagement from "@/pages/SkillsManagement";
 import ProficiencyRates from "@/pages/ProficiencyRates";
+import SalesManagers from "@/pages/SalesManagers";
 import ProjectEstimator from "@/pages/ProjectEstimator";
 import Projects from "@/pages/Projects";
 import ProjectSummary from "@/pages/ProjectSummary";
