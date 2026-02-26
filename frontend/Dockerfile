@@ -7,10 +7,11 @@ WORKDIR /app
 # Copy package files
 COPY package.json yarn.lock ./
 
-# Install dependencies - rewrite lockfile URLs from yarnpkg to npmjs (yarnpkg registry has missing tarballs)
+# Install dependencies - delete stale lockfile (contains unpublished package versions)
+# and let yarn resolve fresh versions from npm registry
 RUN yarn config set registry https://registry.npmjs.org && \
     yarn config set network-timeout 120000 && \
-    sed -i 's|https://registry.yarnpkg.com|https://registry.npmjs.org|g' yarn.lock && \
+    rm -f yarn.lock && \
     yarn install
 
 # Copy source code
