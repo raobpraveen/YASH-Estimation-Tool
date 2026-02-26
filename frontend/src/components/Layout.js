@@ -68,7 +68,7 @@ const Layout = ({ user, onLogout }) => {
       const response = await axios.get(`${API}/api/notifications?user_email=${user?.email}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNotifications(response.data.slice(0, 10));
+      setNotifications(response.data.slice(0, 20));
       setUnreadCount(response.data.filter(n => !n.is_read).length);
     } catch (error) {
       console.error("Failed to fetch notifications", error);
