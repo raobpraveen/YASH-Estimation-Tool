@@ -7,10 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package.json yarn.lock ./
 
-# Install dependencies with retry and increased timeout
-RUN yarn config set network-timeout 120000 && \
-    yarn install --frozen-lockfile || \
-    yarn install --frozen-lockfile || \
+# Install dependencies - use npm registry (yarn registry missing some scoped packages)
+RUN yarn config set registry https://registry.npmjs.org && \
+    yarn config set network-timeout 120000 && \
     yarn install --frozen-lockfile
 
 # Copy source code
