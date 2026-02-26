@@ -750,7 +750,7 @@ const Projects = () => {
       {/* Filters Panel */}
       {showFilters && (
         <Card className="mb-6 border border-[#E2E8F0]">
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div>
                 <Label>Customer Name</Label>
@@ -812,6 +812,59 @@ const Projects = () => {
                   onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
                   data-testid="filter-date-to"
                 />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label>Sales Manager</Label>
+                <Select 
+                  value={filters.salesManager || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, salesManager: v === "all" ? "" : v })}
+                >
+                  <SelectTrigger data-testid="filter-sales-manager">
+                    <SelectValue placeholder="All Sales Managers" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sales Managers</SelectItem>
+                    {salesManagers.map(sm => (
+                      <SelectItem key={sm.id} value={sm.name}>{sm.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Project Type</Label>
+                <Select 
+                  value={filters.projectType || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, projectType: v === "all" ? "" : v })}
+                >
+                  <SelectTrigger data-testid="filter-project-type">
+                    <SelectValue placeholder="All Project Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Project Types</SelectItem>
+                    {projectTypes.map(pt => (
+                      <SelectItem key={pt.id} value={pt.name}>{pt.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Technology</Label>
+                <Select 
+                  value={filters.technology || "all"} 
+                  onValueChange={(v) => setFilters({ ...filters, technology: v === "all" ? "" : v })}
+                >
+                  <SelectTrigger data-testid="filter-technology">
+                    <SelectValue placeholder="All Technologies" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Technologies</SelectItem>
+                    {technologies.map(t => (
+                      <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex justify-end mt-4">
