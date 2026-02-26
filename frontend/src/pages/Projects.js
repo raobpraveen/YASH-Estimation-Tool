@@ -36,6 +36,9 @@ const Projects = () => {
   const [templates, setTemplates] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);
+  const [technologies, setTechnologies] = useState([]);
+  const [projectTypes, setProjectTypes] = useState([]);
+  const [salesManagers, setSalesManagers] = useState([]);
   const [allVersions, setAllVersions] = useState({});
   const [expandedProjects, setExpandedProjects] = useState({});
   const [loadingVersions, setLoadingVersions] = useState({});
@@ -46,6 +49,7 @@ const Projects = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   // Current user from localStorage
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -57,6 +61,9 @@ const Projects = () => {
     createdBy: "",
     dateFrom: "",
     dateTo: "",
+    salesManager: "",
+    projectType: "",
+    technology: "",
   });
 
   useEffect(() => {
