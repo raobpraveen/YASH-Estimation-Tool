@@ -2022,12 +2022,113 @@ async def get_dashboard_analytics(
         reverse=True
     )[:5]
     
+    # NEW KPIs: Technology breakdown
+    technology_stats = {}
+    project_type_stats = {}
+    location_stats = {}
+    sales_manager_stats = {}
+    
+    for project in projects:
+        project_value = 0
+        waves = project.get("waves", [])
+        profit_margin = project.get("profit_margin_percentage", 35)
+        
+        # Recalculate project value for KPIs
+        for wave in waves:
+            config = wave.get("logistics_config", {})
+            allocations = wave.get("grid_allocations", [])
+            wave_base_cost = 0
+            wave_logistics = 0
+            traveling_mm = 0
+            traveling_count = 0
+            
+            for alloc in allocations:
+                mm = sum(alloc.get("phase_allocations", {}).values())
+                salary_cost = alloc.get("avg_monthly_salary", 0) * mm
+                overhead = salary_cost * (alloc.get("overhead_percentage", 0) / 100)
+                wave_base_cost += salary_cost + overhead
+                if alloc.get("travel_required", False):
+                    traveling_mm += mm
+                    traveling_count += 1
+            
+            if traveling_count > 0:
+                per_diem = traveling_mm * config.get("per_diem_daily", 50) * config.get("per_diem_days", 30)
+                accommodation = traveling_mm * config.get("accommodation_daily", 80) * config.get("accommodation_days", 30)
+                conveyance = traveling_mm * config.get("local_conveyance_daily", 15) * config.get("local_conveyance_days", 21)
+                flights = traveling_count * config.get("flight_cost_per_trip", 450) * config.get("num_trips", 6)
+                visa = traveling_count * config.get("visa_medical_per_trip", 400) * config.get("num_trips", 6)
+                subtotal = per_diem + accommodation + conveyance + flights + visa
+                contingency = subtotal * (config.get("contingency_percentage", 5) / 100)
+                wave_logistics = subtotal + contingency
+            
+            project_value += wave_base_cost + wave_logistics
+        
+        if profit_margin < 100:
+            project_value = project_value / (1 - profit_margin / 100)
+        
+        # Technology breakdown
+        for tech_name in project.get("technology_names", []):
+            if tech_name:
+                if tech_name not in technology_stats:
+                    technology_stats[tech_name] = {"count": 0, "value": 0}
+                technology_stats[tech_name]["count"] += 1
+                technology_stats[tech_name]["value"] += project_value
+        
+        # Project Type breakdown
+        for type_name in project.get("project_type_names", []):
+            if type_name:
+                if type_name not in project_type_stats:
+                    project_type_stats[type_name] = {"count": 0, "value": 0}
+                project_type_stats[type_name]["count"] += 1
+                project_type_stats[type_name]["value"] += project_value
+        
+        # Location breakdown
+        for location in project.get("project_locations", []):
+            if location:
+                if location not in location_stats:
+                    location_stats[location] = {"count": 0, "value": 0}
+                location_stats[location]["count"] += 1
+                location_stats[location]["value"] += project_value
+        
+        # Sales Manager breakdown
+        sm_name = project.get("sales_manager_name", "")
+        if sm_name:
+            if sm_name not in sales_manager_stats:
+                sales_manager_stats[sm_name] = {"count": 0, "value": 0}
+            sales_manager_stats[sm_name]["count"] += 1
+            sales_manager_stats[sm_name]["value"] += project_value
+    
+    # Convert to sorted lists
+    technology_data = sorted(
+        [{"name": k, "count": v["count"], "value": v["value"]} for k, v in technology_stats.items()],
+        key=lambda x: x["value"], reverse=True
+    )[:10]
+    
+    project_type_data = sorted(
+        [{"name": k, "count": v["count"], "value": v["value"]} for k, v in project_type_stats.items()],
+        key=lambda x: x["value"], reverse=True
+    )[:10]
+    
+    location_data = sorted(
+        [{"name": k, "count": v["count"], "value": v["value"]} for k, v in location_stats.items()],
+        key=lambda x: x["value"], reverse=True
+    )[:10]
+    
+    sales_manager_data = sorted(
+        [{"name": k, "count": v["count"], "value": v["value"]} for k, v in sales_manager_stats.items()],
+        key=lambda x: x["value"], reverse=True
+    )[:10]
+    
     return {
         "total_projects": total_projects,
         "total_revenue": total_revenue,
         "projects_by_status": projects_by_status,
         "monthly_data": monthly_data,
-        "top_customers": top_customers
+        "top_customers": top_customers,
+        "technology_data": technology_data,
+        "project_type_data": project_type_data,
+        "location_data": location_data,
+        "sales_manager_data": sales_manager_data
     }
 
 
