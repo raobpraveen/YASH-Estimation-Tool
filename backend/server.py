@@ -2142,6 +2142,57 @@ async def get_dashboard_analytics(
         key=lambda x: x["value"], reverse=True
     )[:10]
     
+    # Sales Manager Leaderboard - with approval rates
+    sm_leaderboard = {}
+    for project in projects:
+        sm_name = project.get("sales_manager_name", "")
+        if not sm_name:
+            continue
+        if sm_name not in sm_leaderboard:
+            sm_leaderboard[sm_name] = {"total": 0, "approved": 0, "rejected": 0, "in_review": 0, "draft": 0, "value": 0}
+        sm_leaderboard[sm_name]["total"] += 1
+        status = project.get("status", "draft")
+        sm_leaderboard[sm_name][status] = sm_leaderboard[sm_name].get(status, 0) + 1
+        # Recalculate value for this project
+        p_value = 0
+        p_waves = project.get("waves", [])
+        p_margin = project.get("profit_margin_percentage", 35)
+        for wave in p_waves:
+            cfg = wave.get("logistics_config", {})
+            allocs = wave.get("grid_allocations", [])
+            w_base = 0
+            w_log = 0
+            t_mm = 0
+            t_cnt = 0
+            for alloc in allocs:
+                mm = sum(alloc.get("phase_allocations", {}).values())
+                sc = alloc.get("avg_monthly_salary", 0) * mm
+                oh = sc * (alloc.get("overhead_percentage", 0) / 100)
+                w_base += sc + oh
+                if alloc.get("travel_required", False):
+                    t_mm += mm
+                    t_cnt += 1
+            if t_cnt > 0:
+                pd = t_mm * cfg.get("per_diem_daily", 50) * cfg.get("per_diem_days", 30)
+                ac = t_mm * cfg.get("accommodation_daily", 80) * cfg.get("accommodation_days", 30)
+                cv = t_mm * cfg.get("local_conveyance_daily", 15) * cfg.get("local_conveyance_days", 21)
+                fl = t_cnt * cfg.get("flight_cost_per_trip", 450) * cfg.get("num_trips", 6)
+                vi = t_cnt * cfg.get("visa_medical_per_trip", 400) * cfg.get("num_trips", 6)
+                sub = pd + ac + cv + fl + vi
+                w_log = sub + sub * (cfg.get("contingency_percentage", 5) / 100)
+            p_value += w_base + w_log
+        if p_margin < 100:
+            p_value = p_value / (1 - p_margin / 100)
+        sm_leaderboard[sm_name]["value"] += p_value
+    
+    leaderboard_data = sorted(
+        [{"name": k, "total_projects": v["total"], "approved": v["approved"], "rejected": v["rejected"],
+          "in_review": v["in_review"], "draft": v["draft"], "total_value": v["value"],
+          "approval_rate": round((v["approved"] / v["total"]) * 100, 1) if v["total"] > 0 else 0}
+         for k, v in sm_leaderboard.items()],
+        key=lambda x: x["total_value"], reverse=True
+    )[:10]
+    
     return {
         "total_projects": total_projects,
         "total_revenue": total_revenue,
