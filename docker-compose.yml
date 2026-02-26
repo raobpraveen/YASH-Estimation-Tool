@@ -4,7 +4,6 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
   mongodb:
     image: mongo:6.0
     container_name: estipro-mongodb
@@ -25,7 +24,6 @@ services:
       retries: 5
       start_period: 40s
 
-  # FastAPI Backend
   backend:
     image: backend-img
     container_name: estipro-backend
@@ -48,13 +46,12 @@ services:
       retries: 3
       start_period: 10s
 
-  # React Frontend with Nginx
- frontend:
+  frontend:
     build:
-      context: ./frontend   # <-- path where this Dockerfile exists
+      context: ./frontend
       dockerfile: Dockerfile
       args:
-        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:8001}
+        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://backend:8001}
     image: frontend-img
     container_name: estipro-frontend
     restart: unless-stopped
@@ -73,3 +70,4 @@ networks:
 volumes:
   mongodb_data:
     driver: local
+    
