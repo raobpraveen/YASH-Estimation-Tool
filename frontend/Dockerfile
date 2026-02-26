@@ -4,13 +4,13 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package file
-COPY package.json ./
+# Copy package files (lockfile has npmjs.org URLs)
+COPY package.json yarn.lock ./
 
-# Install dependencies using npm
-RUN npm config set registry https://registry.npmjs.org && \
-    npm config set fetch-timeout 120000 && \
-    npm install --legacy-peer-deps
+# Install dependencies
+RUN yarn config set registry https://registry.npmjs.org && \
+    yarn config set network-timeout 120000 && \
+    yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
