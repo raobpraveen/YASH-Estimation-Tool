@@ -2220,6 +2220,84 @@ async def get_dashboard_analytics(
     }
 
 
+@api_router.get("/dashboard/compare")
+async def compare_periods(
+    period1_from: str,
+    period1_to: str,
+    period2_from: str,
+    period2_to: str,
+):
+    """Compare two date periods for quarterly performance reviews."""
+    async def calc_period(date_from, date_to):
+        query = {"created_at": {"$gte": f"{date_from}T00:00:00", "$lte": f"{date_to}T23:59:59"}}
+        projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
+        total_projects = len(projects)
+        total_value = 0
+        approved = 0
+        rejected = 0
+        in_review = 0
+        draft = 0
+        for project in projects:
+            status = project.get("status", "draft")
+            if status == "approved": approved += 1
+            elif status == "rejected": rejected += 1
+            elif status == "in_review": in_review += 1
+            else: draft += 1
+            pv = 0
+            pm = project.get("profit_margin_percentage", 35)
+            for wave in project.get("waves", []):
+                cfg = wave.get("logistics_config", {})
+                wb = 0; wl = 0; tm = 0; tc = 0
+                for alloc in wave.get("grid_allocations", []):
+                    mm = sum(alloc.get("phase_allocations", {}).values())
+                    sc = alloc.get("avg_monthly_salary", 0) * mm
+                    oh = sc * (alloc.get("overhead_percentage", 0) / 100)
+                    wb += sc + oh
+                    if alloc.get("travel_required", False):
+                        tm += mm; tc += 1
+                if tc > 0:
+                    pd = tm * cfg.get("per_diem_daily", 50) * cfg.get("per_diem_days", 30)
+                    ac = tm * cfg.get("accommodation_daily", 80) * cfg.get("accommodation_days", 30)
+                    cv = tm * cfg.get("local_conveyance_daily", 15) * cfg.get("local_conveyance_days", 21)
+                    fl = tc * cfg.get("flight_cost_per_trip", 450) * cfg.get("num_trips", 6)
+                    vi = tc * cfg.get("visa_medical_per_trip", 400) * cfg.get("num_trips", 6)
+                    sub = pd + ac + cv + fl + vi
+                    wl = sub + sub * (cfg.get("contingency_percentage", 5) / 100)
+                pv += wb + wl
+            if pm < 100:
+                pv = pv / (1 - pm / 100)
+            total_value += pv
+        approval_rate = round((approved / total_projects) * 100, 1) if total_projects > 0 else 0
+        return {
+            "total_projects": total_projects,
+            "total_value": total_value,
+            "approved": approved,
+            "rejected": rejected,
+            "in_review": in_review,
+            "draft": draft,
+            "approval_rate": approval_rate,
+        }
+    
+    p1 = await calc_period(period1_from, period1_to)
+    p2 = await calc_period(period2_from, period2_to)
+    
+    # Calculate deltas (percentage change)
+    def delta(new, old):
+        if old == 0: return 100.0 if new > 0 else 0.0
+        return round(((new - old) / old) * 100, 1)
+    
+    return {
+        "period1": {"from": period1_from, "to": period1_to, **p1},
+        "period2": {"from": period2_from, "to": period2_to, **p2},
+        "deltas": {
+            "total_projects": delta(p2["total_projects"], p1["total_projects"]),
+            "total_value": delta(p2["total_value"], p1["total_value"]),
+            "approved": delta(p2["approved"], p1["approved"]),
+            "approval_rate": round(p2["approval_rate"] - p1["approval_rate"], 1),
+        }
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
