@@ -20,7 +20,7 @@ ARG REACT_APP_BACKEND_URL
 ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
 
 # Build the application
-RUN npm run build
+RUN yarn build
 
 # Stage 2: Production
 FROM nginx:alpine
