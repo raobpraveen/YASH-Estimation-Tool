@@ -1809,6 +1809,22 @@ const ProjectEstimator = () => {
               </div>
             </div>
             <div>
+              <Label>Sales Manager</Label>
+              <Select value={salesManagerId || "none"} onValueChange={(v) => setSalesManagerId(v === "none" ? "" : v)} disabled={isReadOnly}>
+                <SelectTrigger data-testid="sales-manager-select">
+                  <SelectValue placeholder="Select sales manager" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {salesManagers.map((manager) => (
+                    <SelectItem key={manager.id} value={manager.id}>
+                      {manager.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <div className="flex justify-between mb-2">
                 <Label>Profit Margin %</Label>
                 <span className="font-mono font-semibold text-[#0F172A]" data-testid="profit-margin-display">
