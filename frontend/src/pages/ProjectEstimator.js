@@ -2966,6 +2966,10 @@ const ProjectEstimator = () => {
                   <p className="font-semibold">{projectTypeIds.map(id => projectTypes.find(t => t.id === id)?.name).filter(Boolean).join(", ") || "—"}</p>
                 </div>
                 <div>
+                  <p className="text-gray-600">Sales Manager</p>
+                  <p className="font-semibold">{salesManagers.find(m => m.id === salesManagerId)?.name || "—"}</p>
+                </div>
+                <div>
                   <p className="text-gray-600">Profit Margin</p>
                   <p className="font-semibold">{profitMarginPercentage}%</p>
                 </div>
