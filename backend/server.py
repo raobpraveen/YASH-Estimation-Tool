@@ -638,6 +638,8 @@ class ProjectUpdate(BaseModel):
     status: Optional[str] = None
     approver_email: Optional[str] = None
     approval_comments: Optional[str] = None
+    sales_manager_id: Optional[str] = None
+    sales_manager_name: Optional[str] = None
 
 # Notification model
 class Notification(BaseModel):
