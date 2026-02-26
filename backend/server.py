@@ -2014,6 +2014,9 @@ async def get_dashboard_analytics(
         
         total_revenue += project_value
         
+        # Track value by status
+        value_by_status[status] = value_by_status.get(status, 0) + project_value
+        
         # Group by customer
         customer_name = project.get("customer_name", "Unknown")
         customer_revenue[customer_name] = customer_revenue.get(customer_name, 0) + project_value
