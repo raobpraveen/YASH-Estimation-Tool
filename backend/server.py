@@ -1641,6 +1641,16 @@ async def submit_for_review(project_id: str, approver_email: str, user: dict = D
     notif_doc['created_at'] = notif_doc['created_at'].isoformat()
     await db.notifications.insert_one(notif_doc)
     
+    # Send email notification to approver
+    if current_user:
+        subject, html_body, text_body = get_review_request_email(
+            project.get("project_number", ""),
+            project.get("name", ""),
+            current_user.get("name", ""),
+            current_user.get("email", "")
+        )
+        await send_email(approver_email, subject, html_body, text_body)
+    
     return {"message": "Project submitted for review", "status": "in_review"}
 
 
