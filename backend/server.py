@@ -578,6 +578,9 @@ class Project(BaseModel):
     approved_at: Optional[str] = None
     submitted_by: str = ""
     approved_by: str = ""
+    # Sales Manager
+    sales_manager_id: str = ""
+    sales_manager_name: str = ""
     # Audit fields
     created_by_id: str = ""  # User ID who created the project
     created_by_name: str = ""  # User name who created the project
