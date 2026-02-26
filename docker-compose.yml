@@ -27,9 +27,7 @@ services:
 
   # FastAPI Backend
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: backend-img
     container_name: estipro-backend
     restart: unless-stopped
     environment:
@@ -52,9 +50,7 @@ services:
 
   # React Frontend with Nginx
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: frontend-img
       args:
         - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost}
     container_name: estipro-frontend
