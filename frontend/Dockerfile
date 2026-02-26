@@ -7,12 +7,10 @@ WORKDIR /app
 # Copy package file
 COPY package.json ./
 
-# Install dependencies - delete stale lockfile (contains unpublished package versions)
-# and let yarn resolve fresh versions from npm registry
-RUN yarn config set registry https://registry.npmjs.org && \
-    yarn config set network-timeout 120000 && \
-    rm -f yarn.lock && \
-    yarn install
+# Install dependencies using npm (better network handling for scoped packages)
+RUN npm config set registry https://registry.npmjs.org && \
+    npm config set fetch-timeout 120000 && \
+    npm install
 
 # Copy source code
 COPY . .
