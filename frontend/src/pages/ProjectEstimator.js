@@ -244,6 +244,15 @@ const ProjectEstimator = () => {
     }
   };
 
+  const fetchSalesManagers = async () => {
+    try {
+      const response = await axios.get(`${API}/sales-managers?active_only=true`);
+      setSalesManagers(response.data);
+    } catch (error) {
+      console.error("Failed to fetch sales managers");
+    }
+  };
+
   const handleAddWave = () => {
     if (!newWave.name || !newWave.duration_months) {
       toast.error("Please fill wave name and duration");
