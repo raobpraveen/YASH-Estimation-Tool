@@ -71,6 +71,7 @@ function App() {
               <Route path="base-locations" element={<BaseLocations />} />
               <Route path="skills" element={<SkillsManagement />} />
               <Route path="proficiency-rates" element={<ProficiencyRates />} />
+              <Route path="sales-managers" element={<SalesManagers />} />
               <Route path="estimator" element={<ProjectEstimator />} />
               <Route path="projects" element={<Projects />} />
               <Route path="projects/:projectId/summary" element={<ProjectSummary />} />
