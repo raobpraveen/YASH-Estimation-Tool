@@ -1916,7 +1916,10 @@ async def get_audit_summary(user: dict = Depends(require_admin)):
 async def get_dashboard_analytics(
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    customer_id: Optional[str] = None
+    customer_id: Optional[str] = None,
+    project_type_ids: Optional[str] = None,
+    location_codes: Optional[str] = None,
+    sales_manager_ids: Optional[str] = None
 ):
     # Build query based on filters
     query = {}
@@ -1925,10 +1928,8 @@ async def get_dashboard_analytics(
     if date_from or date_to:
         date_filter = {}
         if date_from:
-            # Frontend sends YYYY-MM-DD format, convert to ISO string for comparison
             date_filter["$gte"] = f"{date_from}T00:00:00"
         if date_to:
-            # Add end of day for date_to
             date_filter["$lte"] = f"{date_to}T23:59:59"
         if date_filter:
             query["created_at"] = date_filter
@@ -1936,6 +1937,24 @@ async def get_dashboard_analytics(
     # Customer filter
     if customer_id:
         query["customer_id"] = customer_id
+    
+    # Project Type filter (comma-separated IDs)
+    if project_type_ids:
+        type_list = [t.strip() for t in project_type_ids.split(",") if t.strip()]
+        if type_list:
+            query["project_type_ids"] = {"$elemMatch": {"$in": type_list}}
+    
+    # Location filter (comma-separated codes)
+    if location_codes:
+        loc_list = [l.strip() for l in location_codes.split(",") if l.strip()]
+        if loc_list:
+            query["project_locations"] = {"$elemMatch": {"$in": loc_list}}
+    
+    # Sales Manager filter (comma-separated IDs)
+    if sales_manager_ids:
+        sm_list = [s.strip() for s in sales_manager_ids.split(",") if s.strip()]
+        if sm_list:
+            query["sales_manager_id"] = {"$in": sm_list}
     
     # Get filtered projects
     projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
