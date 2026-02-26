@@ -44,6 +44,7 @@ const ProjectEstimator = () => {
   const [technologies, setTechnologies] = useState([]);
   const [projectTypes, setProjectTypes] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [salesManagers, setSalesManagers] = useState([]);
   
   // Project header
   const [projectId, setProjectId] = useState("");
@@ -58,6 +59,8 @@ const ProjectEstimator = () => {
   const [profitMarginPercentage, setProfitMarginPercentage] = useState(35);
   const [versionNotes, setVersionNotes] = useState("");
   const [isLatestVersion, setIsLatestVersion] = useState(true);
+  
+  const [salesManagerId, setSalesManagerId] = useState("");
   
   // Approval workflow
   const [projectStatus, setProjectStatus] = useState("draft");
