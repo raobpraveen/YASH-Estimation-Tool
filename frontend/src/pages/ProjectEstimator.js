@@ -1004,6 +1004,7 @@ const ProjectEstimator = () => {
     setProjectStatus("draft");
     setApproverEmail("");
     setApprovalComments("");
+    setSalesManagerId("");
     setIsLatestVersion(true);
     setWaves([]);
     setActiveWaveId("");
