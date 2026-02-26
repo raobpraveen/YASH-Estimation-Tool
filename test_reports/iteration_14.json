@@ -1,0 +1,53 @@
+{
+  "summary": "Iteration 14 - Tested new features: Dashboard value_by_status, sales_manager_leaderboard, multi-select filters (project_type_ids, location_codes, sales_manager_ids), Sales Manager in Excel exports and ProjectSummary, shared calculation utility. All backend API tests passed (10/10). All frontend UI tests passed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Dashboard/ProjectSummary",
+        "issues": ["Console warnings about Recharts width/height -1 (cosmetic, charts render correctly)", "React hydration warnings about <span> inside <tbody>/<tr> (cosmetic, tables render correctly)"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration14_features.py",
+    "/app/test_reports/pytest/pytest_iteration14.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Consider wrapping dynamic table row mappings with React.Fragment instead of span to eliminate hydration warnings"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration14_features.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "seed_data_creation": "Created test sales manager and project for leaderboard testing (auto-cleaned up)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 14 tested new features successfully: Dashboard value_by_status breakdown cards (Draft/In Review/Approved/Rejected values), Sales Manager Leaderboard table with 7 columns (#, Sales Manager, Total Value, Projects, Approved, Rejected, Approval Rate), multi-select pill button filters (Project Types: 7 options, Project Locations: 20 options, Sales Managers: 2 options), Apply/Clear filter buttons, Sales Manager field in ProjectSummary Project Details card and Excel export, shared calculations utility at /frontend/src/utils/calculations.js imported by ProjectSummary. One project exists with Sales Manager (Said Abdulrahman - S/4H Public Cloud). Backend endpoint /api/dashboard/analytics accepts comma-separated filter params. All features working correctly.",
+  "features_tested": {
+    "dashboard_api_value_by_status": "PASS - Returns draft, in_review, approved, rejected values",
+    "dashboard_api_sales_manager_leaderboard": "PASS - Returns array with name, total_projects, approved, rejected, approval_rate, total_value",
+    "dashboard_api_project_type_ids_filter": "PASS - Accepts comma-separated IDs",
+    "dashboard_api_location_codes_filter": "PASS - Accepts comma-separated codes",
+    "dashboard_api_sales_manager_ids_filter": "PASS - Accepts comma-separated IDs",
+    "dashboard_ui_value_by_status_cards": "PASS - Shows Draft Value ($2.7M), In Review Value ($1.7M), Approved Value ($2.0M), Rejected Value ($381K)",
+    "dashboard_ui_leaderboard_table": "PASS - Headers: #, Sales Manager, Total Value, Projects, Approved, Rejected, Approval Rate",
+    "dashboard_ui_project_types_multiselect": "PASS - 7 pill buttons, toggle selection works",
+    "dashboard_ui_locations_multiselect": "PASS - 20 pill buttons for countries",
+    "dashboard_ui_sales_managers_multiselect": "PASS - 2 pill buttons (Arpit Agarwal, Said Abdulrahman)",
+    "dashboard_ui_apply_button": "PASS - Sends filter params to API",
+    "dashboard_ui_clear_button": "PASS - Resets all filter selections",
+    "project_summary_sales_manager_field": "PASS - Shows 'Sales Manager: Said Abdulrahman' in Project Details card",
+    "excel_export_sales_manager": "PASS - ProjectSummary Excel export includes sales_manager_name at line 106",
+    "shared_calculations_utility": "PASS - /frontend/src/utils/calculations.js exists with calculateWaveSummary, calculateOverallSummary exports, imported by ProjectSummary"
+  }
+}
