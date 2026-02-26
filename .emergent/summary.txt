@@ -5,186 +5,171 @@ Build an IT/Software Project estimator tool named YASH EstPro.
 - **Core Estimator Grid:** Wave-based estimation with dynamic monthly phases, editable resource definitions (Skill, Level, Location) with automatic salary lookups, and editable cost columns. A Nego Buffer percentage should be captured at the wave level. Add an option to apply a resource/skill to all months in a wave simultaneously.
 - **Cost Calculation:** Comprehensive cost breakdown including Base Cost, Overheads, Profit Margin, Selling Price, and Logistics.
 - **Project & Version Management:** Full project lifecycle with versioning, cloning, mandatory version comments, and read-only states. Projects must capture audit fields (Created By, Created Date). Add project archiving functionality.
-- **Workflow & Analytics:** Approval workflow (Draft, In Review, Approved, Rejected), a dashboard for analytics, and a version comparison screen. Dashboard and project lists need robust filtering capabilities (Customer, Dates, Created By, etc.).
+- **Workflow & Analytics:** Approval workflow (Draft, In Review, Approved, Rejected), a dashboard for analytics, and a version comparison screen. Dashboard and project lists need robust filtering capabilities.
 - **Master Data Management:** Full CRUD for all master data, with filter capabilities on all master data screens.
-- **UI/UX:** A summary screen, KPIs, Export to Excel, and a collapsible sidebar. User-specific profile settings for theme (light/dark/custom) and date format.
-- **Authentication & Authorization**: JWT-based authentication and role-based access control (Admin, Approver, User). Non-owners/admins should have view-only access to projects.
-- **User Management**: Admins can manage users (create, edit, deactivate).
-- **Project Templates**: Ability to save a project as a template and create new projects from it.
-- **Data Import**: Excel upload for Skills and Proficiency Rates.
-- **Branding**: Add company logos (YASH Technologies and YASH EstPro) to the application and exports.
+- **UI/UX:** A summary screen, KPIs, Export to Excel, and a collapsible sidebar. User-specific profile settings for theme and date format.
+- **Authentication & Authorization**: JWT-based authentication and role-based access control.
+- **User Management**: Admins can manage users.
+- **Project Templates**: Ability to save a project as a template.
+- **Data Import**: Excel upload for Skills, Proficiency Rates, and Wave Grid data.
+- **Branding**: Add company logos to the application and exports.
+- **Auditability**: Full audit log for project creation and state changes.
+- **Notifications**: Email and in-app notifications for workflow events.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A comprehensive full-stack project estimation tool, YASH EstPro. The application is feature-rich and includes:
-- **Authentication & RBAC**: A complete JWT-based system with Admin, Approver, and User roles. Access controls are implemented to restrict editing of projects to owners and admins.
-- **User & Master Data Management**: Full CRUD capabilities for Users, Customers, Skills, Project Types, etc., with recently added filtering functionality on the list pages.
-- **Project Lifecycle**: Full support for creating, cloning, versioning, and managing projects. Projects now include audit trails (, ). An archiving feature has been partially implemented.
-- **Estimator Grid**: A functional grid with inline resource editing, automatic salary lookups, and calculated costs. A Nego Buffer input has been added at the wave level, and its calculation has been integrated into the project summary.
-- **Dashboard & Reporting**: An analytics dashboard with KPI cards and charts. Filtering logic for dates and customers has been implemented in the backend.
-- **UI/UX & Branding**: The application has been branded with YASH Technologies and YASH EstPro logos. A user settings page allows theme selection (light/dark). A collapsible sidebar has been partially implemented.
-- **Bug Fixes**: Critical bugs related to selling price calculation (not applying overhead to logistics) and average selling price display (excluding nego buffer) have been addressed.
+A full-stack project estimation tool, YASH EstPro, with a FastAPI backend and React frontend. The application includes JWT authentication, comprehensive project lifecycle management (create, version, clone, archive), and CRUD for master data.
+
+Recent work has focused on implementing several user-requested features and bug fixes. The session successfully resolved critical financial calculation errors, fixed UI/UX issues, and corrected bugs in the project versioning workflow. A full audit log system was implemented, along with Docker files for on-premise deployment.
+
+The agent has just started a large new feature implementation which includes SMTP email notifications, a new Sales Manager master data entity, an in-app notification system (bell icon), and significant dashboard enhancements. The backend for these features is mostly complete, but the frontend work is still in its early stages.
 
 **Last working item**:
--   Last item agent was working: The agent was in the middle of implementing a large batch of features requested by the user. The final action was adding the  component to  to create separate views for Active and Archived projects. This is part of the project archiving feature. The agent was also working on adding filter panels to all master data screens and fixing critical calculation bugs.
+-   Last item agent was working: The agent was implementing a large batch of new features requested by the user:
+    1.  **Email Notifications**: SMTP-based emails for Project Submitted, Approved, and Rejected events.
+    2.  **Dashboard Enhancements**: Rename Total Revenue to Total value of estimations, remove the Create new estimate button, and add new KPIs for Technology, Project Type, Project Location, and Sales Manager.
+    3.  **In-App Notifications**: A bell icon in the top-right corner with a counter for new notifications.
+    4.  **Sales Manager Field**: A new master data entity for Sales Manager with a dropdown on the estimation screen and a KPI on the dashboard.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? **both**. The session included extensive changes to the backend data models (), APIs (archiving, settings, dashboard filters), and multiple frontend pages (, , , master data pages). Full-stack testing is required.
+-   Which testing method agent to use? **both**. This is a large feature set with major backend and frontend changes. The testing agent should verify the new Sales Manager CRUD, email sending, updated dashboard analytics, the new Sales Manager dropdown on the estimator page, the bell icon functionality, and the new dashboard UI.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: (P0) Selling Price Calculation Error in Project PRJ-0016
--   Issue 2: (P0) Nego Buffer Incorrectly Included in Average Selling Price/Man-Month
--   Issue 3: (P1) Dashboard Date Filter Not Working
--   Issue 4: (P1) Complete Project Archiving Feature
-
-**Issues Detail**:
--   **Issue 1**:
-    -   Description: User reported the total selling price in the KPI cards was incorrect for project PRJ-0016, suggesting an error of  instead of the correct . The agent identified that overhead was being incorrectly applied to logistics costs.
-    -   Attempted fixes: The agent modified the summary calculation logic in  to remove the overhead calculation on logistics ( no longer includes ).
-    -   Next debug checklist: Verify the fix by manually checking the calculations for PRJ-0016 or a similar project. Take a screenshot showing the corrected KPI card value.
-    -   Why fix this issue and what will be achieved with the fix?: This is a critical bug that affects the core functionality and financial accuracy of the tool.
-    -   Status: **TESTING PENDING**
-    -   Is recurring issue? N
-    -   Should Test frontend/backend/both after fix?: Frontend
--   **Issue 2**:
-    -   Description: User reported that the negotiation buffer value should not be part of the Avg. Selling Price per Man-Month KPI.
-    -   Attempted fixes: The agent reviewed the calculation in  and confirmed that the average selling price KPIs (, ) are derived from totals that do *not* include the . The  KPI correctly includes it.
-    -   Next debug checklist: Re-confirm through visual inspection and a screenshot that the Avg. Selling Price KPIs remain unchanged when a Nego Buffer is added, while the Final Price KPI updates correctly.
-    -   Why fix this issue and what will be achieved with the fix?: Ensures financial metrics are displayed correctly and are not misleading.
-    -   Status: **TESTING PENDING**
-    -   Is recurring issue? N
-    -   Should Test frontend/backend/both after fix?: Frontend
--   **Issue 3**:
-    -   Description: The date filter on the dashboard does not correctly filter the KPI data. This is a recurring issue.
-    -   Attempted fixes: The agent updated the backend query in  at the  endpoint. The logic was changed from direct  object comparison to string-based comparison (, ) on the  field, assuming it's stored as an ISO string.
-    -   Next debug checklist: Test the dashboard filter functionality directly on the UI. Select a date range and verify via screenshot that the KPI card values (e.g., Total Projects, Total Revenue) update accordingly. If it fails, use  to test the backend endpoint directly.
-    -   Why fix this issue and what will be achieved with the fix?: Makes the dashboard interactive and allows users to analyze data within specific timeframes.
-    -   Status: **TESTING PENDING**
-    -   Is recurring issue? Y
-    -   Should Test frontend/backend/both after fix?: Both
--   **Issue 4**:
-    -   Description: The project archiving feature is incomplete. The UI in  needs to be finalized to show active and archived projects separately.
-    -   Attempted fixes: The agent added  to the backend  model. New APIs  and  were created. The main  GET endpoint was modified to exclude archived projects by default. The  component was being updated to use Shadcn  for Active and Archived views.
-    -   Next debug checklist:
-        1.  Complete the  component. Ensure the Archived tab fetches data from a new endpoint (e.g., ) or that the component fetches both sets of data.
-        2.  Ensure the Archive and Unarchive buttons in the project list call the correct APIs and update the UI.
-        3.  Test the full flow: archive a project, see it move to the Archived tab, then unarchive it.
-    -   Why fix this issue and what will be achieved with the fix?: Allows users to clean up their main project list without permanently deleting old projects.
-    -   Status: **IN PROGRESS**
-    -   Is recurring issue? N
-    -   Should Test frontend/backend/both after fix?: Both
+There are no pending bugs. The current focus is on completing the new feature development.
 
 **In progress Task List**:
--   Task 1: (P1) Implement Apply Skill for All Months in Resource Grid
-    -   Where to resume: This task has not been started. The work needs to be done in , specifically within the resource grid or the Add Resource modal.
-    -   What will be achieved with this?: Improves user efficiency by allowing them to set a default value for a resource's effort across all months of a wave in one action.
-    -   Status: **NOT STARTED**
-    -   Should Test frontend/backend/both after fix?: Frontend
+-   **Task 1**: Complete New Feature Implementation (P0)
+
+**Task Detail**:
+-   **Task 1: Complete New Feature Implementation**
+    -   **Where to resume**: The backend changes (models, endpoints for Sales Manager, email sending logic, updated dashboard analytics) are largely complete. The frontend work has just begun. The next steps are to:
+        1.  **Implement Sales Manager UI**: Build out the CRUD functionality in .
+        2.  **Add Sales Manager to Estimator**: Add a dropdown to select a Sales Manager on the  page and save it with the project.
+        3.  **Implement Notification Bell**: In , implement the logic to fetch notifications, display a count on the bell icon, and show a dropdown list of notifications when clicked.
+        4.  **Revamp Dashboard**: Update  to:
+            -   Rename the main title.
+            -   Remove the Create new estimate button.
+            -   Fetch data from the updated  endpoint.
+            -   Display the new KPIs (Technology, Project Type, Location, Sales Manager) using new charts or cards.
+    -   **What will be achieved with this?**: The application will have a complete email and in-app notification system, a new Sales Manager role integrated into projects, and a more insightful dashboard.
+    -   **Status**: **IN PROGRESS**
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on something**: No
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) **Finalize Collapsible Sidebar**: The UI toggle exists in , but the logic to expand/collapse the sidebar (e.g., by changing CSS classes to hide menu item text) needs to be implemented.
-    -   (P2) **Rename Application to YASH EstPro**: The user has confirmed the name via the new logo. A global search-and-replace for Project Estimator and similar terms should be performed to standardize branding.
+    -   (P1) **Finalize Collapsible Sidebar**: The hover-to-expand functionality was implemented but not visually verified. This should be tested to ensure it works as designed.
 -   **Future Tasks:**
-    -   (P2) **User Profile - Custom Theme**: Implement backend logic and file storage to allow users to upload a background image for a custom theme.
-    -   (P2) **Email Notifications**: Implement email notifications for the project approval workflow.
-    -   (P1) **Export to Excel Enhancement**: Verify that the Excel export includes all new fields (audit data, nego buffer) and the new branding logos.
+    -   (P1) **Export to Excel Enhancement**: Verify that the Excel export includes all new fields (Sales Manager, etc.) and correct calculations.
+    -   (P2) **User Profile - Custom Theme**: Implement backend logic to allow users to upload a background image for a custom theme.
 
 **Completed work in this session**
--   **Branding Overhaul**: Updated the application with new YASH EstPro and YASH Technologies logos on the login page and sidebar.
--   **Project Archiving (Backend)**: Added the  flag to the  model and created the necessary backend APIs for archiving/unarchiving.
--   **Master Data Filters**: Implemented search and filter functionality on the , , and  pages.
--   **Missing Country Data**: Added Iraq to the hardcoded list of countries.
--   **Previous Feature Completion & Deployment Prep**: Successfully resolved all pending issues from the prior session, passed a deployment health check, and implemented a large set of features including advanced audit fields, project access controls, user settings (themes), and the Nego Buffer feature.
+-   **Critical Calculation Fixes**: Corrected Cost to Company and Profit formulas in both  and the separate  page.
+-   **Workflow & Versioning Fixes**:
+    -   Fixed a bug where creating a new version of an Approved project resulted in an Approved status instead of Draft.
+    -   Fixed the UI to immediately update the status to Draft on new version creation without a page refresh.
+    -   Implemented an approver dropdown for the Submit for Review dialog, fetching users with 'admin' or 'approver' roles.
+    -   Fixed  errors on workflow actions (submit, approve, reject) by adding the auth header to the requests.
+-   **New Features**:
+    -   **Audit Log System**: Implemented a full audit trail with backend models, API endpoints, and integration into all project state changes. Created a new Audit Logs page for admins and a per-project history tab.
+    -   **Enhanced Sidebar**: Implemented a collapsible sidebar with grouped navigation and a hover-to-expand feature for the collapsed state.
+    -   **Excel Grid Upload/Download**: Added Download Template and Upload Grid buttons to the wave editor.
+    -   **Dockerization**: Created s, , and a  guide for easy on-premise deployment.
+-   **Bug Fixes**:
+    -   Resolved a Docker build failure for the  package by adding the correct private index URL.
 
 **Earlier issues found/mentioned but not fixed**
--   **Dashboard Date Filter**: This issue was reported in a previous session (message #178), an attempt was made to fix it, but the user reported it again (message #254). The latest fix has not been verified.
+-   The task to rename the application from Project Estimator to YASH EstPro was explicitly cancelled by the user.
 
 **Known issue recurrence from previous fork**
--   Issue recurrence in previous fork: N/A
--   Recurrence count: 0
--   Status: N/A
+-   None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, JWT Authentication, Pydantic Models
--   **Frontend**: React.js, React Hooks, Context API ()
+-   **Backend**: FastAPI, Pydantic, JWT Authentication
+-   **Frontend**: React.js, React Hooks, Context API, Axios
 -   **Database**: MongoDB
--   **UI**: Shadcn UI components, Tailwind CSS,  for charts
--   **File Handling**:  for Excel export/import
+-   **UI**: Shadcn UI, Tailwind CSS, 
+-   **Deployment**: Docker, Docker Compose, Nginx
 
 **key DB schema**
--   : 
--   : 
--   : 
+-   : Added .
+-   : (New Collection) 
+-   : (New Collection) 
 
 **changes in tech stack**
--   No changes to the core tech stack.
+-   None.
 
 **All files of reference**
--   **/app/backend/server.py**: Heavily modified to add project archiving APIs, user settings APIs, updated dashboard analytics filter logic, and logic to populate audit fields on project creation/cloning.
--   **/app/frontend/src/pages/ProjectEstimator.js**: Modified to fix the selling price calculation bug, adjust the display of average selling price, and integrate  into wave data.
--   **/app/frontend/src/pages/Projects.js**: Significantly updated to add filters and is currently being rewritten to include  for the new archiving feature.
--   **/app/frontend/src/pages/Login.js**: Updated with new branding logos.
--   **/app/frontend/src/components/Layout.js**: Updated with new sidebar logos and the initial implementation of the collapsible sidebar.
--   **/app/frontend/src/pages/Customers.js**, **/app/frontend/src/pages/Skills.js**, **/app/frontend/src/pages/ProficiencyRates.js**: Updated to include new filter panels.
--   **/app/frontend/src/lib/constants.js**: Updated to add Iraq to the countries list.
--   **/app/public/**: New logo files were added.
+-   **/app/backend/server.py**: Heavily modified to add audit logs, email sending, Sales Manager CRUD, new dashboard analytics, approver list endpoint, and multiple bug fixes.
+-   **/app/frontend/src/pages/ProjectEstimator.js**: Modified for bug fixes (status update), adding the approver dropdown, and implementing Excel template upload/download.
+-   **/app/frontend/src/pages/ProjectSummary.js**: File was completely overhauled with correct calculation logic that was previously only in .
+-   **/app/frontend/src/components/Layout.js**: Modified to add the enhanced sidebar with grouped navigation and the placeholder for the notification bell.
+-   **/app/frontend/src/App.js**: Updated to add routes for  and .
+-   **/app/frontend/src/pages/AuditLog.js**: New file for displaying global audit logs.
+-   **/app/frontend/src/pages/SalesManagers.js**: New file (scaffold only) for Sales Manager master data management.
+-   **/app/backend/Dockerfile**: Created and fixed to use the correct pip index URL.
+-   **/app/docker-compose.yml**: New file for orchestrating the services.
+-   **/app/DEPLOYMENT.md**: New file with deployment instructions.
+-   **/.env.example**: New file with environment variable templates, including SMTP settings.
 
 **Areas that need refactoring**:
--   The  file contains a long, hardcoded list of countries. This could be moved to a separate JSON file or a database collection for better management.
--   The agent created  at one point, which appears to be a duplicate or older version of . This should be investigated and cleaned up to avoid confusion.
+-   The financial calculation logic is duplicated between  and . This logic should be extracted into a shared custom hook or utility function () to ensure consistency and simplify future maintenance.
 
 **key api endpoints**
--   **Archiving**:  (POST),  (POST)
--   **User Settings**:  (GET, PUT)
--   **Analytics**:  (GET with query params: , , )
+-   : GET
+-   : GET
+-   : GET
+-   : GET, POST
+-   : PUT, DELETE
+-   : GET (Response structure was significantly updated)
+-   , , : Updated to trigger email notifications.
 
 **Critical Info for New Agent**
--   You are picking up in the middle of a large feature implementation batch. Prioritize verifying the bug fixes for selling price calculation and the dashboard date filter, as these are critical user-facing issues.
--   The project archiving feature is the next priority. The backend is mostly done, but the frontend work in  needs to be completed. You will need to implement the logic to fetch and display archived projects in the new Archived tab.
--   The Apply Skill for All Months feature is a net-new request and has not been started. This will require careful modification of the resource grid logic in .
--   Once the current batch of features is complete, a full regression test using the  is mandatory due to the widespread changes across the application.
+-   The immediate priority is to complete the large feature set requested by the user. The backend work is mostly done, but the frontend requires significant implementation across the Dashboard, Project Estimator, and Layout components.
+-   Refer to the  for a detailed breakdown of the remaining frontend work.
+-   The user has provided SMTP details. Ensure these are correctly used from environment variables when testing the email notification feature.
+-   The sidebar's hover-to-expand functionality was implemented but never visually confirmed. This should be one of the first things you test.
 
 **documents and test reports created in this job**
--   /app/memory/PRD.md (updated multiple times)
--   /app/test_reports/iteration_9.json
--   /app/test_reports/iteration_10.json
+-   /app/memory/PRD.md (updated)
+-   /app/DEPLOYMENT.md
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user**: Requests 5 new features/fixes: update logos, fix dashboard date filter, add filters to , add audit fields & access control. Approves plan.
-2.  **agent**: Implements all 5 items.
-3.  **agent**: Runs comprehensive tests via .
-4.  **agent**: Reads test report; all 14 features pass.
-5.  **agent**: Updates PRD.md and prepares to finish.
-6.  **user**: Provides 9 new items: update logos (again), make sidebar collapsible, fix missing Iraq, add filters to master data screens, add project archiving, add apply skill to all months feature, and reports two critical bugs (selling price calculation, nego buffer display).
-7.  **agent**: Creates a detailed plan to address all 9 items and asks clarifying questions.
-8.  **user**: Approves the plan and provides clarification.
-9.  **agent**: Starts implementation: downloads new logos, analyzes and fixes the two critical bugs in .
-10. **agent**: Continues implementation: updates logos, adds collapsible sidebar toggle, adds Iraq, implements filters on master data pages, and starts the archiving feature by modifying the backend and beginning edits on .
+1.  **user**: Reports new version from approved project is still Approved. (BUG)
+2.  **agent**: Fixes the backend logic to prevent status overwrite.
+3.  **user**: Confirms fix works but UI status doesn't update without refresh. (BUG)
+4.  **agent**: Fixes the frontend state management to update status immediately.
+5.  **user**: Confirms the fix is working fine.
+6.  **user**: Reports  package not found during Docker build. (BUG)
+7.  **agent**: Fixes Dockerfile to use the correct private pip index.
+8.  **user**: Confirms they will proceed.
+9.  **user**: Requests a large batch of new features: email notifications, dashboard KPIs, in-app notification bell, and a Sales Manager field.
+10. **user**: Provides choices for the implementation: SMTP, specific email triggers, and showing both in-app and email notifications. (This is the current task).
 
 **Project Health Check:**
--   **Broken**: The project archiving UI is incomplete. The dashboard date filter's fix is unverified and may still be broken.
--   **Mocked**: None.
+-   **Broken**: None.
+-   **Mocked**: None. The application is stable but has a major feature set in a half-implemented state.
 
 **3rd Party Integrations**
 -   **xlsx**: Used for Excel export and import.
 -   **recharts**: Used for dashboard charts.
 -   **python-jose[cryptography]**, **passlib[bcrypt]**: Used for JWT authentication in the backend.
+-   **Docker**: Used for containerization and deployment.
 
 **Testing status**
--   Testing agent used after significant changes: YES, but not after the most recent batch of changes. The last test run was before the user's final 9 requests.
+-   Testing agent used after significant changes: NO (not since the last set of feature implementations).
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: None.
--   Known regressions: The dashboard date filter is a known recurring issue.
+-   Known regressions: None.
 
 **Credentials to test flow:**
-Use the registration/login flow. The admin user  with password  was created for testing user management and admin-specific features.
+-   **Email**: 
+-   **Password**: 
 
 **What agent forgot to execute**
--   The Apply the skill for all months feature (item #7 in user message #254) has not been started.
--   The collapsible sidebar functionality in  was only partially implemented (toggle button added, but not the collapse/expand logic).</analysis>
+-   The agent implemented the hover-to-expand functionality for the collapsed sidebar but never took a screenshot to visually verify if it was working as intended. This should be checked.</analysis>
