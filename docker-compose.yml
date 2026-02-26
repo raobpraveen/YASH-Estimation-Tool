@@ -49,10 +49,13 @@ services:
       start_period: 10s
 
   # React Frontend with Nginx
-  frontend:
-    image: frontend-img
+ frontend:
+    build:
+      context: ./frontend   # <-- path where this Dockerfile exists
+      dockerfile: Dockerfile
       args:
-        - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost}
+        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:8001}
+    image: frontend-img
     container_name: estipro-frontend
     restart: unless-stopped
     depends_on:
