@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Outlet, NavLink } from "react-router-dom";
+import axios from "axios";
 import { 
   LayoutDashboard,
   Users,
@@ -16,7 +17,9 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  History
+  History,
+  Bell,
+  UserCircle
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -26,6 +29,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "./ui/popover";
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 const Layout = ({ user, onLogout }) => {
   // Load saved preference from localStorage
@@ -34,11 +44,49 @@ const Layout = ({ user, onLogout }) => {
     return saved === 'true';
   });
   const [isHovering, setIsHovering] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Save preference to localStorage when changed
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', isCollapsed.toString());
   }, [isCollapsed]);
+
+  // Fetch notifications
+  useEffect(() => {
+    if (user?.email) {
+      fetchNotifications();
+      // Poll for new notifications every 30 seconds
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user?.email]);
+
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/api/notifications?user_email=${user?.email}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(response.data.slice(0, 10));
+      setUnreadCount(response.data.filter(n => !n.is_read).length);
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`${API}/api/notifications/mark-all-read?user_email=${user?.email}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Failed to mark notifications as read", error);
+    }
+  };
 
   // Keyboard shortcut: Ctrl+B to toggle sidebar
   useEffect(() => {
