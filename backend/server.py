@@ -1963,6 +1963,7 @@ async def get_dashboard_analytics(
     total_projects = len(projects)
     total_revenue = 0
     projects_by_status = {"draft": 0, "in_review": 0, "approved": 0, "rejected": 0}
+    value_by_status = {"draft": 0, "in_review": 0, "approved": 0, "rejected": 0}
     projects_by_month = {}
     customer_revenue = {}
     
