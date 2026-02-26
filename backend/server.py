@@ -715,6 +715,129 @@ def detect_changes(old_data: dict, new_data: dict, fields_to_track: List[str]) -
     return changes
 
 
+# Email Helper Function
+async def send_email(to_email: str, subject: str, html_body: str, text_body: str = None):
+    """Send email via SMTP"""
+    if not SMTP_HOST or not SMTP_USER:
+        logging.warning("SMTP not configured, skipping email notification")
+        return False
+    
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"{SMTP_FROM_NAME} <{SMTP_FROM_EMAIL}>"
+        msg['To'] = to_email
+        
+        # Add plain text and HTML parts
+        if text_body:
+            msg.attach(MIMEText(text_body, 'plain'))
+        msg.attach(MIMEText(html_body, 'html'))
+        
+        # Connect and send
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.sendmail(SMTP_FROM_EMAIL, to_email, msg.as_string())
+        
+        logging.info(f"Email sent successfully to {to_email}")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to send email to {to_email}: {str(e)}")
+        return False
+
+
+# Email templates
+def get_review_request_email(project_number: str, project_name: str, submitter_name: str, submitter_email: str):
+    subject = f"[YASH EstiPro] Review Request: {project_number} - {project_name}"
+    html_body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 20px; border-radius: 8px 8px 0 0;">
+                <h1 style="color: #fff; margin: 0; font-size: 24px;">YASH EstiPro</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px;">
+                <h2 style="color: #0F172A; margin-top: 0;">New Project Review Request</h2>
+                <p>A project has been submitted for your review:</p>
+                <div style="background: #fff; padding: 20px; border-radius: 8px; border-left: 4px solid #0EA5E9; margin: 20px 0;">
+                    <p style="margin: 5px 0;"><strong>Project:</strong> {project_number}</p>
+                    <p style="margin: 5px 0;"><strong>Name:</strong> {project_name}</p>
+                    <p style="margin: 5px 0;"><strong>Submitted by:</strong> {submitter_name} ({submitter_email})</p>
+                </div>
+                <p>Please log in to YASH EstiPro to review and approve/reject this project.</p>
+                <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+                    This is an automated message from YASH EstiPro. Please do not reply to this email.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    text_body = f"New Project Review Request\n\nProject: {project_number}\nName: {project_name}\nSubmitted by: {submitter_name} ({submitter_email})\n\nPlease log in to YASH EstiPro to review."
+    return subject, html_body, text_body
+
+
+def get_approval_email(project_number: str, project_name: str, status: str, approver_name: str, comments: str = ""):
+    status_text = "Approved" if status == "approved" else "Rejected"
+    status_color = "#10B981" if status == "approved" else "#EF4444"
+    subject = f"[YASH EstiPro] Project {status_text}: {project_number} - {project_name}"
+    html_body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 20px; border-radius: 8px 8px 0 0;">
+                <h1 style="color: #fff; margin: 0; font-size: 24px;">YASH EstiPro</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px;">
+                <h2 style="color: {status_color}; margin-top: 0;">Project {status_text}</h2>
+                <p>Your project has been <strong style="color: {status_color};">{status_text.lower()}</strong>:</p>
+                <div style="background: #fff; padding: 20px; border-radius: 8px; border-left: 4px solid {status_color}; margin: 20px 0;">
+                    <p style="margin: 5px 0;"><strong>Project:</strong> {project_number}</p>
+                    <p style="margin: 5px 0;"><strong>Name:</strong> {project_name}</p>
+                    <p style="margin: 5px 0;"><strong>Reviewed by:</strong> {approver_name}</p>
+                    {f'<p style="margin: 5px 0;"><strong>Comments:</strong> {comments}</p>' if comments else ''}
+                </div>
+                <p>Log in to YASH EstiPro to view the details.</p>
+                <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+                    This is an automated message from YASH EstiPro. Please do not reply to this email.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    text_body = f"Project {status_text}\n\nProject: {project_number}\nName: {project_name}\nReviewed by: {approver_name}\n{f'Comments: {comments}' if comments else ''}"
+    return subject, html_body, text_body
+
+
+# Sales Manager Model
+class SalesManager(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str = ""
+    phone: str = ""
+    department: str = ""
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class SalesManagerCreate(BaseModel):
+    name: str
+    email: str = ""
+    phone: str = ""
+    department: str = ""
+    is_active: bool = True
+
+
+class SalesManagerUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
 # Customers Routes
 @api_router.post("/customers", response_model=Customer)
 async def create_customer(input: CustomerCreate):
