@@ -165,7 +165,8 @@ const Projects = () => {
     if (filters.description) {
       result = result.filter(p => 
         p.description?.toLowerCase().includes(filters.description.toLowerCase()) ||
-        p.name?.toLowerCase().includes(filters.description.toLowerCase())
+        p.name?.toLowerCase().includes(filters.description.toLowerCase()) ||
+        p.project_locations?.some(l => l.toLowerCase().includes(filters.description.toLowerCase()))
       );
     }
     
@@ -184,6 +185,24 @@ const Projects = () => {
       result = result.filter(p => new Date(p.created_at) <= toDate);
     }
     
+    if (filters.salesManager) {
+      result = result.filter(p => 
+        p.sales_manager_name?.toLowerCase().includes(filters.salesManager.toLowerCase())
+      );
+    }
+    
+    if (filters.projectType) {
+      result = result.filter(p => 
+        p.project_type_names?.some(t => t.toLowerCase().includes(filters.projectType.toLowerCase()))
+      );
+    }
+    
+    if (filters.technology) {
+      result = result.filter(p => 
+        p.technology_names?.some(t => t.toLowerCase().includes(filters.technology.toLowerCase()))
+      );
+    }
+    
     setFilteredProjects(result);
   };
 
@@ -194,6 +213,9 @@ const Projects = () => {
       createdBy: "",
       dateFrom: "",
       dateTo: "",
+      salesManager: "",
+      projectType: "",
+      technology: "",
     });
   };
 
