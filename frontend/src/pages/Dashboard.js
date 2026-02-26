@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   FolderKanban, TrendingUp, DollarSign, Users, 
   FileCheck, FileClock, FileX, FileEdit,
-  Bell, ArrowRight, CheckCircle, XCircle, Clock, Filter, X
+  Bell, ArrowRight, CheckCircle, XCircle, Clock, Filter, X,
+  Cpu, MapPin, Briefcase, UserCircle
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -20,13 +21,14 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const COLORS = ["#10B981", "#0EA5E9", "#F59E0B", "#EF4444"];
 const STATUS_COLORS = {
   draft: "#6B7280",
   in_review: "#F59E0B", 
   approved: "#10B981",
   rejected: "#EF4444"
 };
+
+const CHART_COLORS = ["#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"];
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -98,11 +100,8 @@ const Dashboard = () => {
   };
 
   const formatCurrency = (value) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
-    } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`;
-    }
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
     return `$${value.toFixed(0)}`;
   };
 
@@ -118,43 +117,35 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-lg text-gray-500">Loading dashboard...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0EA5E9]"></div>
       </div>
     );
   }
 
   const statusData = analytics ? [
-    { name: "Draft", value: analytics.projects_by_status.draft || 0, color: STATUS_COLORS.draft },
-    { name: "In Review", value: analytics.projects_by_status.in_review || 0, color: STATUS_COLORS.in_review },
-    { name: "Approved", value: analytics.projects_by_status.approved || 0, color: STATUS_COLORS.approved },
-    { name: "Rejected", value: analytics.projects_by_status.rejected || 0, color: STATUS_COLORS.rejected },
+    { name: "Draft", value: analytics.projects_by_status?.draft || 0, color: STATUS_COLORS.draft },
+    { name: "In Review", value: analytics.projects_by_status?.in_review || 0, color: STATUS_COLORS.in_review },
+    { name: "Approved", value: analytics.projects_by_status?.approved || 0, color: STATUS_COLORS.approved },
+    { name: "Rejected", value: analytics.projects_by_status?.rejected || 0, color: STATUS_COLORS.rejected },
   ].filter(item => item.value > 0) : [];
 
   return (
     <div data-testid="dashboard" className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Dashboard</h1>
           <p className="text-base text-gray-600 mt-2">Project estimation analytics and overview</p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-            className={showFilters ? "bg-cyan-50 border-cyan-300" : ""}
-            data-testid="toggle-filters-button"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            Filters
-          </Button>
-          <Button 
-          onClick={() => navigate("/estimator")} 
-          className="bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
-          data-testid="create-project-btn"
+        <Button 
+          variant="outline"
+          onClick={() => setShowFilters(!showFilters)}
+          className={showFilters ? "bg-cyan-50 border-cyan-300" : ""}
+          data-testid="toggle-filters-button"
         >
-          Create New Estimate
+          <Filter className="w-4 h-4 mr-2" />
+          Filters
         </Button>
-        </div>
       </div>
 
       {/* Filters Panel */}
@@ -227,11 +218,11 @@ const Dashboard = () => {
           </CardContent>
         </Card>
         
-        <Card className="border border-[#E2E8F0] shadow-sm" data-testid="total-revenue-card">
+        <Card className="border border-[#E2E8F0] shadow-sm" data-testid="total-estimation-value-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-[#10B981]" />
-              Total Revenue
+              Total Value of Estimations
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -270,9 +261,8 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Charts Row */}
+      {/* Charts Row 1 - Status + Revenue Trend */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Projects by Status */}
         <Card className="border border-[#E2E8F0] shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-[#0F172A]">Projects by Status</CardTitle>
@@ -282,15 +272,7 @@ const Dashboard = () => {
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie
-                      data={statusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
+                    <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
                       {statusData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
@@ -301,17 +283,14 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                No project data available
-              </div>
+              <div className="h-64 flex items-center justify-center text-gray-500">No project data available</div>
             )}
           </CardContent>
         </Card>
 
-        {/* Revenue Trend */}
         <Card className="border border-[#E2E8F0] shadow-sm lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg font-bold text-[#0F172A]">Revenue Trend</CardTitle>
+            <CardTitle className="text-lg font-bold text-[#0F172A]">Estimation Value Trend</CardTitle>
           </CardHeader>
           <CardContent>
             {analytics?.monthly_data?.length > 0 ? (
@@ -320,41 +299,136 @@ const Dashboard = () => {
                   <LineChart data={analytics.monthly_data}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis 
-                      tickFormatter={(value) => formatCurrency(value)} 
-                      tick={{ fontSize: 12 }}
-                    />
-                    <Tooltip 
-                      formatter={(value) => [formatCurrency(value), "Revenue"]}
-                      labelFormatter={(label) => `Month: ${label}`}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="revenue" 
-                      stroke="#10B981" 
-                      strokeWidth={3}
-                      dot={{ fill: "#10B981", strokeWidth: 2 }}
-                    />
+                    <YAxis tickFormatter={(value) => formatCurrency(value)} tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} labelFormatter={(label) => `Month: ${label}`} />
+                    <Line type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={3} dot={{ fill: "#10B981", strokeWidth: 2 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                No revenue data available
-              </div>
+              <div className="h-64 flex items-center justify-center text-gray-500">No trend data available</div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Bottom Row */}
+      {/* Charts Row 2 - Technology + Project Type */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Customers */}
+        <Card className="border border-[#E2E8F0] shadow-sm" data-testid="technology-kpi-card">
+          <CardHeader>
+            <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+              <Cpu className="w-5 h-5 text-[#8B5CF6]" />
+              By Technology
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analytics?.technology_data?.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analytics.technology_data} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
+                    <Bar dataKey="value" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">No technology data</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border border-[#E2E8F0] shadow-sm" data-testid="project-type-kpi-card">
+          <CardHeader>
+            <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-[#0EA5E9]" />
+              By Project Type
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analytics?.project_type_data?.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analytics.project_type_data} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
+                    <Bar dataKey="value" fill="#0EA5E9" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">No project type data</div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Row 3 - Location + Sales Manager */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="border border-[#E2E8F0] shadow-sm" data-testid="location-kpi-card">
+          <CardHeader>
+            <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-[#10B981]" />
+              By Project Location
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analytics?.location_data?.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analytics.location_data} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
+                    <Bar dataKey="value" fill="#10B981" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">No location data</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border border-[#E2E8F0] shadow-sm" data-testid="sales-manager-kpi-card">
+          <CardHeader>
+            <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+              <UserCircle className="w-5 h-5 text-[#F59E0B]" />
+              By Sales Manager
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analytics?.sales_manager_data?.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analytics.sales_manager_data} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
+                    <Bar dataKey="value" fill="#F59E0B" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">No sales manager data</div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom Row - Customers + Notifications */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border border-[#E2E8F0] shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
               <Users className="w-5 h-5 text-[#8B5CF6]" />
-              Top Customers by Revenue
+              Top Customers by Value
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -363,31 +437,19 @@ const Dashboard = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={analytics.top_customers} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      type="number" 
-                      tickFormatter={(value) => formatCurrency(value)}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis 
-                      type="category" 
-                      dataKey="name" 
-                      width={100}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <Tooltip formatter={(value) => [formatCurrency(value), "Revenue"]} />
+                    <XAxis type="number" tickFormatter={(value) => formatCurrency(value)} tick={{ fontSize: 12 }} />
+                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
                     <Bar dataKey="revenue" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                No customer data available
-              </div>
+              <div className="h-64 flex items-center justify-center text-gray-500">No customer data available</div>
             )}
           </CardContent>
         </Card>
 
-        {/* Notifications */}
         <Card className="border border-[#E2E8F0] shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
@@ -409,20 +471,13 @@ const Dashboard = () => {
                   >
                     {getNotificationIcon(notification.type)}
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-[#0F172A] truncate">
-                        {notification.title}
-                      </p>
-                      <p className="text-xs text-gray-600 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {notification.project_number}
-                      </p>
+                      <p className="font-semibold text-sm text-[#0F172A] truncate">{notification.title}</p>
+                      <p className="text-xs text-gray-600 line-clamp-2">{notification.message}</p>
+                      <p className="text-xs text-gray-400 mt-1">{notification.project_number}</p>
                     </div>
                     <div className="flex gap-1">
                       <Button 
-                        size="sm" 
-                        variant="ghost"
+                        size="sm" variant="ghost"
                         className="text-[#0EA5E9] hover:bg-[#0EA5E9]/10 h-8 w-8 p-0"
                         onClick={() => navigate(`/estimator?edit=${notification.project_id}`)}
                         title="View Project"
@@ -430,8 +485,7 @@ const Dashboard = () => {
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                       <Button 
-                        size="sm" 
-                        variant="ghost"
+                        size="sm" variant="ghost"
                         className="text-gray-400 hover:bg-gray-200 h-8 w-8 p-0"
                         onClick={() => markAsRead(notification.id)}
                         title="Mark as Read"
@@ -463,6 +517,7 @@ const Dashboard = () => {
               variant="outline" 
               className="h-20 flex flex-col gap-2 border-[#0EA5E9] text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
               onClick={() => navigate("/estimator")}
+              data-testid="quick-new-estimate"
             >
               <FileEdit className="w-6 h-6" />
               <span>New Estimate</span>
@@ -471,6 +526,7 @@ const Dashboard = () => {
               variant="outline" 
               className="h-20 flex flex-col gap-2 border-[#8B5CF6] text-[#8B5CF6] hover:bg-[#8B5CF6]/10"
               onClick={() => navigate("/projects")}
+              data-testid="quick-view-projects"
             >
               <FolderKanban className="w-6 h-6" />
               <span>View Projects</span>
@@ -479,6 +535,7 @@ const Dashboard = () => {
               variant="outline" 
               className="h-20 flex flex-col gap-2 border-[#10B981] text-[#10B981] hover:bg-[#10B981]/10"
               onClick={() => navigate("/customers")}
+              data-testid="quick-manage-customers"
             >
               <Users className="w-6 h-6" />
               <span>Manage Customers</span>
@@ -487,6 +544,7 @@ const Dashboard = () => {
               variant="outline" 
               className="h-20 flex flex-col gap-2 border-[#F59E0B] text-[#F59E0B] hover:bg-[#F59E0B]/10"
               onClick={() => navigate("/proficiency-rates")}
+              data-testid="quick-update-rates"
             >
               <TrendingUp className="w-6 h-6" />
               <span>Update Rates</span>
