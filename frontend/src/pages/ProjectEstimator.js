@@ -834,6 +834,8 @@ const ProjectEstimator = () => {
       version_notes: versionNotes,
       status: projectStatus,
       approver_email: approverEmail,
+      sales_manager_id: salesManagerId,
+      sales_manager_name: salesManagers.find(m => m.id === salesManagerId)?.name || "",
     };
   };
 
