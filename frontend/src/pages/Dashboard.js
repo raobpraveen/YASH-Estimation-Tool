@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   FolderKanban, TrendingUp, DollarSign, Users, 
   FileCheck, FileClock, FileEdit,
-  Bell, ArrowRight, CheckCircle, XCircle, Clock, Filter, X,
-  Cpu, MapPin, Briefcase, UserCircle, Trophy, Award
+  ArrowRight, Filter, X,
+  Cpu, MapPin, Briefcase, UserCircle, Trophy, Award,
+  ArrowUpRight, ArrowDownRight, Minus, GitCompare
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -29,15 +30,44 @@ const STATUS_COLORS = {
   rejected: "#EF4444"
 };
 
+// Custom tooltip for KPI charts showing project numbers
+const KpiTooltip = ({ active, payload, formatCurrency }) => {
+  if (!active || !payload?.length) return null;
+  const data = payload[0].payload;
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 max-w-xs">
+      <p className="font-bold text-sm text-[#0F172A] mb-1">{data.name}</p>
+      <p className="text-sm text-gray-600">Value: <span className="font-mono font-bold text-[#10B981]">{formatCurrency(data.value)}</span></p>
+      <p className="text-sm text-gray-600">Projects: <span className="font-mono font-bold">{data.count}</span></p>
+      {data.project_numbers?.length > 0 && (
+        <div className="mt-2 border-t pt-2">
+          <p className="text-xs text-gray-500 mb-1">Project Numbers:</p>
+          <div className="flex flex-wrap gap-1">
+            {data.project_numbers.slice(0, 8).map(pn => (
+              <span key={pn} className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded">{pn}</span>
+            ))}
+            {data.project_numbers.length > 8 && (
+              <span className="text-xs text-gray-400">+{data.project_numbers.length - 8} more</span>
+            )}
+          </div>
+        </div>
+      )}
+      <p className="text-xs text-blue-500 mt-2 italic">Click bar to view projects</p>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [analytics, setAnalytics] = useState(null);
-  const [notifications, setNotifications] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [projectTypes, setProjectTypes] = useState([]);
   const [salesManagers, setSalesManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonData, setComparisonData] = useState(null);
+  const [comparisonLoading, setComparisonLoading] = useState(false);
   const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
@@ -45,6 +75,9 @@ const Dashboard = () => {
     selectedProjectTypeIds: [],
     selectedLocationCodes: [],
     selectedSalesManagerIds: [],
+  });
+  const [comparison, setComparison] = useState({
+    p1From: "", p1To: "", p2From: "", p2To: ""
   });
 
   useEffect(() => {
@@ -55,30 +88,13 @@ const Dashboard = () => {
   }, []);
 
   const fetchCustomers = async () => {
-    try {
-      const response = await axios.get(`${API}/customers`);
-      setCustomers(response.data);
-    } catch (error) {
-      console.error("Failed to fetch customers");
-    }
+    try { setCustomers((await axios.get(`${API}/customers`)).data); } catch {}
   };
-
   const fetchProjectTypes = async () => {
-    try {
-      const response = await axios.get(`${API}/project-types`);
-      setProjectTypes(response.data);
-    } catch (error) {
-      console.error("Failed to fetch project types");
-    }
+    try { setProjectTypes((await axios.get(`${API}/project-types`)).data); } catch {}
   };
-
   const fetchSalesManagers = async () => {
-    try {
-      const response = await axios.get(`${API}/sales-managers`);
-      setSalesManagers(response.data);
-    } catch (error) {
-      console.error("Failed to fetch sales managers");
-    }
+    try { setSalesManagers((await axios.get(`${API}/sales-managers`)).data); } catch {}
   };
 
   const fetchDashboardData = async () => {
@@ -92,13 +108,7 @@ const Dashboard = () => {
       if (filters.selectedLocationCodes.length > 0) params.append("location_codes", filters.selectedLocationCodes.join(","));
       if (filters.selectedSalesManagerIds.length > 0) params.append("sales_manager_ids", filters.selectedSalesManagerIds.join(","));
       if (params.toString()) url += `?${params.toString()}`;
-
-      const [analyticsRes, notificationsRes] = await Promise.all([
-        axios.get(url),
-        axios.get(`${API}/notifications?unread_only=true`)
-      ]);
-      setAnalytics(analyticsRes.data);
-      setNotifications(notificationsRes.data.slice(0, 5));
+      setAnalytics((await axios.get(url)).data);
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
@@ -106,24 +116,26 @@ const Dashboard = () => {
     }
   };
 
-  const applyFilters = () => {
-    setLoading(true);
-    fetchDashboardData();
+  const fetchComparison = async () => {
+    if (!comparison.p1From || !comparison.p1To || !comparison.p2From || !comparison.p2To) return;
+    setComparisonLoading(true);
+    try {
+      const res = await axios.get(`${API}/dashboard/compare`, {
+        params: { period1_from: comparison.p1From, period1_to: comparison.p1To, period2_from: comparison.p2From, period2_to: comparison.p2To }
+      });
+      setComparisonData(res.data);
+    } catch (error) {
+      console.error("Failed to fetch comparison:", error);
+    } finally {
+      setComparisonLoading(false);
+    }
   };
 
+  const applyFilters = () => { setLoading(true); fetchDashboardData(); };
   const clearFilters = () => {
     setFilters({ dateFrom: "", dateTo: "", customerId: "", selectedProjectTypeIds: [], selectedLocationCodes: [], selectedSalesManagerIds: [] });
     setLoading(true);
     setTimeout(() => fetchDashboardData(), 100);
-  };
-
-  const markAsRead = async (notificationId) => {
-    try {
-      await axios.put(`${API}/notifications/${notificationId}/read`);
-      setNotifications(notifications.filter(n => n.id !== notificationId));
-    } catch (error) {
-      console.error("Failed to mark notification as read");
-    }
   };
 
   const formatCurrency = (value) => {
@@ -132,21 +144,21 @@ const Dashboard = () => {
     return `$${Math.round(value)}`;
   };
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case "review_request": return <Clock className="w-4 h-4 text-amber-500" />;
-      case "approved": return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case "rejected": return <XCircle className="w-4 h-4 text-red-500" />;
-      default: return <Bell className="w-4 h-4 text-blue-500" />;
-    }
-  };
-
-  // Multi-select toggle helpers
   const toggleFilter = (key, value) => {
     setFilters(prev => {
       const arr = prev[key];
       return { ...prev, [key]: arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value] };
     });
+  };
+
+  // Navigate to projects list with a filter type and value
+  const navigateToProjects = (filterType, filterValue) => {
+    navigate(`/projects?filter_type=${encodeURIComponent(filterType)}&filter_value=${encodeURIComponent(filterValue)}`);
+  };
+
+  // Handle bar click for KPI charts
+  const handleBarClick = (data, filterType) => {
+    if (data?.name) navigateToProjects(filterType, data.name);
   };
 
   if (loading) {
@@ -170,6 +182,12 @@ const Dashboard = () => {
     ...filters.selectedProjectTypeIds, ...filters.selectedLocationCodes, ...filters.selectedSalesManagerIds
   ].filter(Boolean).length;
 
+  const DeltaIndicator = ({ value, suffix = "%" }) => {
+    if (value > 0) return <span className="text-green-600 flex items-center gap-1 text-sm font-medium"><ArrowUpRight className="w-4 h-4" />+{value}{suffix}</span>;
+    if (value < 0) return <span className="text-red-500 flex items-center gap-1 text-sm font-medium"><ArrowDownRight className="w-4 h-4" />{value}{suffix}</span>;
+    return <span className="text-gray-400 flex items-center gap-1 text-sm"><Minus className="w-4 h-4" />0{suffix}</span>;
+  };
+
   return (
     <div data-testid="dashboard" className="space-y-6">
       {/* Header */}
@@ -178,25 +196,21 @@ const Dashboard = () => {
           <h1 className="text-4xl sm:text-5xl font-extrabold text-[#0F172A] tracking-tight">Dashboard</h1>
           <p className="text-base text-gray-600 mt-2">Project estimation analytics and overview</p>
         </div>
-        <Button 
-          variant="outline"
-          onClick={() => setShowFilters(!showFilters)}
-          className={showFilters ? "bg-cyan-50 border-cyan-300" : ""}
-          data-testid="toggle-filters-button"
-        >
-          <Filter className="w-4 h-4 mr-2" />
-          Filters
-          {activeFilterCount > 0 && (
-            <Badge className="ml-2 bg-[#0EA5E9] text-white text-xs">{activeFilterCount}</Badge>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowComparison(!showComparison)} className={showComparison ? "bg-purple-50 border-purple-300" : ""} data-testid="toggle-comparison-button">
+            <GitCompare className="w-4 h-4 mr-2" />Compare Periods
+          </Button>
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className={showFilters ? "bg-cyan-50 border-cyan-300" : ""} data-testid="toggle-filters-button">
+            <Filter className="w-4 h-4 mr-2" />Filters
+            {activeFilterCount > 0 && <Badge className="ml-2 bg-[#0EA5E9] text-white text-xs">{activeFilterCount}</Badge>}
+          </Button>
+        </div>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
         <Card className="border border-cyan-200 bg-cyan-50/30">
           <CardContent className="pt-6 space-y-4">
-            {/* Row 1: Date + Customer */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
                 <Label>Date From</Label>
@@ -221,39 +235,30 @@ const Dashboard = () => {
                 <Button variant="outline" onClick={clearFilters} data-testid="clear-filters"><X className="w-4 h-4 mr-1" />Clear</Button>
               </div>
             </div>
-            {/* Row 2: Project Type multi-select */}
             <div>
               <Label className="mb-2 block">Project Type(s)</Label>
               <div className="flex flex-wrap gap-2" data-testid="filter-project-types">
                 {projectTypes.map(pt => (
                   <button key={pt.id} onClick={() => toggleFilter("selectedProjectTypeIds", pt.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      filters.selectedProjectTypeIds.includes(pt.id) ? "bg-[#0EA5E9] text-white border-[#0EA5E9]" : "bg-white text-gray-700 border-gray-300 hover:border-[#0EA5E9]"
-                    }`}>{pt.name}</button>
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${filters.selectedProjectTypeIds.includes(pt.id) ? "bg-[#0EA5E9] text-white border-[#0EA5E9]" : "bg-white text-gray-700 border-gray-300 hover:border-[#0EA5E9]"}`}>{pt.name}</button>
                 ))}
               </div>
             </div>
-            {/* Row 3: Location multi-select */}
             <div>
               <Label className="mb-2 block">Project Location(s)</Label>
               <div className="flex flex-wrap gap-2" data-testid="filter-locations">
                 {COUNTRIES.slice(0, 20).map(c => (
                   <button key={c.code} onClick={() => toggleFilter("selectedLocationCodes", c.code)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      filters.selectedLocationCodes.includes(c.code) ? "bg-[#10B981] text-white border-[#10B981]" : "bg-white text-gray-700 border-gray-300 hover:border-[#10B981]"
-                    }`}>{c.name}</button>
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${filters.selectedLocationCodes.includes(c.code) ? "bg-[#10B981] text-white border-[#10B981]" : "bg-white text-gray-700 border-gray-300 hover:border-[#10B981]"}`}>{c.name}</button>
                 ))}
               </div>
             </div>
-            {/* Row 4: Sales Manager multi-select */}
             <div>
               <Label className="mb-2 block">Sales Manager(s)</Label>
               <div className="flex flex-wrap gap-2" data-testid="filter-sales-managers">
                 {salesManagers.map(sm => (
                   <button key={sm.id} onClick={() => toggleFilter("selectedSalesManagerIds", sm.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                      filters.selectedSalesManagerIds.includes(sm.id) ? "bg-[#F59E0B] text-white border-[#F59E0B]" : "bg-white text-gray-700 border-gray-300 hover:border-[#F59E0B]"
-                    }`}>{sm.name}</button>
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${filters.selectedSalesManagerIds.includes(sm.id) ? "bg-[#F59E0B] text-white border-[#F59E0B]" : "bg-white text-gray-700 border-gray-300 hover:border-[#F59E0B]"}`}>{sm.name}</button>
                 ))}
               </div>
             </div>
@@ -261,49 +266,123 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Key Metrics - Total Value split by status */}
+      {/* Comparison Panel */}
+      {showComparison && (
+        <Card className="border border-purple-200 bg-purple-50/30" data-testid="comparison-panel">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+              <GitCompare className="w-5 h-5 text-purple-600" />Period Comparison
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="font-semibold text-purple-700">Period 1 (Baseline)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input type="date" value={comparison.p1From} onChange={(e) => setComparison({...comparison, p1From: e.target.value})} data-testid="compare-p1-from" />
+                  <Input type="date" value={comparison.p1To} onChange={(e) => setComparison({...comparison, p1To: e.target.value})} data-testid="compare-p1-to" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold text-purple-700">Period 2 (Current)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input type="date" value={comparison.p2From} onChange={(e) => setComparison({...comparison, p2From: e.target.value})} data-testid="compare-p2-from" />
+                  <Input type="date" value={comparison.p2To} onChange={(e) => setComparison({...comparison, p2To: e.target.value})} data-testid="compare-p2-to" />
+                </div>
+              </div>
+            </div>
+            <Button onClick={fetchComparison} className="bg-purple-600 hover:bg-purple-700" disabled={comparisonLoading} data-testid="run-comparison">
+              {comparisonLoading ? "Comparing..." : "Compare"}
+            </Button>
+
+            {comparisonData && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4" data-testid="comparison-results">
+                <Card>
+                  <CardContent className="pt-4 pb-3 text-center">
+                    <p className="text-xs text-gray-500">Total Projects</p>
+                    <div className="flex items-center justify-center gap-3 mt-1">
+                      <span className="text-lg font-mono text-gray-400">{comparisonData.period1.total_projects}</span>
+                      <ArrowRight className="w-4 h-4 text-gray-300" />
+                      <span className="text-lg font-mono font-bold">{comparisonData.period2.total_projects}</span>
+                    </div>
+                    <DeltaIndicator value={comparisonData.deltas.total_projects} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4 pb-3 text-center">
+                    <p className="text-xs text-gray-500">Total Value</p>
+                    <div className="flex items-center justify-center gap-3 mt-1">
+                      <span className="text-lg font-mono text-gray-400">{formatCurrency(comparisonData.period1.total_value)}</span>
+                      <ArrowRight className="w-4 h-4 text-gray-300" />
+                      <span className="text-lg font-mono font-bold text-[#10B981]">{formatCurrency(comparisonData.period2.total_value)}</span>
+                    </div>
+                    <DeltaIndicator value={comparisonData.deltas.total_value} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4 pb-3 text-center">
+                    <p className="text-xs text-gray-500">Approved</p>
+                    <div className="flex items-center justify-center gap-3 mt-1">
+                      <span className="text-lg font-mono text-gray-400">{comparisonData.period1.approved}</span>
+                      <ArrowRight className="w-4 h-4 text-gray-300" />
+                      <span className="text-lg font-mono font-bold text-green-600">{comparisonData.period2.approved}</span>
+                    </div>
+                    <DeltaIndicator value={comparisonData.deltas.approved} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4 pb-3 text-center">
+                    <p className="text-xs text-gray-500">Approval Rate</p>
+                    <div className="flex items-center justify-center gap-3 mt-1">
+                      <span className="text-lg font-mono text-gray-400">{comparisonData.period1.approval_rate}%</span>
+                      <ArrowRight className="w-4 h-4 text-gray-300" />
+                      <span className="text-lg font-mono font-bold">{comparisonData.period2.approval_rate}%</span>
+                    </div>
+                    <DeltaIndicator value={comparisonData.deltas.approval_rate} suffix="pp" />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border border-[#E2E8F0] shadow-sm" data-testid="total-projects-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <FolderKanban className="w-4 h-4 text-[#0EA5E9]" />
-              Total Projects
+              <FolderKanban className="w-4 h-4 text-[#0EA5E9]" />Total Projects
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-extrabold font-mono tabular-nums text-[#0F172A]">{analytics?.total_projects || 0}</p>
           </CardContent>
         </Card>
-        
         <Card className="border border-[#E2E8F0] shadow-sm" data-testid="total-estimation-value-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-[#10B981]" />
-              Total Value of Estimations
+              <DollarSign className="w-4 h-4 text-[#10B981]" />Total Value of Estimations
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-extrabold font-mono tabular-nums text-[#10B981]">{formatCurrency(analytics?.total_revenue || 0)}</p>
           </CardContent>
         </Card>
-
         <Card className="border border-[#E2E8F0] shadow-sm" data-testid="approved-projects-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <FileCheck className="w-4 h-4 text-[#10B981]" />
-              Approved
+              <FileCheck className="w-4 h-4 text-[#10B981]" />Approved
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-extrabold font-mono tabular-nums text-[#10B981]">{analytics?.projects_by_status?.approved || 0}</p>
           </CardContent>
         </Card>
-
         <Card className="border border-[#E2E8F0] shadow-sm" data-testid="pending-review-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <FileClock className="w-4 h-4 text-[#F59E0B]" />
-              In Review
+              <FileClock className="w-4 h-4 text-[#F59E0B]" />In Review
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -357,12 +436,9 @@ const Dashboard = () => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-gray-500">No project data available</div>
-            )}
+            ) : (<div className="h-64 flex items-center justify-center text-gray-500">No project data available</div>)}
           </CardContent>
         </Card>
-
         <Card className="border border-[#E2E8F0] shadow-sm lg:col-span-2">
           <CardHeader><CardTitle className="text-lg font-bold text-[#0F172A]">Estimation Value Trend</CardTitle></CardHeader>
           <CardContent>
@@ -378,20 +454,17 @@ const Dashboard = () => {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-gray-500">No trend data available</div>
-            )}
+            ) : (<div className="h-64 flex items-center justify-center text-gray-500">No trend data available</div>)}
           </CardContent>
         </Card>
       </div>
 
-      {/* Sales Manager Leaderboard */}
+      {/* Leaderboard */}
       {analytics?.sales_manager_leaderboard?.length > 0 && (
         <Card className="border border-[#E2E8F0] shadow-sm" data-testid="sales-manager-leaderboard">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-[#F59E0B]" />
-              Sales Manager Leaderboard
+              <Trophy className="w-5 h-5 text-[#F59E0B]" />Sales Manager Leaderboard
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -410,7 +483,7 @@ const Dashboard = () => {
                 </thead>
                 <tbody>
                   {analytics.sales_manager_leaderboard.map((sm, idx) => (
-                    <tr key={sm.name} className="border-b hover:bg-gray-50 transition-colors">
+                    <tr key={sm.name} className="border-b hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigateToProjects("sales_manager", sm.name)}>
                       <td className="p-3">
                         {idx === 0 ? <Award className="w-5 h-5 text-[#F59E0B]" /> :
                          idx === 1 ? <Award className="w-5 h-5 text-gray-400" /> :
@@ -454,16 +527,15 @@ const Dashboard = () => {
                   <BarChart data={analytics.technology_data} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 11 }} />
-                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
-                    <Bar dataKey="value" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
+                    <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+                    <Tooltip content={<KpiTooltip formatCurrency={formatCurrency} />} />
+                    <Bar dataKey="value" fill="#8B5CF6" radius={[0, 4, 4, 0]} cursor="pointer" onClick={(data) => handleBarClick(data, "technology")} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (<div className="h-64 flex items-center justify-center text-gray-500">No technology data</div>)}
           </CardContent>
         </Card>
-
         <Card className="border border-[#E2E8F0] shadow-sm" data-testid="project-type-kpi-card">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
@@ -477,9 +549,9 @@ const Dashboard = () => {
                   <BarChart data={analytics.project_type_data} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 11 }} />
-                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
-                    <Bar dataKey="value" fill="#0EA5E9" radius={[0, 4, 4, 0]} />
+                    <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+                    <Tooltip content={<KpiTooltip formatCurrency={formatCurrency} />} />
+                    <Bar dataKey="value" fill="#0EA5E9" radius={[0, 4, 4, 0]} cursor="pointer" onClick={(data) => handleBarClick(data, "project_type")} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -503,16 +575,15 @@ const Dashboard = () => {
                   <BarChart data={analytics.location_data} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 11 }} />
-                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
-                    <Bar dataKey="value" fill="#10B981" radius={[0, 4, 4, 0]} />
+                    <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+                    <Tooltip content={<KpiTooltip formatCurrency={formatCurrency} />} />
+                    <Bar dataKey="value" fill="#10B981" radius={[0, 4, 4, 0]} cursor="pointer" onClick={(data) => handleBarClick(data, "location")} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (<div className="h-64 flex items-center justify-center text-gray-500">No location data</div>)}
           </CardContent>
         </Card>
-
         <Card className="border border-[#E2E8F0] shadow-sm" data-testid="sales-manager-kpi-card">
           <CardHeader>
             <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
@@ -526,9 +597,9 @@ const Dashboard = () => {
                   <BarChart data={analytics.sales_manager_data} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 11 }} />
-                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
-                    <Bar dataKey="value" fill="#F59E0B" radius={[0, 4, 4, 0]} />
+                    <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+                    <Tooltip content={<KpiTooltip formatCurrency={formatCurrency} />} />
+                    <Bar dataKey="value" fill="#F59E0B" radius={[0, 4, 4, 0]} cursor="pointer" onClick={(data) => handleBarClick(data, "sales_manager")} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -537,68 +608,29 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Bottom Row - Customers + Notifications */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border border-[#E2E8F0] shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-              <Users className="w-5 h-5 text-[#8B5CF6]" />Top Customers by Value
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {analytics?.top_customers?.length > 0 ? (
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={analytics.top_customers} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 12 }} />
-                    <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
-                    <Bar dataKey="revenue" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (<div className="h-64 flex items-center justify-center text-gray-500">No customer data available</div>)}
-          </CardContent>
-        </Card>
-
-        <Card className="border border-[#E2E8F0] shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-              <Bell className="w-5 h-5 text-[#0EA5E9]" />Recent Notifications
-              {notifications.length > 0 && (<Badge className="bg-red-500 text-white">{notifications.length}</Badge>)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {notifications.length > 0 ? (
-              <div className="space-y-3">
-                {notifications.map((notification) => (
-                  <div key={notification.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors" data-testid={`notification-${notification.id}`}>
-                    {getNotificationIcon(notification.type)}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-[#0F172A] truncate">{notification.title}</p>
-                      <p className="text-xs text-gray-600 line-clamp-2">{notification.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">{notification.project_number}</p>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="ghost" className="text-[#0EA5E9] hover:bg-[#0EA5E9]/10 h-8 w-8 p-0" onClick={() => navigate(`/estimator?edit=${notification.project_id}`)} title="View Project">
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-gray-400 hover:bg-gray-200 h-8 w-8 p-0" onClick={() => markAsRead(notification.id)} title="Mark as Read">
-                        <CheckCircle className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="h-48 flex flex-col items-center justify-center text-gray-500">
-                <Bell className="w-12 h-12 text-gray-300 mb-3" /><p>No new notifications</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Top Customers */}
+      <Card className="border border-[#E2E8F0] shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+            <Users className="w-5 h-5 text-[#8B5CF6]" />Top Customers by Value
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {analytics?.top_customers?.length > 0 ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.top_customers} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" tickFormatter={(v) => formatCurrency(v)} tick={{ fontSize: 12 }} />
+                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(value) => [formatCurrency(value), "Value"]} />
+                  <Bar dataKey="revenue" fill="#8B5CF6" radius={[0, 4, 4, 0]} cursor="pointer" onClick={(data) => navigateToProjects("customer", data.name)} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (<div className="h-64 flex items-center justify-center text-gray-500">No customer data available</div>)}
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       <Card className="border border-[#E2E8F0] shadow-sm">
