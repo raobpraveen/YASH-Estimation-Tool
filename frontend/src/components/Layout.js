@@ -122,6 +122,7 @@ const Layout = ({ user, onLogout }) => {
     { path: "/base-locations", icon: MapPin, label: "Base Locations" },
     { path: "/skills", icon: Layers, label: "Skills" },
     { path: "/proficiency-rates", icon: Briefcase, label: "Proficiency Rates" },
+    { path: "/sales-managers", icon: UserCircle, label: "Sales Managers" },
   ];
 
   // Admin items
