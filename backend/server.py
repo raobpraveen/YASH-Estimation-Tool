@@ -2135,22 +2135,22 @@ async def get_dashboard_analytics(
     
     # Convert to sorted lists
     technology_data = sorted(
-        [{"name": k, "count": v["count"], "value": v["value"], "project_numbers": v["project_numbers"]} for k, v in technology_stats.items()],
+        [{"name": k, "count": v["count"], "value": v["value"], "project_numbers": sorted(v["project_numbers"])} for k, v in technology_stats.items()],
         key=lambda x: x["value"], reverse=True
     )[:10]
     
     project_type_data = sorted(
-        [{"name": k, "count": v["count"], "value": v["value"], "project_numbers": v["project_numbers"]} for k, v in project_type_stats.items()],
+        [{"name": k, "count": v["count"], "value": v["value"], "project_numbers": sorted(v["project_numbers"])} for k, v in project_type_stats.items()],
         key=lambda x: x["value"], reverse=True
     )[:10]
     
     location_data = sorted(
-        [{"name": k, "count": v["count"], "value": v["value"], "project_numbers": v["project_numbers"]} for k, v in location_stats.items()],
+        [{"name": k, "count": v["count"], "value": v["value"], "project_numbers": sorted(v["project_numbers"])} for k, v in location_stats.items()],
         key=lambda x: x["value"], reverse=True
     )[:10]
     
     sales_manager_data = sorted(
-        [{"name": k, "count": v["count"], "value": v["value"], "project_numbers": v["project_numbers"]} for k, v in sales_manager_stats.items()],
+        [{"name": k, "count": v["count"], "value": v["value"], "project_numbers": sorted(v["project_numbers"])} for k, v in sales_manager_stats.items()],
         key=lambda x: x["value"], reverse=True
     )[:10]
     
