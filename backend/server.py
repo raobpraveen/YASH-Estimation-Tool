@@ -34,7 +34,7 @@ SMTP_PORT = int(os.environ.get('SMTP_PORT', '587'))
 SMTP_USER = os.environ.get('SMTP_USER', '')
 SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
 SMTP_FROM_EMAIL = os.environ.get('SMTP_FROM_EMAIL', '')
-SMTP_FROM_NAME = os.environ.get('SMTP_FROM_NAME', 'YASH EstiPro')
+SMTP_FROM_NAME = os.environ.get('SMTP_FROM_NAME', 'YASH EstPro')
 
 security = HTTPBearer(auto_error=False)
 
