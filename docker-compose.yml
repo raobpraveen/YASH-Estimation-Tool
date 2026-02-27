@@ -7,6 +7,9 @@ services:
   mongodb:
     image: mongo:4.4
     container_name: estipro-mongodb
+    ports:
+    - "27017:27017"
+  command: ["mongod", "--bind_ip_all"]
     restart: unless-stopped
     environment:
       MONGO_INITDB_DATABASE: cost_analyzer
